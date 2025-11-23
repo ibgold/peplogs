@@ -20,7 +20,7 @@
                 extend: {
                     fontFamily: { sans: ['Outfit', 'sans-serif'] },
                     colors: { background: '#0f172a', surface: '#1e293b', primary: '#6366f1' },
-                    animation: { 'fade-in': 'fadeIn 0.3s ease-out', 'slide-up': 'slideUp 0.4s ease-out', 'pulse-slow': 'pulse 3s infinite' },
+                    animation: { 'fade-in': 'fadeIn 0.3s ease-out', 'slide-up': 'slideUp 0.4s ease-out' },
                     keyframes: { fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } }, slideUp: { '0%': { transform: 'translateY(20px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } } }
                 }
             }
@@ -55,6 +55,76 @@
         ::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
         .toggle-checkbox:checked { right: 0; border-color: #68D391; }
         .toggle-checkbox:checked + .toggle-label { background-color: #68D391; }
+
+        /* Syringe Visual Styles */
+        .syringe-container {
+            position: relative;
+            width: 60px;
+            height: 300px;
+            margin: 0 auto;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            border: 2px solid #475569;
+            overflow: hidden;
+        }
+        .syringe-marks {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 10px 0;
+            pointer-events: none;
+            z-index: 10;
+        }
+        .mark {
+            border-top: 1px solid rgba(255,255,255,0.3);
+            width: 100%;
+            height: 1px;
+            position: relative;
+        }
+        .mark.major {
+            border-top: 1px solid rgba(255,255,255,0.8);
+            width: 100%;
+        }
+        .mark-label {
+            position: absolute;
+            right: 45px; /* Label on left */
+            top: -6px;
+            font-size: 10px;
+            color: #94a3b8;
+            font-family: monospace;
+        }
+        .liquid {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: linear-gradient(to top, #ef4444, #f87171); /* Red liquid like peptide calculators */
+            transition: height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0.8;
+            z-index: 1;
+        }
+        .plunger {
+            position: absolute;
+            bottom: 0; /* Moves with liquid */
+            left: 0;
+            width: 100%;
+            height: 10px;
+            background: #334155;
+            z-index: 2;
+            transition: bottom 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            border-top: 2px solid #cbd5e1;
+        }
+        .needle {
+            width: 2px;
+            height: 20px;
+            background: #cbd5e1;
+            margin: 0 auto 2px auto;
+        }
     </style>
 </head>
 <body class="flex flex-col items-center min-h-screen pb-6">
@@ -102,7 +172,7 @@
             <div class="flex bg-slate-800/50 p-1 rounded-2xl backdrop-blur-sm border border-slate-700/50">
                 <button id="tab-log" class="nav-pill flex-1 py-2.5 rounded-xl text-sm font-medium text-slate-400 flex justify-center items-center gap-2 active" onclick="switchTab('log')">Log</button>
                 <button id="tab-history" class="nav-pill flex-1 py-2.5 rounded-xl text-sm font-medium text-slate-400 flex justify-center items-center gap-2" onclick="switchTab('history')">History</button>
-                <button id="tab-calculator" class="nav-pill flex-1 py-2.5 rounded-xl text-sm font-medium text-slate-400 flex justify-center items-center gap-2" onclick="switchTab('calculator')">Calc</button>
+                <button id="tab-calculator" class="nav-pill flex-1 py-2.5 rounded-xl text-sm font-medium text-slate-400 flex justify-center items-center gap-2" onclick="switchTab('calculator')">Visual Calc</button>
                 <button id="tab-config" class="nav-pill flex-1 py-2.5 rounded-xl text-sm font-medium text-slate-400 flex justify-center items-center gap-2" onclick="switchTab('config')">Config</button>
             </div>
         </nav>
@@ -215,10 +285,9 @@
                         <h2 class="text-xl font-bold text-white">History</h2>
                         <span class="text-xs text-indigo-400 bg-indigo-500/10 px-2 py-1 rounded-lg">Last 50</span>
                     </div>
-                    <!-- Search Input -->
                     <div class="input-group">
                         <svg class="input-icon w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                        <input type="text" id="history-search" placeholder="Filter (Peptide, Site...)" class="input-field pl-10 bg-slate-800/50 border-slate-700/50 focus:bg-slate-800">
+                        <input type="text" id="history-search" placeholder="Filter..." class="input-field pl-10 bg-slate-800/50 border-slate-700/50 focus:bg-slate-800">
                     </div>
                 </div>
                 <div id="history-list" class="space-y-3 pb-20">
@@ -228,15 +297,55 @@
 
             <!-- CALCULATOR TAB -->
             <div id="view-calculator" class="hidden space-y-6 animate-slide-up">
-                <div class="glass-card rounded-3xl p-6 text-center">
-                    <p class="text-indigo-300 text-sm font-semibold uppercase tracking-wider mb-2">You need to draw</p>
-                    <div class="text-7xl font-bold text-white tracking-tighter drop-shadow-md" id="calculator-result">0 <span class="text-3xl text-slate-500">IU</span></div>
-                    <p class="text-slate-400 mt-2" id="calculator-microliters">(0 µL)</p>
+                <div class="glass-card rounded-3xl p-6 text-center flex flex-col items-center">
+                    <div class="needle"></div>
+                    <div class="syringe-container mb-4">
+                         <div class="syringe-marks" id="syringe-marks">
+                             <!-- Generated by JS -->
+                         </div>
+                         <div class="liquid" id="visual-liquid" style="height: 0%;"></div>
+                         <div class="plunger" id="visual-plunger" style="bottom: 0%;"></div>
+                    </div>
+
+                    <p class="text-indigo-300 text-sm font-semibold uppercase tracking-wider mb-1">Draw to (Tick Mark)</p>
+                    <div class="text-6xl font-black text-white tracking-tighter drop-shadow-md flex items-end justify-center gap-2">
+                        <span id="calculator-result">0</span> <span class="text-2xl text-slate-500 mb-2">IU</span>
+                    </div>
+                    
+                    <div class="mt-4 w-full pt-4 border-t border-slate-700 flex justify-between text-xs text-slate-400">
+                        <div class="text-center">
+                            <div class="text-white font-bold" id="calc-concentration">0</div>
+                            <div>mcg/mL</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-white font-bold" id="calculator-microliters">0</div>
+                            <div>µL Volume</div>
+                        </div>
+                    </div>
                 </div>
+
                 <form id="calculator-form" class="space-y-4">
-                    <div><label class="text-sm text-slate-400 ml-1">Vial Mass</label><div class="flex gap-2"><input type="number" id="vial-mass-input" placeholder="5" class="input-field flex-1"><select id="vial-mass-unit" class="bg-slate-700 text-white rounded-xl px-3 font-bold w-20"><option value="mg">mg</option><option value="mcg">mcg</option></select></div></div>
-                    <div><label class="text-sm text-slate-400 ml-1">Dilution Water</label><div class="flex gap-2"><input type="number" id="dilution-volume-input" placeholder="2" class="input-field flex-1"><select id="dilution-volume-unit" class="bg-slate-700 text-white rounded-xl px-3 font-bold w-20"><option value="ml">mL</option></select></div></div>
-                    <div><label class="text-sm text-slate-400 ml-1">Target Dose</label><div class="flex gap-2"><input type="number" id="target-dose-input" placeholder="250" class="input-field flex-1"><select id="target-dose-unit" class="bg-slate-700 text-white rounded-xl px-3 font-bold w-20"><option value="mcg">mcg</option><option value="mg">mg</option></select></div></div>
+                    <div>
+                        <label class="text-sm text-slate-400 ml-1">Vial Mass</label>
+                        <div class="flex gap-2">
+                            <input type="number" id="vial-mass-input" placeholder="5" class="input-field flex-1">
+                            <select id="vial-mass-unit" class="bg-slate-700 text-white rounded-xl px-3 font-bold w-20"><option value="mg">mg</option><option value="mcg">mcg</option></select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-sm text-slate-400 ml-1">Bac Water (Reconstitution)</label>
+                        <div class="flex gap-2">
+                            <input type="number" id="dilution-volume-input" placeholder="2" class="input-field flex-1">
+                            <select id="dilution-volume-unit" class="bg-slate-700 text-white rounded-xl px-3 font-bold w-20"><option value="ml">mL</option></select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-sm text-slate-400 ml-1">Target Dose</label>
+                        <div class="flex gap-2">
+                            <input type="number" id="target-dose-input" placeholder="250" class="input-field flex-1">
+                            <select id="target-dose-unit" class="bg-slate-700 text-white rounded-xl px-3 font-bold w-20"><option value="mcg">mcg</option><option value="mg">mg</option></select>
+                        </div>
+                    </div>
                 </form>
             </div>
 
@@ -262,96 +371,64 @@
         </main>
     </div>
 
-    <!-- MODAL SITE SELECTION -->
+    <!-- MODAL FOR SITE SELECTION -->
     <div id="site-modal" class="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-4 animate-fade-in">
         <div class="bg-slate-800 w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl border-t border-slate-700 max-h-[80vh] flex flex-col">
-            <div class="flex justify-between items-center mb-4"><h3 class="text-xl font-bold">Select Site</h3><button onclick="closeModal()" class="p-2 bg-slate-700 rounded-full text-slate-300 hover:text-white">&times;</button></div>
-            <div class="mb-4 relative">
-                <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                <input type="text" id="modal-note" placeholder="Add optional note..." class="w-full bg-slate-900 border border-slate-700 rounded-xl py-3 px-4 pl-10 text-white focus:border-indigo-500 outline-none">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold">Select Site</h3>
+                <button onclick="closeModal()" class="p-2 bg-slate-700 rounded-full text-slate-300 hover:text-white">&times;</button>
             </div>
+            <div class="mb-4 relative"><svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg><input type="text" id="modal-note" placeholder="Add optional note..." class="w-full bg-slate-900 border border-slate-700 rounded-xl py-3 px-4 pl-10 text-white focus:border-indigo-500 outline-none"></div>
             <div id="modal-sites-list" class="grid grid-cols-2 gap-3 overflow-y-auto pb-4"></div>
         </div>
     </div>
 
     <script>
         let APP_URL = localStorage.getItem('pep_log_url');
-        // Global history array to support filtering
         let globalHistory = [];
-        
         const els = {
             setup: document.getElementById('setup-screen'), app: document.getElementById('app-container'),
-            statusDot: document.getElementById('status-dot'), statusLabel: document.getElementById('status-label'),
-            pendingBadge: document.getElementById('pending-badge'), pendingCount: document.getElementById('pending-count'),
+            statusDot: document.getElementById('status-dot'), statusLabel: document.getElementById('status-label'), pendingBadge: document.getElementById('pending-badge'), pendingCount: document.getElementById('pending-count'),
             tabs: { log: document.getElementById('tab-log'), history: document.getElementById('tab-history'), calculator: document.getElementById('tab-calculator'), config: document.getElementById('tab-config') },
             views: { log: document.getElementById('view-log'), history: document.getElementById('view-history'), calculator: document.getElementById('view-calculator'), config: document.getElementById('view-config') },
-            quickContainer: document.getElementById('quick-log-buttons'),
-            historyList: document.getElementById('history-list'), historySearch: document.getElementById('history-search'),
-            streakContainer: document.getElementById('streak-container'),
+            quickContainer: document.getElementById('quick-log-buttons'), historyList: document.getElementById('history-list'), historySearch: document.getElementById('history-search'), streakContainer: document.getElementById('streak-container'),
             modal: document.getElementById('site-modal'), modalList: document.getElementById('modal-sites-list'), modalNote: document.getElementById('modal-note'),
             logForm: document.getElementById('log-form'), configForm: document.getElementById('config-form'),
             pep: document.getElementById('peptide-name'), custPep: document.getElementById('custom-peptide'), custPepGrp: document.getElementById('custom-peptide-group'),
             site: document.getElementById('injection-site'), custSite: document.getElementById('custom-site'), custSiteGrp: document.getElementById('custom-site-group'), manualNote: document.getElementById('manual-notes'),
-            calc: { m: document.getElementById('vial-mass-input'), mu: document.getElementById('vial-mass-unit'), v: document.getElementById('dilution-volume-input'), vu: document.getElementById('dilution-volume-unit'), d: document.getElementById('target-dose-input'), du: document.getElementById('target-dose-unit'), res: document.getElementById('calculator-result'), mic: document.getElementById('calculator-microliters') },
+            calc: { m: document.getElementById('vial-mass-input'), mu: document.getElementById('vial-mass-unit'), v: document.getElementById('dilution-volume-input'), vu: document.getElementById('dilution-volume-unit'), d: document.getElementById('target-dose-input'), du: document.getElementById('target-dose-unit'), res: document.getElementById('calculator-result'), mic: document.getElementById('calculator-microliters'), conc: document.getElementById('calc-concentration'), syringeMarks: document.getElementById('syringe-marks'), visualLiquid: document.getElementById('visual-liquid'), visualPlunger: document.getElementById('visual-plunger') },
             suggestionBox: document.getElementById('suggestion-box'), suggestionText: document.getElementById('suggestion-text'),
             cycleToggle: document.getElementById('cycle-toggle'), cycleOptions: document.getElementById('cycle-options'), cycleStart: document.getElementById('config-cycle-start'), cycleWeeks: document.getElementById('config-cycle-weeks')
         };
 
         const sites = [ {name: "Right Abdomen (Upper)", icon: "R"}, {name: "Right Abdomen (Lower)", icon: "R"}, {name: "Left Abdomen (Upper)", icon: "L"}, {name: "Left Abdomen (Lower)", icon: "L"}, {name: "Right Flank", icon: "R"}, {name: "Left Flank", icon: "L"}, {name: "Right Thigh", icon: "R"}, {name: "Left Thigh", icon: "L"}, {name: "Right Deltoid", icon: "R"}, {name: "Left Deltoid", icon: "L"} ];
         const extraSites = [{name: "Nasal Spray", icon: "👃"}, {name: "Other", icon: "?"}];
-
         let pendingPreset = null, currentSuggestion = null;
 
-        // --- OFFLINE QUEUE SYSTEM ---
+        // OFFLINE QUEUE
         function getQueue() { return JSON.parse(localStorage.getItem('pep_log_queue') || '[]'); }
         function saveQueue(q) { localStorage.setItem('pep_log_queue', JSON.stringify(q)); updateNetworkUI(); }
         function addToQueue(data) { const q = getQueue(); q.push(data); saveQueue(q); }
-        
         function updateNetworkUI() {
             const q = getQueue();
-            const isOnline = navigator.onLine;
-            if (!isOnline) {
-                els.statusDot.className = "w-2 h-2 rounded-full bg-amber-500";
-                els.statusLabel.innerText = "Offline"; els.statusLabel.className = "text-amber-500 font-bold";
-            } else {
-                if (q.length > 0) {
-                    els.statusDot.className = "w-2 h-2 rounded-full bg-blue-500 animate-pulse";
-                    els.statusLabel.innerText = "Syncing..."; els.statusLabel.className = "text-blue-400 font-bold";
-                    syncQueue();
-                } else {
-                    els.statusDot.className = "w-2 h-2 rounded-full bg-green-500";
-                    els.statusLabel.innerText = "Ready"; els.statusLabel.className = "text-slate-400";
-                }
-            }
-            if (q.length > 0) { els.pendingBadge.classList.remove('hidden'); els.pendingCount.innerText = q.length; } 
-            else { els.pendingBadge.classList.add('hidden'); }
+            if (!navigator.onLine) { els.statusDot.className = "w-2 h-2 rounded-full bg-amber-500"; els.statusLabel.innerText = "Offline"; els.statusLabel.className = "text-amber-500 font-bold"; }
+            else if (q.length > 0) { els.statusDot.className = "w-2 h-2 rounded-full bg-blue-500 animate-pulse"; els.statusLabel.innerText = "Syncing..."; els.statusLabel.className = "text-blue-400 font-bold"; syncQueue(); }
+            else { els.statusDot.className = "w-2 h-2 rounded-full bg-green-500"; els.statusLabel.innerText = "Ready"; els.statusLabel.className = "text-slate-400"; }
+            if (q.length > 0) { els.pendingBadge.classList.remove('hidden'); els.pendingCount.innerText = q.length; } else { els.pendingBadge.classList.add('hidden'); }
         }
-
         async function syncQueue() {
             if (!navigator.onLine) return;
-            const q = getQueue();
-            if (q.length === 0) return;
+            const q = getQueue(); if (q.length === 0) return;
             const newQueue = [];
-            for (const item of q) {
-                try {
-                    const res = await fetch(APP_URL, { method: 'POST', body: JSON.stringify(item) });
-                    const json = await res.json();
-                    if (!json.success) newQueue.push(item);
-                } catch (e) { newQueue.push(item); }
-            }
-            localStorage.setItem('pep_log_queue', JSON.stringify(newQueue));
-            updateNetworkUI();
-            if (newQueue.length === 0) loadHistory();
+            for (const item of q) { try { const res = await fetch(APP_URL, { method: 'POST', body: JSON.stringify(item) }); const json = await res.json(); if (!json.success) newQueue.push(item); } catch (e) { newQueue.push(item); } }
+            localStorage.setItem('pep_log_queue', JSON.stringify(newQueue)); updateNetworkUI(); if (newQueue.length === 0) loadHistory();
         }
-
-        window.addEventListener('online', updateNetworkUI);
-        window.addEventListener('offline', updateNetworkUI);
+        window.addEventListener('online', updateNetworkUI); window.addEventListener('offline', updateNetworkUI);
 
         function init() {
-            const params = new URLSearchParams(window.location.search);
-            const magic = params.get('db');
+            const params = new URLSearchParams(window.location.search); const magic = params.get('db');
             if(magic && magic.startsWith('https')) { localStorage.setItem('pep_log_url', magic); APP_URL = magic; window.history.replaceState({}, '', window.location.pathname); }
-            if(!APP_URL) { els.setup.classList.remove('hidden'); } else { els.app.classList.remove('hidden'); setupEvents(); loadConfig(); loadHistory(); updateNetworkUI(); }
+            if(!APP_URL) { els.setup.classList.remove('hidden'); } else { els.app.classList.remove('hidden'); setupEvents(); loadConfig(); loadHistory(); updateNetworkUI(); initSyringe(); }
         }
 
         document.getElementById('setup-form').addEventListener('submit', (e) => { e.preventDefault(); const url = document.getElementById('setup-url').value.trim(); if(url) { localStorage.setItem('pep_log_url', url); APP_URL = url; location.reload(); } });
@@ -366,42 +443,30 @@
             document.getElementById('timestamp').value = new Date(new Date() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0,16);
             els.logForm.addEventListener('submit', handleManualLog);
             els.configForm.addEventListener('submit', handleConfigSave);
-            // Search listener
             els.historySearch.addEventListener('input', filterHistory);
-
             Object.values(els.calc).forEach(el => { if(el.tagName === 'INPUT' || el.tagName === 'SELECT') el.addEventListener('input', runCalc); });
             els.modalList.innerHTML = '';
             [...sites, ...extraSites].forEach(s => {
-                const btn = document.createElement('button');
-                btn.dataset.site = s.name;
+                const btn = document.createElement('button'); btn.dataset.site = s.name;
                 btn.className = "w-full p-4 bg-slate-800/50 hover:bg-indigo-600/80 rounded-xl text-left transition flex items-center gap-3 border border-slate-700/50";
                 btn.innerHTML = `<span class="w-8 h-8 rounded-full bg-slate-900 flex items-center justify-center text-xs font-bold text-slate-400 border border-slate-700">${s.icon}</span> <span class="font-medium text-white">${s.name}</span>`;
-                btn.onclick = () => finalizeQuickLog(s.name);
-                els.modalList.appendChild(btn);
+                btn.onclick = () => finalizeQuickLog(s.name); els.modalList.appendChild(btn);
             });
         }
 
         function switchView(view) {
             Object.values(els.tabs).forEach(t => { t.classList.remove('bg-indigo-500', 'text-white', 'active'); t.classList.add('text-slate-400'); t.style.background = 'transparent'; t.style.color = '#94a3b8'; });
             Object.values(els.views).forEach(v => v.classList.add('hidden'));
-            els.views[view].classList.remove('hidden');
-            els.tabs[view].classList.add('active');
-            els.tabs[view].style.background = '#6366f1'; els.tabs[view].style.color = 'white';
+            els.views[view].classList.remove('hidden'); els.tabs[view].classList.add('active'); els.tabs[view].style.background = '#6366f1'; els.tabs[view].style.color = 'white';
             if(view === 'history') loadHistory();
         }
 
         async function api(data) {
             if (!navigator.onLine) { addToQueue(data); return { success: true, offline: true }; }
-            try { const res = await fetch(APP_URL, { method: 'POST', body: JSON.stringify(data) }); return await res.json(); } 
-            catch(e) { addToQueue(data); return { success: true, offline: true }; }
+            try { const res = await fetch(APP_URL, { method: 'POST', body: JSON.stringify(data) }); return await res.json(); } catch(e) { addToQueue(data); return { success: true, offline: true }; }
         }
 
-        function getCycleProgress(startDateStr, totalWeeks) {
-            if (!startDateStr || !totalWeeks) return null;
-            const start = new Date(startDateStr), now = new Date(), diffDays = Math.ceil(Math.abs(now - start) / (1000 * 60 * 60 * 24)); 
-            const currentWeek = Math.ceil(diffDays / 7), percent = Math.min(100, (currentWeek / totalWeeks) * 100);
-            return { current: currentWeek, total: totalWeeks, percent: percent };
-        }
+        function getCycleProgress(startStr, weeks) { if (!startStr || !weeks) return null; const start = new Date(startStr), now = new Date(), diff = Math.ceil(Math.abs(now - start)/(1000*60*60*24)); return { current: Math.ceil(diff/7), total: weeks, percent: Math.min(100, (Math.ceil(diff/7)/weeks)*100) }; }
 
         async function loadConfig() {
             if (!navigator.onLine) { els.quickContainer.innerHTML = `<div class="col-span-2 text-center p-4 border border-dashed border-slate-700/50 rounded-xl text-slate-500 text-sm">Offline mode.</div>`; return; }
@@ -411,8 +476,8 @@
                 res.presets.forEach(p => {
                     let cycleHtml = '';
                     if(p.cycleStart && p.cycleWeeks) {
-                        const cycle = getCycleProgress(p.cycleStart, p.cycleWeeks);
-                        cycleHtml = `<div class="w-full bg-slate-700 rounded-full h-1.5 mt-3 mb-1"><div class="bg-indigo-400 h-1.5 rounded-full" style="width: ${cycle.percent}%"></div></div><div class="text-[10px] text-indigo-300 font-bold text-right">Week ${cycle.current} / ${cycle.total}</div>`;
+                        const c = getCycleProgress(p.cycleStart, p.cycleWeeks);
+                        cycleHtml = `<div class="w-full bg-slate-700 rounded-full h-1.5 mt-3 mb-1"><div class="bg-indigo-400 h-1.5 rounded-full" style="width: ${c.percent}%"></div></div><div class="text-[10px] text-indigo-300 font-bold text-right">Week ${c.current} / ${c.total}</div>`;
                     }
                     const btn = document.createElement('button');
                     btn.className = "btn-quick bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 hover:border-indigo-500/50 transition text-left group relative overflow-hidden";
@@ -424,52 +489,27 @@
         }
 
         async function loadHistory() {
-            if (!navigator.onLine) { els.historyList.innerHTML = '<div class="text-center text-slate-500 py-4">Offline mode. Cannot load history.</div>'; return; }
+            if (!navigator.onLine) { els.historyList.innerHTML = '<div class="text-center text-slate-500 py-4">Offline mode.</div>'; return; }
             els.historyList.innerHTML = '<div class="text-center p-4 animate-pulse text-slate-500">Loading...</div>';
             const res = await fetch(`${APP_URL}?action=getHistory`).then(r=>r.json()).catch(e=>({}));
-            
-            if(res.success && res.history) {
-                globalHistory = res.history; // Store data globally
-                renderStreak(globalHistory);
-                calculateSuggestion(globalHistory);
-                renderHistoryList(globalHistory); // Render all
-            } else {
-                els.historyList.innerHTML = '<div class="text-center text-slate-500">No logs found.</div>';
-                globalHistory = [];
-            }
+            if(res.success && res.history) { globalHistory = res.history; renderStreak(globalHistory); calculateSuggestion(globalHistory); renderHistoryList(globalHistory); } 
+            else { els.historyList.innerHTML = '<div class="text-center text-slate-500">No logs found.</div>'; globalHistory = []; }
         }
         
-        // --- FILTERING LOGIC ---
         function filterHistory() {
             const term = els.historySearch.value.toLowerCase();
-            const filtered = globalHistory.filter(h => 
-                (h.peptide && h.peptide.toLowerCase().includes(term)) || 
-                (h.site && h.site.toLowerCase().includes(term)) ||
-                (h.notes && h.notes.toLowerCase().includes(term)) ||
-                (h.date && h.date.toLowerCase().includes(term))
-            );
+            const filtered = globalHistory.filter(h => (h.peptide && h.peptide.toLowerCase().includes(term)) || (h.site && h.site.toLowerCase().includes(term)) || (h.notes && h.notes.toLowerCase().includes(term)));
             renderHistoryList(filtered);
         }
 
         function renderHistoryList(list) {
             els.historyList.innerHTML = '';
-            if (list.length === 0) {
-                els.historyList.innerHTML = '<div class="text-center text-slate-500 py-4">No matching logs.</div>';
-                return;
-            }
-            
+            if (list.length === 0) { els.historyList.innerHTML = '<div class="text-center text-slate-500 py-4">No matching logs.</div>'; return; }
             list.forEach(h => {
-                let dateStr = h.date, timeStr = "";
-                const dateObj = new Date(h.date);
-                if (!isNaN(dateObj.getTime())) {
-                    dateStr = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-                    timeStr = dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-                } 
-                
+                let dateStr = h.date, timeStr = ""; const dateObj = new Date(h.date);
+                if (!isNaN(dateObj.getTime())) { dateStr = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }); timeStr = dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }); } 
                 const noteHtml = h.notes ? `<div class="mt-2 text-xs text-indigo-300 italic flex items-center gap-1"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> ${h.notes}</div>` : '';
-                
-                const card = document.createElement('div');
-                card.className = "bg-slate-800/50 p-4 rounded-2xl border border-slate-700/50 flex justify-between items-start animate-fade-in";
+                const card = document.createElement('div'); card.className = "bg-slate-800/50 p-4 rounded-2xl border border-slate-700/50 flex justify-between items-start animate-fade-in";
                 card.innerHTML = `<div><div class="font-bold text-white flex items-center gap-2">${h.peptide} <span class="text-xs bg-indigo-500/10 text-indigo-400 px-2 py-0.5 rounded font-mono border border-indigo-500/20">${h.dosage}</span></div><div class="text-xs text-slate-400 mt-1 flex items-center gap-1"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>${h.site}</div>${noteHtml}</div><div class="flex flex-col items-end gap-2"><div class="text-right text-xs text-slate-500 font-mono bg-slate-900/50 px-2 py-1 rounded border border-slate-800"><div class="text-slate-400">${dateStr}</div><div class="text-indigo-400 font-bold">${timeStr}</div></div><button class="text-slate-600 hover:text-red-400 transition p-1" onclick="deleteEntry('${h.row}')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></button></div>`;
                 els.historyList.appendChild(card);
             });
@@ -480,10 +520,7 @@
             const lastLog = history[0], lastDateObj = new Date(lastLog.date), todayObj = new Date();
             const isSameDay = lastDateObj.toISOString().split('T')[0] === todayObj.toISOString().split('T')[0];
             if(isSameDay) showSuggestion(lastLog.site);
-            else {
-                const idx = sites.findIndex(s => s.name === lastLog.site);
-                showSuggestion(idx === -1 ? sites[0].name : sites[(idx + 1) % sites.length].name);
-            }
+            else { const idx = sites.findIndex(s => s.name === lastLog.site); showSuggestion(idx === -1 ? sites[0].name : sites[(idx + 1) % sites.length].name); }
         }
         function showSuggestion(siteName) { currentSuggestion = siteName; els.suggestionText.textContent = siteName; els.suggestionBox.classList.remove('hidden'); }
         function useSuggestion() { if(!currentSuggestion) return; els.site.value = currentSuggestion; els.site.focus(); }
@@ -501,11 +538,7 @@
             const data = { action: 'logInjection', peptide: pName, dosage: dose, site: sName, timestamp: document.getElementById('timestamp').value, notes: els.manualNote.value };
             const res = await api(data);
             btn.innerHTML = originalText; btn.disabled = false;
-            if(res.success) {
-                if(res.offline) alert("Offline. Saved to queue.");
-                else alert("Log Saved!");
-                els.logForm.reset(); document.getElementById('timestamp').value = new Date(new Date() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0,16); if(!res.offline) loadHistory();
-            } else alert("Error.");
+            if(res.success) { if(res.offline) alert("Offline. Saved to queue."); else alert("Log Saved!"); els.logForm.reset(); document.getElementById('timestamp').value = new Date(new Date() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0,16); if(!res.offline) loadHistory(); } else alert("Error.");
         }
 
         async function finalizeQuickLog(site) {
@@ -514,11 +547,7 @@
             const ts = new Date(new Date() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0,16);
             const data = { action: 'logInjection', peptide: pendingPreset.peptide, dosage: `${pendingPreset.value} ${pendingPreset.unit}`, site: site, timestamp: ts, notes: els.modalNote.value };
             const res = await api(data);
-            if(res.success) {
-                if(res.offline) alert("Offline. Saved to queue.");
-                else alert(`Saved: ${pendingPreset.peptide}`);
-                if(!res.offline) loadHistory();
-            } else alert("Error.");
+            if(res.success) { if(res.offline) alert("Offline. Saved to queue."); else alert(`Saved: ${pendingPreset.peptide}`); if(!res.offline) loadHistory(); } else alert("Error.");
             pendingPreset = null;
         }
 
@@ -532,7 +561,63 @@
             if(res.success) { alert("Preset Saved"); els.configForm.reset(); els.cycleToggle.checked = false; els.cycleOptions.classList.add('hidden'); loadConfig(); switchView('log'); } else alert("Error");
         }
 
-        function runCalc() { const vm = parseFloat(els.calc.m.value), dv = parseFloat(els.calc.v.value), td = parseFloat(els.calc.d.value); if(!vm || !dv || !td) { els.calc.res.innerText = "0 IU"; els.calc.mic.innerText = "(0 µL)"; return; } const m_ug = els.calc.mu.value === 'mg' ? vm * 1000 : vm; const d_ug = els.calc.du.value === 'mg' ? td * 1000 : td; const vol = (d_ug / (m_ug / dv)); els.calc.res.innerText = `${(vol * 100).toFixed(1)} IU`; els.calc.mic.innerText = `(${vol.toFixed(2) * 1000} µL)`; }
+        function initSyringe() {
+             // Populate syringe ticks for visual effect
+             els.calc.syringeMarks.innerHTML = '';
+             // 10 Major ticks for 100 units
+             for(let i=0; i<=10; i++) {
+                 const mark = document.createElement('div');
+                 mark.className = 'mark major';
+                 mark.style.bottom = `${i * 10}%`;
+                 mark.innerHTML = `<span class="mark-label">${i*10}</span>`;
+                 els.calc.syringeMarks.appendChild(mark);
+             }
+             // Minor ticks
+             for(let i=0; i<50; i++) {
+                 if(i % 5 !== 0) {
+                    const mark = document.createElement('div');
+                    mark.className = 'mark';
+                    mark.style.bottom = `${i * 2}%`;
+                    mark.style.width = '50%';
+                    els.calc.syringeMarks.appendChild(mark);
+                 }
+             }
+        }
+
+        function runCalc() {
+            const vm = parseFloat(els.calc.m.value), dv = parseFloat(els.calc.v.value), td = parseFloat(els.calc.d.value);
+            if(!vm || !dv || !td) { 
+                els.calc.res.innerText = "0"; 
+                els.calc.mic.innerText = "0"; 
+                els.calc.conc.innerText = "--"; 
+                // Reset visual
+                els.calc.visualLiquid.style.height = '0%';
+                els.calc.visualPlunger.style.bottom = '0%';
+                return; 
+            }
+            
+            const m_ug = els.calc.mu.value === 'mg' ? vm * 1000 : vm;
+            const conc_mcg_ml = m_ug / dv;
+            const mcgPerUnit = conc_mcg_ml * 0.01;
+            const target_mcg = els.calc.du.value === 'mg' ? td * 1000 : td;
+            const unitsNeeded = target_mcg / mcgPerUnit;
+            const vol_ul = (unitsNeeded * 0.01) * 1000;
+
+            els.calc.res.innerText = `${unitsNeeded.toFixed(1)}`;
+            els.calc.mic.innerText = `${vol_ul.toFixed(1)}`;
+            els.calc.conc.innerText = mcgPerUnit.toFixed(1);
+            
+            // Update Visuals
+            // Standard U100 syringe has 100 units max. 
+            // We cap visual at 100 but show real number text.
+            let visualPercent = unitsNeeded;
+            if(visualPercent > 100) visualPercent = 100;
+            if(visualPercent < 0) visualPercent = 0;
+            
+            els.calc.visualLiquid.style.height = `${visualPercent}%`;
+            els.calc.visualPlunger.style.bottom = `${visualPercent}%`;
+        }
+
         function closeModal() { els.modal.classList.add('hidden'); }
         init(); switchView('log');
     </script>
