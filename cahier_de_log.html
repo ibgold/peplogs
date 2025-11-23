@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peptide Log Book</title>
+    <!-- Load Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Base configuration for Inter font and Dark Mode setup */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1f2937; /* Dark Gray 800 */
+            color: #e5e7eb; /* Light Gray */
+        }
+        /* Style for cards and containers in Dark Mode */
+        .card {
+            background-color: #374151; /* Dark Gray 700 */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+            border: 1px solid #4b5563; /* Dark Gray 600 border */
+        }
+        /* Primary Button Style */
+        .btn-primary {
+            background-color: #6366f1; /* Indigo 500 */
+            transition: background-color 0.2s;
+        }
+        .btn-primary:hover {
+            background-color: #4f46e5; /* Indigo 600 */
+        }
+        /* Secondary Button Style (Quick Log buttons) */
+        .btn-quick-log {
+            background-color: #4b5563; /* Gray 600 */
+            color: #e5e7eb;
+            font-weight: 600;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+        .btn-quick-log:hover {
+            background-color: #374151; /* Gray 700 */
+            transform: translateY(-1px);
+        }
+        /* Input Fields Style in Dark Mode */
+        .input-field {
+            background-color: #4b5563; /* Dark Gray 600 */
+            color: #f3f4f6; /* White text */
+            border: 1px solid #6b7280; 
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            transition: border-color 0.2s;
+        }
+        .input-field:focus {
+            border-color: #6366f1; 
+            outline: none;
+            box-shadow: 0 0 0 1px #6366f1;
+        }
+        /* Style for Select dropdown options */
+        .input-field option {
+            background-color: #374151;
+            color: #f3f4f6;
+        }
+        /* Tab Styles */
+        .tab-btn {
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            border-radius: 0.75rem 0.75rem 0 0;
+            transition: background-color 0.2s, color 0.2s;
+            border-bottom: 2px solid transparent;
+        }
+        .tab-btn.active {
+            background-color: #374151; /* Dark Gray 700 */
+            color: #6366f1; /* Indigo 500 */
+            border-bottom: 2px solid #6366f1;
+        }
+        .tab-btn:not(.active):hover {
+            background-color: #4b5563; /* Dark Gray 600 */
+        }
+        .unit-select {
+            border-left: none;
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+            padding: 0.75rem 0.5rem;
+            width: 5rem;
+            text-align: center;
+        }
+        .input-with-unit {
+            border-right: none;
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8 min-h-screen">
+
+    <div class="max-w-xl mx-auto">
+        <header class="text-center mb-6">
+            <h1 class="text-4xl font-extrabold text-gray-100 mb-2">Peptide Log Book</h1>
+            <p class="text-gray-400">Simplified logging and dosage tools for Google Sheets.</p>
+        </header>
+
+        <!-- Tab Navigation -->
+        <div class="flex border-b border-gray-600 mb-6 overflow-x-auto">
+            <button id="tab-log" class="tab-btn active text-gray-100 whitespace-nowrap" data-tab="log">Log Injection</button>
+            <button id="tab-calculator" class="tab-btn text-gray-400 whitespace-nowrap" data-tab="calculator">Calculator</button>
+            <button id="tab-config" class="tab-btn text-gray-400 whitespace-nowrap" data-tab="config">Configuration</button>
+        </div>
+
+        <!-- Connection Status -->
+        <div class="mb-6 p-4 text-sm card border-gray-700">
+            <p id="status-message" class="text-center font-medium text-gray-400">
+                Status: <span id="log-status" class="text-yellow-400">Loading application...</span>
+            </p>
+        </div>
+        
+        <!-- Tab Content Container -->
+        <div id="tab-content">
+
+            <!-- 1. Log Injection Section -->
+            <div id="content-log" class="tab-pane">
+                
+                <!-- Quick Log Section -->
+                <section class="mb-10 card p-6 md:p-8">
+                    <h2 class="text-2xl font-semibold mb-6 text-gray-100">Quick Log (1-Click)</h2>
+                    
+                    <div id="quick-log-buttons" class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        <p class="text-gray-500 col-span-full text-center py-4">Loading presets from Google Sheets...</p>
+                    </div>
+                    
+                    <p class="text-sm text-gray-500 mt-4 text-center">Logs the injection at the current time with pre-saved settings. Configure these in the "Configuration" tab.</p>
+                </section>
+                
+                <!-- Manual Log Section -->
+                <section class="mb-10 card p-6 md:p-8">
+                    <h2 class="text-2xl font-semibold mb-6 text-gray-100">Manual Log</h2>
+                    
+                    <form id="log-form" class="grid grid-cols-1 gap-4">
+                        
+                        <!-- 1. Peptide Name -->
+                        <div>
+                            <label for="peptide-name" class="block text-sm font-medium text-gray-300 mb-1">Peptide</label>
+                            <select id="peptide-name" required class="input-field w-full">
+                                <option value="" disabled selected>Select a peptide</option>
+                                <option value="Tirzepatide">Tirzepatide</option>
+                                <option value="BPC 157">BPC 157</option>
+                                <option value="CJC-1295 + Ipamorelin">CJC-1295 + Ipamorelin</option>
+                                <option value="GHK-Cu">GHK-Cu</option>
+                                <option value="Semax">Semax</option>
+                                <option value="Selank">Selank</option>
+                                <option value="Other">Other (Specify below)</option>
+                            </select>
+                        </div>
+
+                        <!-- Custom Peptide Input (Hidden by default) -->
+                        <div id="custom-peptide-group" class="hidden">
+                            <label for="custom-peptide" class="block text-sm font-medium text-gray-300 mb-1">Custom Peptide Name</label>
+                            <input type="text" id="custom-peptide" placeholder="e.g. Tesofensine, AOD 9604" class="input-field w-full">
+                        </div>
+
+                        <!-- 2. Dosage (Value + Unit) -->
+                        <div>
+                            <label for="dosage-value" class="block text-sm font-medium text-gray-300 mb-1">Dosage</label>
+                            <div class="flex">
+                                <input type="number" id="dosage-value" min="0.1" step="0.1" required placeholder="e.g. 250" class="input-field w-full input-with-unit">
+                                <select id="dosage-unit" class="input-field unit-select" required>
+                                    <option value="mcg">mcg</option>
+                                    <option value="mg">mg</option>
+                                    <option value="IU">IU</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- 3. Injection Site -->
+                        <div>
+                            <label for="injection-site" class="block text-sm font-medium text-gray-300 mb-1">Injection Site</label>
+                            <select id="injection-site" required class="input-field w-full">
+                                <option value="" disabled selected>Select site</option>
+                                <option value="Left Abdomen">Left Abdomen</option>
+                                <option value="Right Abdomen">Right Abdomen</option>
+                                <option value="Left Thigh">Left Thigh</option>
+                                <option value="Right Thigh">Right Thigh</option>
+                                <option value="Left Deltoid">Left Deltoid</option>
+                                <option value="Right Deltoid">Right Deltoid</option>
+                                <option value="Nasal Spray">Nasal Spray</option>
+                                <option value="Other">Other (Specify below)</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Custom Site Input (Hidden by default) -->
+                        <div id="custom-site-group" class="hidden">
+                            <label for="custom-site" class="block text-sm font-medium text-gray-300 mb-1">Custom Injection Site Name</label>
+                            <input type="text" id="custom-site" placeholder="e.g. Left Ventrogluteal" class="input-field w-full">
+                        </div>
+
+                        <!-- 4. Date/Time -->
+                        <div>
+                            <label for="timestamp" class="block text-sm font-medium text-gray-300 mb-1">Date and Time of Injection</label>
+                            <input type="datetime-local" id="timestamp" required class="input-field w-full">
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="mt-4">
+                            <button type="submit" id="submit-btn" class="btn-primary text-white font-bold py-3 px-6 w-full rounded-xl">
+                                <span id="btn-text">Log Injection</span>
+                            </button>
+                            <p id="response-message" class="text-sm mt-2 hidden text-center"></p>
+                        </div>
+                    </form>
+                </section>
+            </div>
+            
+            <!-- 2. Dosage Calculator Section (Hidden by default) -->
+            <div id="content-calculator" class="tab-pane hidden">
+                <section class="mb-10 card p-6 md:p-8">
+                    <h2 class="text-2xl font-semibold mb-6 text-gray-100">Dosage Calculator (IU)</h2>
+                    <p class="text-gray-400 mb-6">Calculate the number of Insulin Units (IU) you need to draw for your desired dose. (1mL syringe, 100 IU = $1000\mu L$)</p>
+                    
+                    <form id="calculator-form" class="grid grid-cols-1 gap-6">
+                        
+                        <!-- Peptide Mass in Vial -->
+                        <div>
+                            <label for="vial-mass-input" class="block text-sm font-medium text-gray-300 mb-1">Peptide Mass in Vial</label>
+                            <div class="flex">
+                                <input type="number" id="vial-mass-input" min="0.01" step="0.01" required placeholder="e.g. 5" class="input-field w-full input-with-unit">
+                                <select id="vial-mass-unit" class="input-field unit-select">
+                                    <option value="mg">mg</option>
+                                    <option value="mcg">mcg</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Dilution Volume -->
+                        <div>
+                            <label for="dilution-volume-input" class="block text-sm font-medium text-gray-300 mb-1">Dilution Volume (Bacteriostatic Water)</label>
+                            <div class="flex">
+                                <input type="number" id="dilution-volume-input" min="0.1" step="0.1" required placeholder="e.g. 2" class="input-field w-full input-with-unit">
+                                <select id="dilution-volume-unit" class="input-field unit-select">
+                                    <option value="ml">mL</option>
+                                    <option value="cc">cc</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Target Dose -->
+                        <div>
+                            <label for="target-dose-input" class="block text-sm font-medium text-gray-300 mb-1">Target Dose per Injection</label>
+                            <div class="flex">
+                                <input type="number" id="target-dose-input" min="1" step="1" required placeholder="e.g. 250" class="input-field w-full input-with-unit">
+                                <select id="target-dose-unit" class="input-field unit-select">
+                                    <option value="mcg">mcg</option>
+                                    <option value="mg">mg</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                    
+                    <!-- Result Display -->
+                    <div class="mt-8 p-6 card border-indigo-500 bg-gray-800 text-center">
+                        <p class="text-xl font-medium text-gray-300 mb-2">Result: You need to draw</p>
+                        <p id="calculator-result" class="text-5xl font-extrabold text-indigo-400">
+                            -- IU
+                        </p>
+                        <p id="calculator-microliters" class="text-sm text-gray-500 mt-2">
+                            (-- $\mu L$)
+                        </p>
+                        <p id="calculator-error" class="text-red-400 text-sm mt-4 hidden"></p>
+                    </div>
+
+                </section>
+            </div>
+
+            <!-- 3. Configuration Section (New) -->
+            <div id="content-config" class="tab-pane hidden">
+                <section class="mb-10 card p-6 md:p-8">
+                    <h2 class="text-2xl font-semibold mb-6 text-gray-100">Quick Log Configuration</h2>
+                    <p class="text-gray-400 mb-6">Create new 1-Click presets. These will be saved to your Google Sheet and appear on the main page.</p>
+
+                    <form id="config-form" class="grid grid-cols-1 gap-4">
+                        
+                        <!-- Preset Label -->
+                        <div>
+                            <label for="config-label" class="block text-sm font-medium text-gray-300 mb-1">Button Label</label>
+                            <input type="text" id="config-label" required placeholder="e.g. GHK-Cu Daily" class="input-field w-full">
+                        </div>
+
+                        <!-- Peptide -->
+                        <div>
+                            <label for="config-peptide" class="block text-sm font-medium text-gray-300 mb-1">Peptide Name</label>
+                            <input type="text" id="config-peptide" required placeholder="e.g. GHK-Cu" class="input-field w-full">
+                        </div>
+
+                        <!-- Dosage -->
+                        <div>
+                            <label for="config-value" class="block text-sm font-medium text-gray-300 mb-1">Dosage</label>
+                            <div class="flex">
+                                <input type="number" id="config-value" min="0.1" step="0.1" required placeholder="2" class="input-field w-full input-with-unit">
+                                <select id="config-unit" class="input-field unit-select" required>
+                                    <option value="mcg">mcg</option>
+                                    <option value="mg">mg</option>
+                                    <option value="IU">IU</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Site -->
+                        <div>
+                            <label for="config-site" class="block text-sm font-medium text-gray-300 mb-1">Default Site</label>
+                            <input type="text" id="config-site" required placeholder="e.g. Left Abdomen" class="input-field w-full">
+                        </div>
+
+                        <!-- Submit -->
+                        <div class="mt-4">
+                            <button type="submit" id="config-submit-btn" class="btn-primary text-white font-bold py-3 px-6 w-full rounded-xl">
+                                <span id="config-btn-text">Save New Preset</span>
+                            </button>
+                            <p id="config-message" class="text-sm mt-2 hidden text-center"></p>
+                        </div>
+                    </form>
+                </section>
+            </div>
+            
+        </div> <!-- End Tab Content Container -->
+        
+    </div>
+
+    <!-- Configuration and JavaScript Logic -->
+    <script>
+        // --- ⚠️ PASTE YOUR GOOGLE APPS SCRIPT DEPLOYMENT URL HERE ⚠️ ---
+        const SHEETS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwjH-bUThD7WtuU2SAoqmmJev_hRKDxC3Qm6wfUJaIb1zU9lGcecBuJju_u8jClWZS7/exec";
+        // -----------------------------------------------------------------------
+        
+        // UI Elements - General
+        const tabLogBtn = document.getElementById('tab-log');
+        const tabCalculatorBtn = document.getElementById('tab-calculator');
+        const tabConfigBtn = document.getElementById('tab-config');
+        
+        const contentLogEl = document.getElementById('content-log');
+        const contentCalculatorEl = document.getElementById('content-calculator');
+        const contentConfigEl = document.getElementById('content-config');
+        const logStatusEl = document.getElementById('log-status');
+
+        // UI Elements - Log Tab
+        const logForm = document.getElementById('log-form');
+        const submitBtn = document.getElementById('submit-btn');
+        const btnText = document.getElementById('btn-text');
+        const responseMessage = document.getElementById('response-message');
+        const peptideSelectEl = document.getElementById('peptide-name');
+        const customPeptideGroupEl = document.getElementById('custom-peptide-group');
+        const customPeptideInputEl = document.getElementById('custom-peptide');
+        
+        // Site Elements
+        const siteSelectEl = document.getElementById('injection-site');
+        const customSiteGroupEl = document.getElementById('custom-site-group');
+        const customSiteInputEl = document.getElementById('custom-site');
+
+        // Quick Log Elements
+        const quickLogButtonsContainer = document.getElementById('quick-log-buttons');
+
+        // UI Elements - Config Tab
+        const configForm = document.getElementById('config-form');
+        const configSubmitBtn = document.getElementById('config-submit-btn');
+        const configBtnText = document.getElementById('config-btn-text');
+        const configMessage = document.getElementById('config-message');
+
+        // UI Elements - Calculator Tab
+        const vialMassInput = document.getElementById('vial-mass-input');
+        const vialMassUnit = document.getElementById('vial-mass-unit');
+        const dilutionVolumeInput = document.getElementById('dilution-volume-input');
+        const dilutionVolumeUnit = document.getElementById('dilution-volume-unit');
+        const targetDoseInput = document.getElementById('target-dose-input');
+        const targetDoseUnit = document.getElementById('target-dose-unit');
+        const calculatorResultEl = document.getElementById('calculator-result');
+        const calculatorMicrolitersEl = document.getElementById('calculator-microliters');
+        const calculatorErrorEl = document.getElementById('calculator-error');
+
+
+        // Set current date/time by default
+        document.getElementById('timestamp').value = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+        
+        // --- Tab Switching Logic ---
+        const switchTab = (tabName) => {
+            // Reset all
+            [tabLogBtn, tabCalculatorBtn, tabConfigBtn].forEach(btn => {
+                btn.classList.remove('active', 'text-gray-100');
+                btn.classList.add('text-gray-400');
+            });
+            [contentLogEl, contentCalculatorEl, contentConfigEl].forEach(el => el.classList.add('hidden'));
+
+            // Activate specific
+            if (tabName === 'log') {
+                tabLogBtn.classList.add('active', 'text-gray-100');
+                tabLogBtn.classList.remove('text-gray-400');
+                contentLogEl.classList.remove('hidden');
+            } else if (tabName === 'calculator') {
+                tabCalculatorBtn.classList.add('active', 'text-gray-100');
+                tabCalculatorBtn.classList.remove('text-gray-400');
+                contentCalculatorEl.classList.remove('hidden');
+                calculateDosage(); 
+            } else if (tabName === 'config') {
+                tabConfigBtn.classList.add('active', 'text-gray-100');
+                tabConfigBtn.classList.remove('text-gray-400');
+                contentConfigEl.classList.remove('hidden');
+            }
+        };
+
+        tabLogBtn.addEventListener('click', () => switchTab('log'));
+        tabCalculatorBtn.addEventListener('click', () => switchTab('calculator'));
+        tabConfigBtn.addEventListener('click', () => switchTab('config'));
+
+        // --- Custom Inputs Logic ---
+        const handlePeptideSelection = () => {
+            if (peptideSelectEl.value === 'Other') {
+                customPeptideGroupEl.classList.remove('hidden');
+                customPeptideInputEl.required = true;
+            } else {
+                customPeptideGroupEl.classList.add('hidden');
+                customPeptideInputEl.required = false;
+                customPeptideInputEl.value = ''; 
+            }
+        };
+        
+        const handleSiteSelection = () => {
+            if (siteSelectEl.value === 'Other') {
+                customSiteGroupEl.classList.remove('hidden');
+                customSiteInputEl.required = true;
+            } else {
+                customSiteGroupEl.classList.add('hidden');
+                customSiteInputEl.required = false;
+                customSiteInputEl.value = ''; 
+            }
+        };
+        
+        // --- Core Fetch Utility ---
+        async function fetchWithRetry(url, options, maxRetries = 3) {
+            let lastError = null;
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (response.ok) return response;
+                    const errorText = await response.text();
+                    lastError = new Error(`HTTP Error ${response.status}: ${errorText.substring(0, 100)}...`);
+                } catch (error) {
+                    lastError = error;
+                }
+                if (i < maxRetries - 1) {
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+            }
+            throw lastError;
+        }
+
+        // --- QUICK LOGS: LOAD FROM SHEETS ---
+        const loadQuickLogConfig = async () => {
+            try {
+                // Apps Script GET request to fetch config
+                const response = await fetchWithRetry(SHEETS_WEB_APP_URL, {
+                    method: 'GET', // GET request to read data
+                    mode: 'cors',
+                    cache: 'no-cache',
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.presets && data.presets.length > 0) {
+                    renderQuickLogButtons(data.presets);
+                    logStatusEl.textContent = 'Ready. Config loaded.';
+                    logStatusEl.classList.add('text-green-400');
+                } else {
+                     quickLogButtonsContainer.innerHTML = '<p class="text-gray-500 col-span-full text-center py-4">No presets found. Add one in the Configuration tab.</p>';
+                     logStatusEl.textContent = 'Ready (No presets).';
+                }
+
+            } catch (error) {
+                console.error("Config Load Error:", error);
+                quickLogButtonsContainer.innerHTML = '<p class="text-red-400 col-span-full text-center py-4">Failed to load presets.</p>';
+            }
+        };
+
+        const renderQuickLogButtons = (presets) => {
+            quickLogButtonsContainer.innerHTML = '';
+            presets.forEach(preset => {
+                const button = document.createElement('button');
+                button.className = 'btn-quick-log truncate w-full';
+                button.textContent = preset.label;
+                // Store data in the button for the handler
+                button.onclick = () => handleQuickLog(preset);
+                quickLogButtonsContainer.appendChild(button);
+            });
+        };
+
+        // --- CONFIGURATION: SAVE NEW PRESET ---
+        const handleSaveConfig = async (e) => {
+            e.preventDefault();
+            configSubmitBtn.disabled = true;
+            configBtnText.textContent = 'Saving...';
+            configMessage.classList.add('hidden');
+
+            const newPreset = {
+                action: 'saveConfig', // Tell server this is a config save
+                label: document.getElementById('config-label').value.trim(),
+                peptide: document.getElementById('config-peptide').value.trim(),
+                value: document.getElementById('config-value').value.trim(),
+                unit: document.getElementById('config-unit').value.trim(),
+                site: document.getElementById('config-site').value.trim(),
+            };
+
+            try {
+                 const response = await fetchWithRetry(SHEETS_WEB_APP_URL, {
+                    method: 'POST',
+                    mode: 'cors', 
+                    cache: 'no-cache',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newPreset)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    configMessage.textContent = "Preset saved! Reloading buttons...";
+                    configMessage.classList.remove('hidden', 'text-red-400');
+                    configMessage.classList.add('text-green-400');
+                    
+                    // Clear form
+                    document.getElementById('config-label').value = '';
+                    document.getElementById('config-peptide').value = '';
+                    document.getElementById('config-site').value = '';
+                    
+                    // Reload buttons on main page
+                    await loadQuickLogConfig();
+                } else {
+                    throw new Error(result.error);
+                }
+
+            } catch (error) {
+                configMessage.textContent = `Error: ${error.message}`;
+                configMessage.classList.remove('hidden', 'text-green-400');
+                configMessage.classList.add('text-red-400');
+            } finally {
+                configSubmitBtn.disabled = false;
+                configBtnText.textContent = 'Save New Preset';
+            }
+        };
+
+
+        // --- LOGGING: SUBMIT ---
+        const handleQuickLog = async (preset) => {
+            const now = new Date();
+            const offset = now.getTimezoneOffset() * 60000;
+            const timestampIso = new Date(now - offset).toISOString().slice(0, 16);
+
+            const logData = {
+                action: 'logInjection', // Default action
+                peptide: preset.peptide,
+                dosage: `${preset.value} ${preset.unit}`,
+                site: preset.site,
+                timestamp: timestampIso,
+            };
+
+            await submitLogData(logData);
+            document.getElementById('timestamp').value = timestampIso;
+        }
+
+        const handleManualLog = async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            
+            let peptideName = (peptideSelectEl.value === 'Other') ? form['custom-peptide'].value.trim() : peptideSelectEl.value.trim();
+            let injectionSite = (siteSelectEl.value === 'Other') ? form['custom-site'].value.trim() : siteSelectEl.value.trim();
+
+            if (!peptideName || !injectionSite) {
+                 responseMessage.textContent = `Error: Please check peptide/site names.`;
+                 responseMessage.classList.remove('hidden');
+                 return;
+            }
+
+            const logData = {
+                action: 'logInjection',
+                peptide: peptideName,
+                dosage: `${form['dosage-value'].value.trim()} ${form['dosage-unit'].value.trim()}`,
+                site: injectionSite,
+                timestamp: form['timestamp'].value, 
+            };
+            
+            await submitLogData(logData);
+            
+            // Reset if success (submitLogData throws if not)
+             peptideSelectEl.value = '';
+             siteSelectEl.value = ''; 
+             form['dosage-value'].value = '';
+             customPeptideInputEl.value = '';
+             customSiteInputEl.value = ''; 
+             handlePeptideSelection(); 
+             handleSiteSelection(); 
+             document.getElementById('timestamp').value = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+        };
+
+        const submitLogData = async (logData) => {
+            submitBtn.disabled = true;
+            btnText.textContent = 'Saving...';
+            responseMessage.classList.add('hidden');
+            responseMessage.classList.remove('text-green-400', 'text-red-400');
+            logStatusEl.textContent = 'Sending data...';
+            
+            try {
+                const response = await fetchWithRetry(SHEETS_WEB_APP_URL, {
+                    method: 'POST',
+                    mode: 'cors', 
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(logData)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    responseMessage.textContent = 'Success! Log saved.';
+                    responseMessage.classList.add('text-green-400');
+                } else {
+                    throw new Error(result.error || 'Unknown error.');
+                }
+            } catch (error) {
+                console.error("Log Error:", error);
+                let displayError = error.message.includes('Failed to fetch') ? "Connection Failed." : error.message;
+                responseMessage.textContent = `Error: ${displayError}`;
+                responseMessage.classList.add('text-red-400');
+            } finally {
+                submitBtn.disabled = false;
+                btnText.textContent = "Log Injection";
+                responseMessage.classList.remove('hidden');
+                logStatusEl.textContent = 'Ready.';
+            }
+        }
+
+        // --- Dosage Calculator Logic ---
+        const calculateDosage = () => {
+            calculatorErrorEl.classList.add('hidden');
+            calculatorResultEl.textContent = '-- IU';
+            calculatorMicrolitersEl.textContent = '(-- µL)';
+            try {
+                let vialMass = parseFloat(vialMassInput.value);
+                let dilutionVolume = parseFloat(dilutionVolumeInput.value);
+                let targetDose = parseFloat(targetDoseInput.value);
+
+                if (!vialMass || !dilutionVolume || !targetDose) return;
+
+                let massInMicrograms = (vialMassUnit.value === 'mg') ? vialMass * 1000 : vialMass;
+                let volumeInMicroliters = dilutionVolume * 1000;
+                let doseInMicrograms = (targetDoseUnit.value === 'mg') ? targetDose * 1000 : targetDose;
+
+                const concentration = massInMicrograms / volumeInMicroliters;
+                const doseVolumeMicroliters = doseInMicrograms / concentration;
+                const doseVolumeIU = doseVolumeMicroliters / 10;
+                
+                calculatorResultEl.textContent = `${doseVolumeIU.toFixed(1)} IU`;
+                calculatorMicrolitersEl.textContent = `(${doseVolumeMicroliters.toFixed(2)} µL)`;
+            } catch (error) {
+                // Silent catch for incomplete inputs
+            }
+        };
+
+        [vialMassInput, vialMassUnit, dilutionVolumeInput, dilutionVolumeUnit, targetDoseInput, targetDoseUnit].forEach(element => {
+            element.addEventListener('input', calculateDosage);
+            element.addEventListener('change', calculateDosage);
+        });
+
+        // --- Init ---
+        document.addEventListener('DOMContentLoaded', () => {
+            logStatusEl.textContent = 'Initializing...';
+            logForm.addEventListener('submit', handleManualLog);
+            configForm.addEventListener('submit', handleSaveConfig);
+            
+            peptideSelectEl.addEventListener('change', handlePeptideSelection);
+            siteSelectEl.addEventListener('change', handleSiteSelection); 
+            
+            switchTab('log');
+            loadQuickLogConfig(); // Load buttons on start
+        });
+    </script>
+</body>
+</html>
