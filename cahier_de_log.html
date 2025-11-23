@@ -26,7 +26,7 @@
         .input-field { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(148, 163, 184, 0.2); color: white; border-radius: 1rem; padding: 0.75rem 1rem 0.75rem 2.5rem; width: 100%; font-size: 16px; transition: all 0.2s; }
         .input-field:focus { border-color: #6366f1; box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2); outline: none; background: rgba(15, 23, 42, 0.9); }
         .input-icon { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: #94a3b8; pointer-events: none; }
-        select.input-field { appearance: none; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3c/svg%3e"); background-position: right 0.75rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; }
+        select.input-field { appearance: none; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3e"); background-position: right 0.75rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; }
         select.input-field option { background-color: #1e293b; color: #f8fafc; padding: 10px; }
         select.input-field optgroup { background-color: #0f172a; color: #94a3b8; font-weight: bold; }
         .btn-primary { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3); transition: transform 0.2s, box-shadow 0.2s; }
@@ -279,22 +279,35 @@
                 renderStreak(res.history);
                 els.historyList.innerHTML = '';
                 res.history.forEach(h => {
+                    // ENGLISH DATE FORMATTING
+                    const dateObj = new Date(h.date);
+                    const dateStr = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+                    const timeStr = dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+
                     const card = document.createElement('div'); card.className = "bg-slate-800 p-4 rounded-2xl border border-slate-700/50 flex justify-between items-center";
-                    // Affichage Date et Heure séparés
-                    const datePart = h.date.split(' ')[0];
-                    const timePart = h.date.split(' ')[1] || '';
-                    
-                    card.innerHTML = `<div><div class="font-bold text-white flex items-center gap-2">${h.peptide} <span class="text-xs bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded">${h.dosage}</span></div><div class="text-xs text-slate-400 mt-1 flex items-center gap-1"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>${h.site}</div></div>
-                    <div class="flex flex-col items-end gap-2">
-                        <div class="text-right text-xs text-slate-500 font-mono bg-slate-900/50 px-2 py-1 rounded">
-                            <div>${datePart}</div>
-                            <div class="text-indigo-400 font-bold">${timePart}</div>
+                    card.innerHTML = `
+                        <div>
+                            <div class="font-bold text-white flex items-center gap-2">
+                                ${h.peptide} 
+                                <span class="text-xs bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded">${h.dosage}</span>
+                            </div>
+                            <div class="text-xs text-slate-400 mt-1 flex items-center gap-1">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                                ${h.site}
+                            </div>
                         </div>
-                        <button class="text-red-400 hover:text-red-300 p-1" onclick="deleteEntry('${h.row}')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></button>
-                    </div>`;
+                        <div class="flex flex-col items-end gap-2">
+                            <div class="text-right text-xs text-slate-500 font-mono bg-slate-900/50 px-2 py-1 rounded">
+                                <div class="text-gray-300">${dateStr}</div>
+                                <div class="text-indigo-400 font-bold">${timeStr}</div>
+                            </div>
+                            <button class="text-red-400 hover:text-red-300 p-1" onclick="deleteEntry('${h.row}')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></button>
+                        </div>`;
                     els.historyList.appendChild(card);
                 });
-            } else { els.historyList.innerHTML = '<div class="text-center text-slate-500">No history found.</div>'; }
+            } else {
+                els.historyList.innerHTML = '<div class="text-center text-slate-500">No history found.</div>';
+            }
         }
 
         async function deleteEntry(rowId) {
@@ -309,7 +322,7 @@
             for(let i=6; i>=0; i--) {
                 const d = new Date(today); d.setDate(today.getDate() - i);
                 const dateStr = d.toISOString().split('T')[0];
-                const hasLog = history.some(h => h.isoDate === dateStr);
+                const hasLog = history.some(h => h.date.startsWith(dateStr));
                 const circle = document.createElement('div');
                 circle.className = `w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${hasLog ? 'bg-green-500 text-white shadow-lg shadow-green-500/30' : 'bg-slate-700 text-slate-500'}`;
                 circle.textContent = d.getDate();
@@ -350,9 +363,7 @@
         function runCalc() {
             const vm = parseFloat(els.calc.m.value), dv = parseFloat(els.calc.v.value), td = parseFloat(els.calc.d.value);
             if(!vm || !dv || !td) { els.calc.res.innerText = "0 IU"; els.calc.mic.innerText = "(0 µL)"; return; }
-            const m_ug = els.calc.mu.value === 'mg' ? vm * 1000 : vm;
-            const d_ug = els.calc.du.value === 'mg' ? td * 1000 : td;
-            const vol = (d_ug / (m_ug / dv));
+            const vol = ((els.calc.du.value === 'mg' ? td * 1000 : td) / ((els.calc.mu.value === 'mg' ? vm * 1000 : vm) / (els.calc.vu.value === 'ml' ? dv * 1000 : dv * 1000)));
             els.calc.res.innerText = `${(vol * 100).toFixed(1)} IU`; els.calc.mic.innerText = `(${vol.toFixed(2) * 1000} µL)`;
         }
 
