@@ -10,23 +10,10 @@
             darkMode: 'class',
             theme: {
                 extend: {
-                    fontFamily: {
-                        sans: ['Outfit', 'sans-serif'],
-                    },
-                    colors: {
-                        background: '#0f172a', // Slate 900
-                        surface: '#1e293b',    // Slate 800
-                        primary: '#6366f1',    // Indigo 500
-                        secondary: '#334155',  // Slate 700
-                    },
-                    animation: {
-                        'fade-in': 'fadeIn 0.3s ease-out',
-                        'slide-up': 'slideUp 0.4s ease-out',
-                    },
-                    keyframes: {
-                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
-                        slideUp: { '0%': { transform: 'translateY(20px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } }
-                    }
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: { background: '#0f172a', surface: '#1e293b', primary: '#6366f1' },
+                    animation: { 'fade-in': 'fadeIn 0.3s ease-out', 'slide-up': 'slideUp 0.4s ease-out' },
+                    keyframes: { fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } }, slideUp: { '0%': { transform: 'translateY(20px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } } }
                 }
             }
         }
@@ -51,86 +38,33 @@
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
         }
 
-        /* Inputs */
-        .input-group {
-            position: relative;
-            transition: all 0.3s ease;
-        }
-        .input-field {
-            background: rgba(15, 23, 42, 0.6);
-            border: 1px solid rgba(148, 163, 184, 0.2);
-            color: white;
-            border-radius: 1rem;
-            padding: 0.75rem 1rem 0.75rem 2.5rem; /* Space for icon */
-            width: 100%;
-            font-size: 16px; /* Prevent zoom on iOS */
-            transition: all 0.2s;
-        }
-        .input-field:focus {
-            border-color: #6366f1;
-            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
-            outline: none;
-            background: rgba(15, 23, 42, 0.9);
-        }
-        .input-icon {
-            position: absolute;
-            left: 0.75rem;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #94a3b8;
-            pointer-events: none;
-        }
-
-        /* Dropdown Fixes for Mobile */
-        select.input-field {
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3c/svg%3e");
-            background-position: right 0.75rem center;
-            background-repeat: no-repeat;
-            background-size: 1.5em 1.5em;
-        }
-        select.input-field option {
-            background-color: #1e293b;
-            color: #f8fafc;
-            padding: 10px;
-        }
-        select.input-field optgroup {
-            background-color: #0f172a;
-            color: #94a3b8;
-            font-weight: bold;
-        }
-
-        /* Buttons */
-        .btn-primary {
-            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .btn-primary:active { transform: scale(0.98); }
-        
-        .btn-quick {
-            background: rgba(51, 65, 85, 0.5);
-            border: 1px solid rgba(255,255,255,0.05);
-            transition: all 0.2s;
-        }
-        .btn-quick:active { background: rgba(99, 102, 241, 0.2); border-color: #6366f1; }
-
-        /* Tabs */
-        .nav-pill {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .nav-pill.active {
-            background: #6366f1;
-            color: white;
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
-        }
-
         /* Suggestion Card (Specific Style) */
         .suggestion-glass {
             background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(30, 41, 59, 0.7) 100%);
             border: 1px solid rgba(99, 102, 241, 0.3);
             box-shadow: 0 0 20px rgba(99, 102, 241, 0.1);
         }
+
+        /* Inputs */
+        .input-group { position: relative; transition: all 0.3s ease; }
+        .input-field { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(148, 163, 184, 0.2); color: white; border-radius: 1rem; padding: 0.75rem 1rem 0.75rem 2.5rem; width: 100%; font-size: 16px; transition: all 0.2s; }
+        .input-field:focus { border-color: #6366f1; box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2); outline: none; background: rgba(15, 23, 42, 0.9); }
+        .input-icon { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: #94a3b8; pointer-events: none; }
+
+        /* Dropdown Fixes */
+        select.input-field { appearance: none; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3c/svg%3e"); background-position: right 0.75rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; }
+        select.input-field option { background-color: #1e293b; color: #f8fafc; padding: 10px; }
+        select.input-field optgroup { background-color: #0f172a; color: #94a3b8; font-weight: bold; }
+
+        /* Buttons */
+        .btn-primary { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3); transition: transform 0.2s, box-shadow 0.2s; }
+        .btn-primary:active { transform: scale(0.98); }
+        .btn-quick { background: rgba(51, 65, 85, 0.5); border: 1px solid rgba(255,255,255,0.05); transition: all 0.2s; }
+        .btn-quick:active { background: rgba(99, 102, 241, 0.2); border-color: #6366f1; }
+
+        /* Tabs */
+        .nav-pill { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .nav-pill.active { background: #6366f1; color: white; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25); }
 
         /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 6px; }
@@ -147,7 +81,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
             </div>
             <h2 class="text-2xl font-bold">Connect Database</h2>
-            <p class="text-slate-400">Enter your Google Apps Script URL to start.</p>
+            <p class="text-slate-400">Paste your Google Apps Script URL to start.</p>
             <form id="setup-form" class="space-y-4">
                 <div class="input-group">
                     <svg class="input-icon w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
@@ -161,7 +95,6 @@
     <!-- APP CONTAINER -->
     <div id="app-container" class="w-full max-w-lg flex flex-col h-full hidden animate-fade-in">
         
-        <!-- HEADER -->
         <header class="pt-6 pb-2 px-6 flex justify-between items-center">
             <div>
                 <h1 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-white">Peptide Log</h1>
@@ -174,24 +107,13 @@
             </button>
         </header>
 
-        <!-- TABS (Pill Style) -->
+        <!-- TABS -->
         <nav class="px-4 py-2">
             <div class="flex bg-slate-800/50 p-1 rounded-2xl backdrop-blur-sm border border-slate-700/50">
-                <button id="tab-log" class="nav-pill flex-1 py-2.5 rounded-xl text-sm font-medium text-slate-400 flex justify-center items-center gap-2 active" onclick="switchTab('log')">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                    Log
-                </button>
-                <button id="tab-history" class="nav-pill flex-1 py-2.5 rounded-xl text-sm font-medium text-slate-400 flex justify-center items-center gap-2" onclick="switchTab('history')">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                    History
-                </button>
-                <button id="tab-calculator" class="nav-pill flex-1 py-2.5 rounded-xl text-sm font-medium text-slate-400 flex justify-center items-center gap-2" onclick="switchTab('calculator')">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="16" y1="14" x2="16" y2="14"/><line x1="8" y1="14" x2="8" y2="14"/><line x1="12" y1="14" x2="12" y2="14"/><line x1="16" y1="18" x2="16" y2="18"/><line x1="8" y1="18" x2="8" y2="18"/><line x1="12" y1="18" x2="12" y2="18"/></svg>
-                    Calc
-                </button>
-                <button id="tab-config" class="nav-pill flex-1 py-2.5 rounded-xl text-sm font-medium text-slate-400 flex justify-center items-center gap-2" onclick="switchTab('config')">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
-                </button>
+                <button id="tab-log" class="nav-pill flex-1 py-2.5 rounded-xl text-sm font-medium text-slate-400 flex justify-center items-center gap-2 active" onclick="switchTab('log')">Log</button>
+                <button id="tab-history" class="nav-pill flex-1 py-2.5 rounded-xl text-sm font-medium text-slate-400 flex justify-center items-center gap-2" onclick="switchTab('history')">History</button>
+                <button id="tab-calculator" class="nav-pill flex-1 py-2.5 rounded-xl text-sm font-medium text-slate-400 flex justify-center items-center gap-2" onclick="switchTab('calculator')">Calc</button>
+                <button id="tab-config" class="nav-pill flex-1 py-2.5 rounded-xl text-sm font-medium text-slate-400 flex justify-center items-center gap-2" onclick="switchTab('config')">Config</button>
             </div>
         </nav>
 
@@ -229,8 +151,7 @@
                     <h2 class="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-3 ml-1">Quick Log</h2>
                     <div id="quick-log-buttons" class="grid grid-cols-2 gap-3">
                         <div class="col-span-2 bg-slate-800/50 rounded-xl p-6 text-center border border-dashed border-slate-700">
-                            <svg class="w-8 h-8 text-slate-600 mx-auto mb-2 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                            <p class="text-slate-500 text-sm">Loading...</p>
+                            <p class="text-slate-500 text-sm">Loading presets...</p>
                         </div>
                     </div>
                 </section>
@@ -239,8 +160,6 @@
                 <section class="glass-card rounded-3xl p-6">
                     <h2 class="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-4">Manual Entry</h2>
                     <form id="log-form" class="space-y-4">
-                        
-                        <!-- Peptide -->
                         <div class="input-group">
                             <svg class="input-icon w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>
                             <select id="peptide-name" required class="input-field">
@@ -254,12 +173,9 @@
                                 <option value="Other">Other (Custom)</option>
                             </select>
                         </div>
-                        
                         <div id="custom-peptide-group" class="hidden animate-fade-in">
-                            <input type="text" id="custom-peptide" placeholder="Peptide Name..." class="input-field pl-4">
+                            <input type="text" id="custom-peptide" placeholder="Type Peptide Name..." class="input-field pl-4">
                         </div>
-
-                        <!-- Dosage -->
                         <div class="flex gap-2">
                             <div class="input-group flex-1">
                                 <svg class="input-icon w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4" /></svg>
@@ -271,8 +187,6 @@
                                 <option value="IU">IU</option>
                             </select>
                         </div>
-
-                        <!-- Site -->
                         <div class="input-group">
                             <svg class="input-icon w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                             <select id="injection-site" required class="input-field">
@@ -300,17 +214,11 @@
                         <div id="custom-site-group" class="hidden animate-fade-in">
                             <input type="text" id="custom-site" placeholder="Site Name" class="input-field pl-4">
                         </div>
-
-                        <!-- Time -->
                         <div class="input-group">
                             <svg class="input-icon w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                             <input type="datetime-local" id="timestamp" required class="input-field" style="color-scheme: dark;">
                         </div>
-
-                        <!-- Submit -->
-                        <button type="submit" id="submit-btn" class="btn-primary w-full py-4 rounded-2xl font-bold text-lg shadow-lg shadow-indigo-500/20 mt-2">
-                            Log Injection
-                        </button>
+                        <button type="submit" id="submit-btn" class="btn-primary w-full py-4 rounded-2xl font-bold text-lg shadow-lg shadow-indigo-500/20 mt-2">Log Injection</button>
                         <p id="response-message" class="text-center text-sm font-medium hidden mt-2"></p>
                     </form>
                 </section>
@@ -322,342 +230,150 @@
                     <h2 class="text-xl font-bold text-white">History</h2>
                     <span class="text-xs text-indigo-400 bg-indigo-500/10 px-2 py-1 rounded-lg">Last 50</span>
                 </div>
-                <div id="history-list" class="space-y-3 pb-20">
-                    <!-- JS will populate this -->
-                    <div class="p-8 text-center text-slate-500">Loading...</div>
-                </div>
+                <div id="history-list" class="space-y-3 pb-20"></div>
             </div>
 
             <!-- CALCULATOR TAB -->
             <div id="view-calculator" class="hidden space-y-6 animate-slide-up">
                 <div class="glass-card rounded-3xl p-6 text-center">
-                    <p class="text-indigo-300 text-sm font-semibold uppercase tracking-wider mb-2">Draw to</p>
+                    <p class="text-indigo-300 text-sm font-semibold uppercase tracking-wider mb-2">You need to draw</p>
                     <div class="text-7xl font-bold text-white tracking-tighter drop-shadow-md" id="calculator-result">0 <span class="text-3xl text-slate-500">IU</span></div>
                     <p class="text-slate-400 mt-2" id="calculator-microliters">(0 µL)</p>
                 </div>
-
                 <form id="calculator-form" class="space-y-4">
-                    <div>
-                        <label class="text-sm text-slate-400 ml-1">Vial Mass</label>
-                        <div class="flex gap-2">
-                            <input type="number" id="vial-mass-input" placeholder="5" class="input-field flex-1">
-                            <select id="vial-mass-unit" class="bg-slate-700 text-white rounded-xl px-3 font-bold w-20"><option value="mg">mg</option><option value="mcg">mcg</option></select>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="text-sm text-slate-400 ml-1">Bac Water</label>
-                        <div class="flex gap-2">
-                            <input type="number" id="dilution-volume-input" placeholder="2" class="input-field flex-1">
-                            <select id="dilution-volume-unit" class="bg-slate-700 text-white rounded-xl px-3 font-bold w-20"><option value="ml">mL</option></select>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="text-sm text-slate-400 ml-1">Target Dose</label>
-                        <div class="flex gap-2">
-                            <input type="number" id="target-dose-input" placeholder="250" class="input-field flex-1">
-                            <select id="target-dose-unit" class="bg-slate-700 text-white rounded-xl px-3 font-bold w-20"><option value="mcg">mcg</option><option value="mg">mg</option></select>
-                        </div>
-                    </div>
+                    <div><label class="text-sm text-slate-400 ml-1">Vial Mass</label><div class="flex gap-2"><input type="number" id="vial-mass-input" placeholder="5" class="input-field flex-1"><select id="vial-mass-unit" class="bg-slate-700 text-white rounded-xl px-3 font-bold w-20"><option value="mg">mg</option><option value="mcg">mcg</option></select></div></div>
+                    <div><label class="text-sm text-slate-400 ml-1">Dilution Water</label><div class="flex gap-2"><input type="number" id="dilution-volume-input" placeholder="2" class="input-field flex-1"><select id="dilution-volume-unit" class="bg-slate-700 text-white rounded-xl px-3 font-bold w-20"><option value="ml">mL</option></select></div></div>
+                    <div><label class="text-sm text-slate-400 ml-1">Target Dose</label><div class="flex gap-2"><input type="number" id="target-dose-input" placeholder="250" class="input-field flex-1"><select id="target-dose-unit" class="bg-slate-700 text-white rounded-xl px-3 font-bold w-20"><option value="mcg">mcg</option><option value="mg">mg</option></select></div></div>
                 </form>
             </div>
 
             <!-- CONFIG TAB -->
             <div id="view-config" class="hidden space-y-6 animate-slide-up">
                 <section class="glass-card rounded-3xl p-6">
-                    <h2 class="text-xl font-bold mb-4">New Preset</h2>
+                    <h2 class="text-xl font-bold mb-4">Add Quick Log</h2>
                     <form id="config-form" class="space-y-4">
-                        <input type="text" id="config-label" placeholder="Label (e.g. GHK Morning)" class="input-field">
-                        <input type="text" id="config-peptide" placeholder="Peptide Name (e.g. GHK-Cu)" class="input-field">
-                        <div class="flex gap-2">
-                            <input type="number" id="config-value" placeholder="Dose" class="input-field flex-1">
-                            <select id="config-unit" class="bg-slate-700 text-white rounded-xl px-3 font-bold w-24">
-                                <option value="mcg">mcg</option><option value="mg">mg</option><option value="IU">IU</option>
-                            </select>
-                        </div>
+                        <input type="text" id="config-label" placeholder="Label (e.g. Daily GHK)" class="input-field">
+                        <input type="text" id="config-peptide" placeholder="Peptide Name" class="input-field">
+                        <div class="flex gap-2"><input type="number" id="config-value" placeholder="Dose" class="input-field flex-1"><select id="config-unit" class="bg-slate-700 text-white rounded-xl px-3 font-bold w-24"><option value="mcg">mcg</option><option value="mg">mg</option><option value="IU">IU</option></select></div>
                         <button type="submit" id="config-submit-btn" class="btn-primary w-full py-3 rounded-xl font-bold">Save Preset</button>
                     </form>
                 </section>
-
-                <button id="reset-app-btn" class="w-full py-4 border border-red-500/30 text-red-400 rounded-2xl hover:bg-red-500/10 transition">
-                    Disconnect / Reset
-                </button>
+                <button id="reset-app-btn" class="w-full py-4 border border-red-500/30 text-red-400 rounded-2xl hover:bg-red-500/10 transition">Disconnect & Reset App</button>
             </div>
-
         </main>
     </div>
 
-    <!-- MODAL FOR SITE SELECTION -->
+    <!-- MODAL -->
     <div id="site-modal" class="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-4 animate-fade-in">
         <div class="bg-slate-800 w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl border-t border-slate-700 max-h-[80vh] flex flex-col">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold">Select Site</h3>
-                <button onclick="closeModal()" class="p-2 bg-slate-700 rounded-full text-slate-300 hover:text-white">&times;</button>
-            </div>
-            <div id="modal-sites-list" class="grid grid-cols-2 gap-3 overflow-y-auto pb-4">
-                <!-- Buttons injected here -->
-            </div>
+            <div class="flex justify-between items-center mb-4"><h3 class="text-xl font-bold">Select Injection Site</h3><button onclick="closeModal()" class="p-2 bg-slate-700 rounded-full text-slate-300 hover:text-white">&times;</button></div>
+            <div id="modal-sites-list" class="grid grid-cols-2 gap-3 overflow-y-auto pb-4"></div>
         </div>
     </div>
 
     <script>
         let APP_URL = localStorage.getItem('pep_log_url');
-        
         const els = {
-            setup: document.getElementById('setup-screen'),
-            app: document.getElementById('app-container'),
-            status: document.getElementById('status-text'),
+            setup: document.getElementById('setup-screen'), app: document.getElementById('app-container'),
             tabs: { log: document.getElementById('tab-log'), history: document.getElementById('tab-history'), calculator: document.getElementById('tab-calculator'), config: document.getElementById('tab-config') },
             views: { log: document.getElementById('view-log'), history: document.getElementById('view-history'), calculator: document.getElementById('view-calculator'), config: document.getElementById('view-config') },
-            quickContainer: document.getElementById('quick-log-buttons'),
-            historyList: document.getElementById('history-list'),
-            modal: document.getElementById('site-modal'),
-            modalList: document.getElementById('modal-sites-list'),
-            
-            // Forms
-            logForm: document.getElementById('log-form'),
-            configForm: document.getElementById('config-form'),
-            
-            // Inputs
-            pep: document.getElementById('peptide-name'),
-            custPep: document.getElementById('custom-peptide'),
-            custPepGrp: document.getElementById('custom-peptide-group'),
-            site: document.getElementById('injection-site'),
-            custSite: document.getElementById('custom-site'),
-            custSiteGrp: document.getElementById('custom-site-group'),
-            
-            // Calc
-            calc: {
-                m: document.getElementById('vial-mass-input'), mu: document.getElementById('vial-mass-unit'),
-                v: document.getElementById('dilution-volume-input'), vu: document.getElementById('dilution-volume-unit'),
-                d: document.getElementById('target-dose-input'), du: document.getElementById('target-dose-unit'),
-                res: document.getElementById('calculator-result'), mic: document.getElementById('calculator-microliters')
-            },
-            // Suggestion
-            suggestionBox: document.getElementById('suggestion-box'),
-            suggestionText: document.getElementById('suggestion-text'),
-            streakContainer: document.getElementById('streak-container')
+            quickContainer: document.getElementById('quick-log-buttons'), historyList: document.getElementById('history-list'), streakContainer: document.getElementById('streak-container'),
+            modal: document.getElementById('site-modal'), modalList: document.getElementById('modal-sites-list'),
+            logForm: document.getElementById('log-form'), configForm: document.getElementById('config-form'),
+            pep: document.getElementById('peptide-name'), custPep: document.getElementById('custom-peptide'), custPepGrp: document.getElementById('custom-peptide-group'),
+            site: document.getElementById('injection-site'), custSite: document.getElementById('custom-site'), custSiteGrp: document.getElementById('custom-site-group'),
+            calc: { m: document.getElementById('vial-mass-input'), mu: document.getElementById('vial-mass-unit'), v: document.getElementById('dilution-volume-input'), vu: document.getElementById('dilution-volume-unit'), d: document.getElementById('target-dose-input'), du: document.getElementById('target-dose-unit'), res: document.getElementById('calculator-result'), mic: document.getElementById('calculator-microliters') },
+            suggestionBox: document.getElementById('suggestion-box'), suggestionText: document.getElementById('suggestion-text')
         };
 
-        const sites = [
-            {name: "Right Abdomen (Upper)", icon: "R"}, {name: "Right Abdomen (Lower)", icon: "R"}, 
-            {name: "Left Abdomen (Upper)", icon: "L"}, {name: "Left Abdomen (Lower)", icon: "L"}, 
-            {name: "Right Flank", icon: "R"}, {name: "Left Flank", icon: "L"}, 
-            {name: "Right Thigh", icon: "R"}, {name: "Left Thigh", icon: "L"}, 
-            {name: "Right Deltoid", icon: "R"}, {name: "Left Deltoid", icon: "L"}
-        ];
-        const extraSites = [{name: "Nasal Spray", icon: "👃"}, {name: "Other", icon: "?"}];
+        const sites = [ {name: "Right Abdomen (Upper)", icon: "R"}, {name: "Right Abdomen (Lower)", icon: "R"}, {name: "Left Abdomen (Upper)", icon: "L"}, {name: "Left Abdomen (Lower)", icon: "L"}, {name: "Right Flank", icon: "R"}, {name: "Left Flank", icon: "L"}, {name: "Right Thigh", icon: "R"}, {name: "Left Thigh", icon: "L"}, {name: "Right Deltoid", icon: "R"}, {name: "Left Deltoid", icon: "L"}, {name: "Nasal Spray", icon: "👃"}, {name: "Other", icon: "?"} ];
+        let pendingPreset = null, currentSuggestion = null;
 
-        let pendingPreset = null;
-        let currentSuggestion = null;
-
-        // --- INIT ---
         function init() {
             const params = new URLSearchParams(window.location.search);
             const magic = params.get('db');
-            if(magic && magic.startsWith('https')) {
-                localStorage.setItem('pep_log_url', magic);
-                APP_URL = magic;
-                window.history.replaceState({}, '', window.location.pathname);
-            }
-
-            if(!APP_URL) {
-                els.setup.classList.remove('hidden');
-            } else {
-                els.app.classList.remove('hidden');
-                setupEvents();
-                loadConfig();
-                loadHistory();
-            }
+            if(magic && magic.startsWith('https')) { localStorage.setItem('pep_log_url', magic); APP_URL = magic; window.history.replaceState({}, '', window.location.pathname); }
+            if(!APP_URL) { els.setup.classList.remove('hidden'); } else { els.app.classList.remove('hidden'); setupEvents(); loadConfig(); loadHistory(); }
         }
 
-        document.getElementById('setup-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const url = document.getElementById('setup-url').value.trim();
-            if(url) {
-                localStorage.setItem('pep_log_url', url);
-                APP_URL = url;
-                location.reload();
-            }
-        });
-
-        document.getElementById('reset-app-btn').addEventListener('click', () => {
-            if(confirm("Disconnect?")) { localStorage.removeItem('pep_log_url'); location.reload(); }
-        });
-
-        document.getElementById('refresh-app').addEventListener('click', () => {
-            loadConfig();
-            loadHistory();
-        });
+        document.getElementById('setup-form').addEventListener('submit', (e) => { e.preventDefault(); const url = document.getElementById('setup-url').value.trim(); if(url) { localStorage.setItem('pep_log_url', url); APP_URL = url; location.reload(); } });
+        document.getElementById('reset-app-btn').addEventListener('click', () => { if(confirm("Disconnect?")) { localStorage.removeItem('pep_log_url'); location.reload(); } });
+        document.getElementById('refresh-app').addEventListener('click', () => { loadConfig(); loadHistory(); });
 
         function setupEvents() {
-            Object.keys(els.tabs).forEach(key => {
-                els.tabs[key].addEventListener('click', () => switchView(key));
-            });
-
-            els.pep.addEventListener('change', () => {
-                const isOther = els.pep.value === 'Other';
-                els.custPepGrp.classList.toggle('hidden', !isOther);
-                if(isOther) document.getElementById('custom-peptide').focus();
-            });
-            els.site.addEventListener('change', () => {
-                const isOther = els.site.value === 'Other';
-                els.custSiteGrp.classList.toggle('hidden', !isOther);
-                if(isOther) document.getElementById('custom-site').focus();
-            });
-
+            Object.keys(els.tabs).forEach(key => els.tabs[key].addEventListener('click', () => switchView(key)));
+            els.pep.addEventListener('change', () => { const isOther = els.pep.value === 'Other'; els.custPepGrp.classList.toggle('hidden', !isOther); });
+            els.site.addEventListener('change', () => { const isOther = els.site.value === 'Other'; els.custSiteGrp.classList.toggle('hidden', !isOther); });
             document.getElementById('timestamp').value = new Date(new Date() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0,16);
-
             els.logForm.addEventListener('submit', handleManualLog);
             els.configForm.addEventListener('submit', handleConfigSave);
-
-            Object.values(els.calc).forEach(el => {
-                if(el.tagName === 'INPUT' || el.tagName === 'SELECT') el.addEventListener('input', runCalc);
-            });
-
+            Object.values(els.calc).forEach(el => { if(el.tagName === 'INPUT' || el.tagName === 'SELECT') el.addEventListener('input', runCalc); });
             els.modalList.innerHTML = '';
-            [...sites, ...extraSites].forEach(s => {
-                const btn = document.createElement('button');
-                btn.className = "p-4 bg-slate-700/50 hover:bg-indigo-600 rounded-xl text-sm font-semibold transition flex items-center gap-2 border border-slate-600";
-                btn.innerHTML = `<span class="w-6 h-6 rounded-full bg-slate-800 flex items-center justify-center text-xs text-slate-400">${s.icon}</span> ${s.name}`;
-                btn.onclick = () => finalizeQuickLog(s.name);
-                els.modalList.appendChild(btn);
-            });
+            sites.forEach(s => { const btn = document.createElement('button'); btn.className = "p-4 bg-slate-700/50 hover:bg-indigo-600 rounded-xl text-sm font-semibold transition flex items-center gap-2 border border-slate-600"; btn.innerHTML = `<span class="w-6 h-6 rounded-full bg-slate-800 flex items-center justify-center text-xs text-slate-400">${s.icon}</span> ${s.name}`; btn.onclick = () => finalizeQuickLog(s.name); els.modalList.appendChild(btn); });
         }
 
         function switchView(view) {
-            Object.values(els.tabs).forEach(t => {
-                t.classList.remove('bg-indigo-500', 'text-white', 'active');
-                t.classList.add('text-slate-400');
-                t.style.background = 'transparent';
-                t.style.color = '#94a3b8';
-            });
+            Object.values(els.tabs).forEach(t => { t.classList.remove('bg-indigo-500', 'text-white', 'active'); t.classList.add('text-slate-400'); t.style.background = 'transparent'; t.style.color = '#94a3b8'; });
             Object.values(els.views).forEach(v => v.classList.add('hidden'));
-            
             els.views[view].classList.remove('hidden');
             els.tabs[view].classList.add('active');
-            els.tabs[view].style.background = '#6366f1';
-            els.tabs[view].style.color = 'white';
-
+            els.tabs[view].style.background = '#6366f1'; els.tabs[view].style.color = 'white';
             if(view === 'history') loadHistory();
         }
 
-        // --- API ---
-        async function api(data) {
-            try {
-                const res = await fetch(APP_URL, { method: 'POST', body: JSON.stringify(data) });
-                return await res.json();
-            } catch(e) {
-                console.error(e);
-                return { success: false, error: "Connection Error" };
-            }
-        }
+        async function api(data) { try { const res = await fetch(APP_URL, { method: 'POST', body: JSON.stringify(data) }); return await res.json(); } catch(e) { return { success: false, error: "Connection Failed" }; } }
 
-        // --- ACTIONS ---
         async function loadConfig() {
             const res = await fetch(`${APP_URL}?action=getConfig`).then(r=>r.json()).catch(e=>({}));
             if(res.success && res.presets) {
                 els.quickContainer.innerHTML = '';
                 res.presets.forEach(p => {
-                    const btn = document.createElement('button');
-                    btn.className = "btn-quick flex flex-col items-center justify-center p-4 rounded-2xl gap-2";
-                    btn.innerHTML = `
-                        <div class="w-10 h-10 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
-                        </div>
-                        <div class="text-center">
-                            <div class="font-bold text-sm leading-tight">${p.label}</div>
-                            <div class="text-xs text-slate-400 mt-1">${p.value}${p.unit}</div>
-                        </div>
-                    `;
+                    const btn = document.createElement('button'); btn.className = "btn-quick flex flex-col items-center justify-center p-4 rounded-2xl gap-2";
+                    btn.innerHTML = `<div class="w-10 h-10 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></div><div class="text-center"><div class="font-bold text-sm leading-tight">${p.label}</div><div class="text-xs text-slate-400 mt-1">${p.value}${p.unit}</div></div>`;
                     btn.onclick = () => { pendingPreset = p; els.modal.classList.remove('hidden'); };
                     els.quickContainer.appendChild(btn);
                 });
-            } else {
-                els.quickContainer.innerHTML = `<div class="col-span-2 text-center p-4 border border-dashed border-slate-700 rounded-xl text-slate-500">No presets found.</div>`;
-            }
+            } else { els.quickContainer.innerHTML = `<div class="col-span-2 text-center p-4 border border-dashed border-slate-700 rounded-xl text-slate-500">No presets configured.</div>`; }
         }
 
         async function loadHistory() {
             els.historyList.innerHTML = '<div class="text-center p-4 animate-pulse text-slate-500">Loading...</div>';
             const res = await fetch(`${APP_URL}?action=getHistory`).then(r=>r.json()).catch(e=>({}));
-            els.historyList.innerHTML = '';
             if(res.success && res.history) {
                 renderStreak(res.history);
                 calculateSuggestion(res.history);
+                els.historyList.innerHTML = '';
                 res.history.forEach(h => {
-                    // CORRECT DATE HANDLING (Keep existing logic)
-                    let dateStr = h.date;
-                    let timeStr = "";
+                    let dateStr = h.date, timeStr = "";
                     const dateObj = new Date(h.date);
                     if (!isNaN(dateObj.getTime())) {
                         dateStr = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
                         timeStr = dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-                    } 
-
-                    const card = document.createElement('div');
-                    card.className = "bg-slate-800 p-4 rounded-2xl border border-slate-700/50 flex justify-between items-center";
-                    card.innerHTML = `
-                        <div>
-                            <div class="font-bold text-white flex items-center gap-2">
-                                ${h.peptide} 
-                                <span class="text-xs bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded">${h.dosage}</span>
-                            </div>
-                            <div class="text-xs text-slate-400 mt-1 flex items-center gap-1">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-                                ${h.site}
-                            </div>
-                        </div>
-                        <div class="flex flex-col items-end gap-2">
-                            <div class="text-right text-xs text-slate-500 font-mono bg-slate-900/50 px-2 py-1 rounded">
-                                <div>${dateStr}</div>
-                                <div class="text-indigo-400 font-bold">${timeStr}</div>
-                            </div>
-                            <button class="text-red-400 hover:text-red-300 p-1" onclick="deleteEntry('${h.row}')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></button>
-                        </div>
-                    `;
+                    }
+                    const card = document.createElement('div'); card.className = "bg-slate-800 p-4 rounded-2xl border border-slate-700/50 flex justify-between items-center";
+                    card.innerHTML = `<div><div class="font-bold text-white flex items-center gap-2">${h.peptide} <span class="text-xs bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded">${h.dosage}</span></div><div class="text-xs text-slate-400 mt-1 flex items-center gap-1"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>${h.site}</div></div>
+                    <div class="flex flex-col items-end gap-2"><div class="text-right text-xs text-slate-500 font-mono bg-slate-900/50 px-2 py-1 rounded"><div>${dateStr}</div><div class="text-indigo-400 font-bold">${timeStr}</div></div><button class="text-red-400 hover:text-red-300 p-1" onclick="deleteEntry('${h.row}')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></button></div>`;
                     els.historyList.appendChild(card);
                 });
-            } else {
-                els.historyList.innerHTML = '<div class="text-center text-slate-500">No history found.</div>';
-            }
+            } else { els.historyList.innerHTML = '<div class="text-center text-slate-500">No history found.</div>'; }
         }
 
-        // --- SUGGESTION LOGIC ---
         function calculateSuggestion(history) {
             if(!history || history.length === 0) { showSuggestion(sites[0].name); return; }
-            
-            const lastLog = history[0];
-            const lastDateObj = new Date(lastLog.date);
-            const todayObj = new Date();
-            
+            const lastLog = history[0], lastDateObj = new Date(lastLog.date), todayObj = new Date();
             const isSameDay = lastDateObj.toISOString().split('T')[0] === todayObj.toISOString().split('T')[0];
-            
-            if(isSameDay) {
-                showSuggestion(lastLog.site);
-            } else {
-                const lastSiteName = lastLog.site;
-                const idx = sites.findIndex(s => s.name === lastSiteName);
-                
-                if (idx === -1) {
-                    showSuggestion(sites[0].name);
-                } else {
-                    const nextIdx = (idx + 1) % sites.length;
-                    showSuggestion(sites[nextIdx].name);
-                }
+            if(isSameDay) showSuggestion(lastLog.site);
+            else {
+                const idx = sites.findIndex(s => s.name === lastLog.site);
+                showSuggestion(idx === -1 ? sites[0].name : sites[(idx + 1) % sites.length].name);
             }
         }
 
         function showSuggestion(siteName) {
-            currentSuggestion = siteName;
-            els.suggestionText.textContent = siteName;
-            els.suggestionBox.classList.remove('hidden');
+            currentSuggestion = siteName; els.suggestionText.textContent = siteName; els.suggestionBox.classList.remove('hidden');
         }
 
-        function useSuggestion() {
-            if(!currentSuggestion) return;
-            els.site.value = currentSuggestion;
-            els.site.focus();
-        }
+        function useSuggestion() { if(!currentSuggestion) return; els.site.value = currentSuggestion; els.site.focus(); }
 
         async function deleteEntry(rowId) {
             if(!confirm("Delete log?")) return;
@@ -671,11 +387,7 @@
             for(let i=6; i>=0; i--) {
                 const d = new Date(today); d.setDate(today.getDate() - i);
                 const dateStr = d.toISOString().split('T')[0];
-                const hasLog = history.some(h => {
-                    if(!h.date) return false;
-                    return h.date.startsWith(dateStr); 
-                });
-                
+                const hasLog = history.some(h => { if(!h.date) return false; return h.date.startsWith(dateStr); });
                 const circle = document.createElement('div');
                 circle.className = `w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border ${hasLog ? 'bg-green-900/30 border-green-500/50 text-green-400' : 'bg-gray-800 border-gray-700 text-gray-600'}`;
                 circle.textContent = d.getDate();
@@ -686,95 +398,42 @@
         async function handleManualLog(e) {
             e.preventDefault();
             const btn = document.getElementById('submit-btn'); const originalText = btn.innerHTML; btn.innerHTML = "Saving..."; btn.disabled = true;
-
             const pName = els.pep.value === 'Other' ? document.getElementById('custom-peptide').value : els.pep.value;
             const sName = els.site.value === 'Other' ? document.getElementById('custom-site').value : els.site.value;
             const dose = `${document.getElementById('dosage-value').value} ${document.getElementById('dosage-unit').value}`;
-            
-            const data = {
-                action: 'logInjection',
-                peptide: pName,
-                dosage: dose,
-                site: sName,
-                timestamp: document.getElementById('timestamp').value
-            };
-
+            const data = { action: 'logInjection', peptide: pName, dosage: dose, site: sName, timestamp: document.getElementById('timestamp').value };
             const res = await api(data);
             btn.innerHTML = originalText; btn.disabled = false;
-            
-            if(res.success) {
-                alert("Log Saved!");
-                els.logForm.reset();
-                document.getElementById('timestamp').value = new Date(new Date() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0,16);
-                loadHistory();
-            } else {
-                alert("Error.");
-            }
+            if(res.success) { alert("Log Saved!"); els.logForm.reset(); document.getElementById('timestamp').value = new Date(new Date() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0,16); loadHistory(); }
         }
 
         async function finalizeQuickLog(site) {
             els.modal.classList.add('hidden');
             if(!pendingPreset) return;
-            
-            const ts = new Date(new Date() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0,16);
-            const data = {
-                action: 'logInjection',
-                peptide: pendingPreset.peptide,
-                dosage: `${pendingPreset.value} ${pendingPreset.unit}`,
-                site: site,
-                timestamp: ts
-            };
-            
+            const data = { action: 'logInjection', peptide: pendingPreset.peptide, dosage: `${pendingPreset.value} ${pendingPreset.unit}`, site: site, timestamp: new Date().toISOString() };
             const res = await api(data);
-            if(res.success) {
-                alert(`Saved: ${pendingPreset.peptide}`);
-                loadHistory();
-            } else {
-                alert("Connection Error");
-            }
+            if(res.success) { alert(`Saved: ${pendingPreset.peptide}`); loadHistory(); }
             pendingPreset = null;
         }
 
         async function handleConfigSave(e) {
             e.preventDefault();
-            const btn = document.getElementById('config-submit-btn');
-            btn.textContent = "Saving..."; btn.disabled = true;
-            
-            const data = {
-                action: 'saveConfig',
-                label: document.getElementById('config-label').value,
-                peptide: document.getElementById('config-peptide').value,
-                value: document.getElementById('config-value').value,
-                unit: document.getElementById('config-unit').value,
-                site: 'Ask'
-            };
-
+            const btn = document.getElementById('config-submit-btn'); btn.textContent = "Saving..."; btn.disabled = true;
+            const data = { action: 'saveConfig', label: document.getElementById('config-label').value, peptide: document.getElementById('config-peptide').value, value: document.getElementById('config-value').value, unit: document.getElementById('config-unit').value, site: 'Ask' };
             const res = await api(data);
             btn.textContent = "Save Preset"; btn.disabled = false;
-            
-            if(res.success) {
-                alert("Preset Saved");
-                els.configForm.reset();
-                loadConfig();
-                switchView('log');
-            } else {
-                alert("Error");
-            }
+            if(res.success) { alert("Saved"); loadConfig(); switchView('log'); }
         }
 
         function runCalc() {
             const vm = parseFloat(els.calc.m.value), dv = parseFloat(els.calc.v.value), td = parseFloat(els.calc.d.value);
             if(!vm || !dv || !td) { els.calc.res.innerText = "0 IU"; els.calc.mic.innerText = "(0 µL)"; return; }
-            const m_ug = els.calc.mu.value === 'mg' ? vm * 1000 : vm;
-            const d_ug = els.calc.du.value === 'mg' ? td * 1000 : td;
-            const vol = (d_ug / (m_ug / dv));
+            const vol = ((els.calc.du.value === 'mg' ? td * 1000 : td) / ((els.calc.mu.value === 'mg' ? vm * 1000 : vm) / (els.calc.vu.value === 'ml' ? dv * 1000 : dv * 1000)));
             els.calc.res.innerText = `${(vol * 100).toFixed(1)} IU`; els.calc.mic.innerText = `(${vol.toFixed(2) * 1000} µL)`;
         }
 
         function closeModal() { els.modal.classList.add('hidden'); }
-
-        init();
-        switchView('log');
+        init(); switchView('log');
     </script>
 </body>
 </html>
