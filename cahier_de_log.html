@@ -10,79 +10,39 @@
             darkMode: 'class',
             theme: {
                 extend: {
-                    fontFamily: {
-                        sans: ['Outfit', 'sans-serif'],
-                    },
-                    colors: {
-                        background: '#0f172a', // Slate 900
-                        surface: '#1e293b',    // Slate 800
-                        primary: '#6366f1',    // Indigo 500
-                        secondary: '#334155',  // Slate 700
-                    },
-                    animation: {
-                        'fade-in': 'fadeIn 0.3s ease-out',
-                        'slide-up': 'slideUp 0.4s ease-out',
-                    },
-                    keyframes: {
-                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
-                        slideUp: { '0%': { transform: 'translateY(20px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } }
-                    }
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: { background: '#0f172a', surface: '#1e293b', primary: '#6366f1', secondary: '#334155' },
+                    animation: { 'fade-in': 'fadeIn 0.3s ease-out', 'slide-up': 'slideUp 0.4s ease-out' },
+                    keyframes: { fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } }, slideUp: { '0%': { transform: 'translateY(20px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } } }
                 }
             }
         }
     </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
-        
-        body { 
-            font-family: 'Outfit', sans-serif; 
-            background-color: #0f172a; 
-            background-image: radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%);
-            color: #f8fafc;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        /* Glassmorphism Cards */
-        .glass-card {
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-        }
-
-        /* Suggestion Card (Specific Style) */
-        .suggestion-glass {
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(30, 41, 59, 0.7) 100%);
-            border: 1px solid rgba(99, 102, 241, 0.3);
-            box-shadow: 0 0 20px rgba(99, 102, 241, 0.1);
-        }
-
-        /* Inputs */
+        body { font-family: 'Outfit', sans-serif; background-color: #0f172a; background-image: radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%); color: #f8fafc; -webkit-tap-highlight-color: transparent; }
+        .glass-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); }
+        .suggestion-glass { background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(30, 41, 59, 0.7) 100%); border: 1px solid rgba(99, 102, 241, 0.3); box-shadow: 0 0 20px rgba(99, 102, 241, 0.1); }
         .input-group { position: relative; transition: all 0.3s ease; }
         .input-field { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(148, 163, 184, 0.2); color: white; border-radius: 1rem; padding: 0.75rem 1rem 0.75rem 2.5rem; width: 100%; font-size: 16px; transition: all 0.2s; }
         .input-field:focus { border-color: #6366f1; box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2); outline: none; background: rgba(15, 23, 42, 0.9); }
         .input-icon { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: #94a3b8; pointer-events: none; }
-
-        /* Dropdown Fixes */
         select.input-field { appearance: none; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3c/svg%3e"); background-position: right 0.75rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; }
         select.input-field option { background-color: #1e293b; color: #f8fafc; padding: 10px; }
         select.input-field optgroup { background-color: #0f172a; color: #94a3b8; font-weight: bold; }
-
-        /* Buttons */
         .btn-primary { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3); transition: transform 0.2s, box-shadow 0.2s; }
         .btn-primary:active { transform: scale(0.98); }
-        .btn-quick { background: rgba(51, 65, 85, 0.5); border: 1px solid rgba(255,255,255,0.05); transition: all 0.2s; }
+        .btn-quick { background: rgba(51, 65, 85, 0.5); border: 1px solid rgba(255,255,255,0.05); transition: all 0.2s; position: relative; overflow: hidden; }
         .btn-quick:active { background: rgba(99, 102, 241, 0.2); border-color: #6366f1; }
-
-        /* Tabs */
         .nav-pill { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .nav-pill.active { background: #6366f1; color: white; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25); }
-
-        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+        
+        /* Toggle Switch */
+        .toggle-checkbox:checked { right: 0; border-color: #68D391; }
+        .toggle-checkbox:checked + .toggle-label { background-color: #68D391; }
     </style>
 </head>
 <body class="flex flex-col items-center min-h-screen pb-6">
@@ -108,7 +68,6 @@
     <!-- APP CONTAINER -->
     <div id="app-container" class="w-full max-w-lg flex flex-col h-full hidden animate-fade-in">
         
-        <!-- HEADER -->
         <header class="pt-6 pb-2 px-6 flex justify-between items-center">
             <div>
                 <h1 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-white">Peptide Log</h1>
@@ -121,28 +80,15 @@
             </button>
         </header>
 
-        <!-- TABS (Pill Style) -->
         <nav class="px-4 py-2">
             <div class="flex bg-slate-800/50 p-1 rounded-2xl backdrop-blur-sm border border-slate-700/50">
-                <button id="tab-log" class="nav-pill flex-1 py-2.5 rounded-xl text-sm font-medium text-slate-400 flex justify-center items-center gap-2 active" onclick="switchTab('log')">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                    Log
-                </button>
-                <button id="tab-history" class="nav-pill flex-1 py-2.5 rounded-xl text-sm font-medium text-slate-400 flex justify-center items-center gap-2" onclick="switchTab('history')">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                    History
-                </button>
-                <button id="tab-calculator" class="nav-pill flex-1 py-2.5 rounded-xl text-sm font-medium text-slate-400 flex justify-center items-center gap-2" onclick="switchTab('calculator')">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="16" y1="14" x2="16" y2="14"/><line x1="8" y1="14" x2="8" y2="14"/><line x1="12" y1="14" x2="12" y2="14"/><line x1="16" y1="18" x2="16" y2="18"/><line x1="8" y1="18" x2="8" y2="18"/><line x1="12" y1="18" x2="12" y2="18"/></svg>
-                    Calc
-                </button>
-                <button id="tab-config" class="nav-pill flex-1 py-2.5 rounded-xl text-sm font-medium text-slate-400 flex justify-center items-center gap-2" onclick="switchTab('config')">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
-                </button>
+                <button id="tab-log" class="nav-pill flex-1 py-2.5 rounded-xl text-sm font-medium text-slate-400 flex justify-center items-center gap-2 active" onclick="switchTab('log')">Log</button>
+                <button id="tab-history" class="nav-pill flex-1 py-2.5 rounded-xl text-sm font-medium text-slate-400 flex justify-center items-center gap-2" onclick="switchTab('history')">History</button>
+                <button id="tab-calculator" class="nav-pill flex-1 py-2.5 rounded-xl text-sm font-medium text-slate-400 flex justify-center items-center gap-2" onclick="switchTab('calculator')">Calc</button>
+                <button id="tab-config" class="nav-pill flex-1 py-2.5 rounded-xl text-sm font-medium text-slate-400 flex justify-center items-center gap-2" onclick="switchTab('config')">Config</button>
             </div>
         </nav>
 
-        <!-- CONTENT -->
         <main class="flex-1 px-4 py-4 overflow-y-auto custom-scrollbar" id="main-content">
             
             <!-- LOG TAB -->
@@ -310,15 +256,49 @@
             <!-- CONFIG TAB -->
             <div id="view-config" class="hidden space-y-6 animate-slide-up">
                 <section class="glass-card rounded-3xl p-6">
-                    <h2 class="text-xl font-bold mb-4">New Preset</h2>
+                    <h2 class="text-xl font-bold mb-4">Add Quick Log</h2>
                     <form id="config-form" class="space-y-4">
+                        
+                        <!-- TOGGLE CYCLE -->
+                        <div class="flex items-center justify-between bg-slate-800/50 p-3 rounded-xl border border-slate-700/50">
+                            <span class="text-sm font-medium text-gray-300">Track Cycle?</span>
+                            <label for="cycle-toggle" class="flex items-center cursor-pointer">
+                                <div class="relative">
+                                    <input type="checkbox" id="cycle-toggle" class="sr-only">
+                                    <div class="w-10 h-6 bg-slate-700 rounded-full shadow-inner"></div>
+                                    <div class="dot absolute w-4 h-4 bg-white rounded-full shadow -left-1 -top-1 transition transform translate-x-full translate-y-1.5" style="transition: 0.3s;"></div>
+                                </div>
+                            </label>
+                        </div>
+
                         <input type="text" id="config-label" placeholder="Label (e.g. Daily GHK)" class="input-field">
                         <input type="text" id="config-peptide" placeholder="Peptide Name (e.g. GHK-Cu)" class="input-field">
                         <div class="flex gap-2">
                             <input type="number" id="config-value" placeholder="Dose" class="input-field flex-1">
                             <select id="config-unit" class="bg-slate-700 text-white rounded-xl px-3 font-bold w-24">
-                                <option value="mcg">mcg</option><option value="mg">mg</option><option value="IU">IU</option></select>
+                                <option value="mcg">mcg</option><option value="mg">mg</option><option value="IU">IU</option>
+                            </select>
                         </div>
+                        
+                        <!-- CYCLE OPTIONS (Hidden by default) -->
+                        <div id="cycle-options" class="hidden space-y-4 pt-2 border-t border-slate-700 mt-2">
+                            <p class="text-xs text-indigo-400 font-bold uppercase tracking-wide">Cycle Settings</p>
+                            <div>
+                                <label class="text-xs text-slate-400">Start Date</label>
+                                <div class="input-group">
+                                    <svg class="input-icon w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                    <input type="date" id="config-cycle-start" class="input-field" style="color-scheme: dark;">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="text-xs text-slate-400">Duration (Weeks)</label>
+                                <div class="input-group">
+                                    <svg class="input-icon w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                    <input type="number" id="config-cycle-weeks" placeholder="8" class="input-field">
+                                </div>
+                            </div>
+                        </div>
+
                         <button type="submit" id="config-submit-btn" class="btn-primary w-full py-3 rounded-xl font-bold">Save Preset</button>
                     </form>
                 </section>
@@ -370,16 +350,18 @@
             custSiteGrp: document.getElementById('custom-site-group'),
             
             // Calc
-            calc: {
-                m: document.getElementById('vial-mass-input'), mu: document.getElementById('vial-mass-unit'),
-                v: document.getElementById('dilution-volume-input'), vu: document.getElementById('dilution-volume-unit'),
-                d: document.getElementById('target-dose-input'), du: document.getElementById('target-dose-unit'),
-                res: document.getElementById('calculator-result'), mic: document.getElementById('calculator-microliters')
-            },
-            // Suggestion
+            calc: { m: document.getElementById('vial-mass-input'), mu: document.getElementById('vial-mass-unit'), v: document.getElementById('dilution-volume-input'), vu: document.getElementById('dilution-volume-unit'), d: document.getElementById('target-dose-input'), du: document.getElementById('target-dose-unit'), res: document.getElementById('calculator-result'), mic: document.getElementById('calculator-microliters') },
+            
+            // Suggestion & Streak
             suggestionBox: document.getElementById('suggestion-box'),
             suggestionText: document.getElementById('suggestion-text'),
-            streakContainer: document.getElementById('streak-container')
+            streakContainer: document.getElementById('streak-container'),
+
+            // Cycle Config
+            cycleToggle: document.getElementById('cycle-toggle'),
+            cycleOptions: document.getElementById('cycle-options'),
+            cycleStart: document.getElementById('config-cycle-start'),
+            cycleWeeks: document.getElementById('config-cycle-weeks')
         };
 
         const sites = [
@@ -449,6 +431,27 @@
                 if(isOther) document.getElementById('custom-site').focus();
             });
 
+            // Cycle Toggle Logic
+            els.cycleToggle.addEventListener('change', (e) => {
+                if(e.target.checked) {
+                    els.cycleOptions.classList.remove('hidden');
+                    // Default to today
+                    els.cycleStart.value = new Date().toISOString().split('T')[0];
+                } else {
+                    els.cycleOptions.classList.add('hidden');
+                }
+                // Update toggle visual (dot position)
+                const dot = e.target.parentNode.querySelector('.dot');
+                if(e.target.checked) {
+                    dot.classList.remove('-left-1');
+                    dot.classList.add('right-1');
+                    dot.classList.add('translate-x-full'); 
+                    dot.style.transform = 'translateX(100%)'; // Tailwind override
+                } else {
+                    dot.style.transform = 'translateX(0)';
+                }
+            });
+
             document.getElementById('timestamp').value = new Date(new Date() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0,16);
 
             els.logForm.addEventListener('submit', handleManualLog);
@@ -461,7 +464,6 @@
             els.modalList.innerHTML = '';
             [...sites, ...extraSites].forEach(s => {
                 const btn = document.createElement('button');
-                // Dynamic highlighting for recommendation inside Modal
                 btn.dataset.site = s.name;
                 btn.className = "w-full p-4 bg-slate-800/50 hover:bg-indigo-600/80 rounded-xl text-left transition flex items-center gap-3 border border-slate-700/50";
                 btn.innerHTML = `<span class="w-8 h-8 rounded-full bg-slate-900 flex items-center justify-center text-xs font-bold text-slate-400 border border-slate-700">${s.icon}</span> <span class="font-medium text-white">${s.name}</span>`;
@@ -498,15 +500,43 @@
             }
         }
 
+        // --- HELPER: CYCLE CALC ---
+        function getCycleProgress(startDateStr, totalWeeks) {
+            if (!startDateStr || !totalWeeks) return null;
+            const start = new Date(startDateStr);
+            const now = new Date();
+            const diffTime = Math.abs(now - start);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+            const currentWeek = Math.ceil(diffDays / 7);
+            const percent = Math.min(100, (currentWeek / totalWeeks) * 100);
+            return { current: currentWeek, total: totalWeeks, percent: percent };
+        }
+
         // --- ACTIONS ---
         async function loadConfig() {
             const res = await fetch(`${APP_URL}?action=getConfig`).then(r=>r.json()).catch(e=>({}));
             if(res.success && res.presets) {
                 els.quickContainer.innerHTML = '';
                 res.presets.forEach(p => {
+                    // Cycle Logic
+                    let cycleHtml = '';
+                    if(p.cycleStart && p.cycleWeeks) {
+                        const cycle = getCycleProgress(p.cycleStart, p.cycleWeeks);
+                        cycleHtml = `
+                        <div class="w-full bg-slate-700 rounded-full h-1.5 mt-3 mb-1">
+                            <div class="bg-indigo-400 h-1.5 rounded-full" style="width: ${cycle.percent}%"></div>
+                        </div>
+                        <div class="text-[10px] text-indigo-300 font-bold text-right">Week ${cycle.current} / ${cycle.total}</div>
+                        `;
+                    }
+
                     const btn = document.createElement('button');
-                    btn.className = "btn-quick bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 hover:border-indigo-500/50 transition text-left group";
-                    btn.innerHTML = `<div class="font-bold text-white group-hover:text-indigo-400 mb-1">${p.label}</div><div class="text-xs text-slate-500">${p.value}${p.unit}</div>`;
+                    btn.className = "btn-quick bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 hover:border-indigo-500/50 transition text-left group relative overflow-hidden";
+                    btn.innerHTML = `
+                        <div class="font-bold text-white group-hover:text-indigo-400 mb-1">${p.label}</div>
+                        <div class="text-xs text-slate-500">${p.value}${p.unit}</div>
+                        ${cycleHtml}
+                    `;
                     btn.onclick = () => { pendingPreset = p; openSiteModal(); };
                     els.quickContainer.appendChild(btn);
                 });
@@ -523,15 +553,12 @@
                 renderStreak(res.history);
                 calculateSuggestion(res.history);
                 res.history.forEach(h => {
-                    // CORRECT DATE HANDLING (ISO to English Format)
                     let dateStr = h.date;
                     let timeStr = "";
                     const dateObj = new Date(h.date);
                     if (!isNaN(dateObj.getTime())) {
-                        // Ex: "Mon, Nov 24"
                         dateStr = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-                        // Ex: "2:30 PM"
-                        timeStr = dateObj.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+                        timeStr = dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
                     } 
 
                     const card = document.createElement('div');
@@ -564,7 +591,6 @@
             }
         }
 
-        // --- SUGGESTION LOGIC ---
         function calculateSuggestion(history) {
             if(!history || history.length === 0) { showSuggestion(sites[0].name); return; }
             
@@ -602,13 +628,11 @@
         }
         
         function openSiteModal() {
-            // Update modal buttons to highlight suggestion
             const buttons = els.modalList.querySelectorAll('button');
             buttons.forEach(btn => {
                 if(currentSuggestion && btn.dataset.site === currentSuggestion) {
                     btn.classList.remove('bg-slate-800/50', 'border-slate-700/50');
                     btn.classList.add('bg-indigo-900/40', 'border-indigo-500/50', 'ring-1', 'ring-indigo-500/50');
-                    // Add badge if not present
                     if(!btn.querySelector('.badge')) {
                         const badge = document.createElement('span');
                         badge.className = 'badge text-[10px] uppercase bg-indigo-500 text-white px-1.5 py-0.5 rounded ml-auto font-bold tracking-wide';
@@ -616,7 +640,6 @@
                         btn.appendChild(badge);
                     }
                 } else {
-                    // Reset style
                     btn.className = "w-full p-4 bg-slate-800/50 hover:bg-indigo-600/80 rounded-xl text-left transition flex items-center gap-3 border border-slate-700/50";
                     const badge = btn.querySelector('.badge');
                     if(badge) badge.remove();
@@ -707,13 +730,18 @@
             const btn = document.getElementById('config-submit-btn');
             btn.textContent = "Saving..."; btn.disabled = true;
             
+            const isCycle = els.cycleToggle.checked;
+            
             const data = {
                 action: 'saveConfig',
                 label: document.getElementById('config-label').value,
                 peptide: document.getElementById('config-peptide').value,
                 value: document.getElementById('config-value').value,
                 unit: document.getElementById('config-unit').value,
-                site: 'Ask'
+                site: 'Ask',
+                // CYCLE DATA
+                cycleStart: isCycle ? els.cycleStart.value : null,
+                cycleWeeks: isCycle ? els.cycleWeeks.value : null
             };
 
             const res = await api(data);
@@ -722,6 +750,10 @@
             if(res.success) {
                 alert("Preset Saved");
                 els.configForm.reset();
+                // Reset toggle UI
+                els.cycleToggle.checked = false;
+                els.cycleToggle.dispatchEvent(new Event('change'));
+                
                 loadConfig();
                 switchView('log');
             } else {
