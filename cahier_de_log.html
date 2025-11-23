@@ -89,7 +89,7 @@
             <!-- LOG TAB -->
             <div id="view-log" class="space-y-6 animate-slide-up">
                 
-                <!-- STREAK TRACKER (NEW) -->
+                <!-- STREAK TRACKER -->
                 <div class="glass-card rounded-2xl p-4 flex justify-between items-center">
                     <span class="text-xs font-bold text-indigo-300 uppercase">7 Day Streak</span>
                     <div id="streak-container" class="flex gap-2">
@@ -142,8 +142,10 @@
                             <select id="injection-site" required class="input-field">
                                 <option value="" disabled selected>Select Site</option>
                                 <optgroup label="Abdomen"><option value="Right Abdomen (Upper)">Right Abdomen (Upper)</option><option value="Right Abdomen (Lower)">Right Abdomen (Lower)</option><option value="Left Abdomen (Upper)">Left Abdomen (Upper)</option><option value="Left Abdomen (Lower)">Left Abdomen (Lower)</option></optgroup>
-                                <optgroup label="Flanks & Thighs"><option value="Right Flank">Right Flank</option><option value="Left Flank">Left Flank</option><option value="Right Thigh">Right Thigh</option><option value="Left Thigh">Left Thigh</option></optgroup>
-                                <optgroup label="Arms & Other"><option value="Right Deltoid">Right Deltoid</option><option value="Left Deltoid">Left Deltoid</option><option value="Nasal Spray">Nasal Spray</option><option value="Other">Other</option></optgroup>
+                                <optgroup label="Flanks"><option value="Right Flank">Right Flank</option><option value="Left Flank">Left Flank</option></optgroup>
+                                <optgroup label="Thighs"><option value="Right Thigh">Right Thigh</option><option value="Left Thigh">Left Thigh</option></optgroup>
+                                <optgroup label="Arms"><option value="Right Deltoid">Right Deltoid</option><option value="Left Deltoid">Left Deltoid</option></optgroup>
+                                <optgroup label="Others"><option value="Nasal Spray">Nasal Spray</option><option value="Other">Other</option></optgroup>
                             </select>
                         </div>
                         <div id="custom-site-group" class="hidden animate-fade-in">
@@ -154,6 +156,7 @@
                             <input type="datetime-local" id="timestamp" required class="input-field" style="color-scheme: dark;">
                         </div>
                         <button type="submit" id="submit-btn" class="btn-primary w-full py-4 rounded-2xl font-bold text-lg shadow-lg shadow-indigo-500/20 mt-2">Log Injection</button>
+                        <p id="response-message" class="text-center text-sm font-medium hidden mt-2"></p>
                     </form>
                 </section>
             </div>
@@ -270,17 +273,28 @@
         }
 
         async function loadHistory() {
+            els.historyList.innerHTML = '<div class="text-center p-4 animate-pulse text-slate-500">Refreshing...</div>';
             const res = await fetch(`${APP_URL}?action=getHistory`).then(r=>r.json()).catch(e=>({}));
             if(res.success && res.history) {
                 renderStreak(res.history);
                 els.historyList.innerHTML = '';
                 res.history.forEach(h => {
                     const card = document.createElement('div'); card.className = "bg-slate-800 p-4 rounded-2xl border border-slate-700/50 flex justify-between items-center";
+                    // Affichage Date et Heure séparés
+                    const datePart = h.date.split(' ')[0];
+                    const timePart = h.date.split(' ')[1] || '';
+                    
                     card.innerHTML = `<div><div class="font-bold text-white flex items-center gap-2">${h.peptide} <span class="text-xs bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded">${h.dosage}</span></div><div class="text-xs text-slate-400 mt-1 flex items-center gap-1"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>${h.site}</div></div>
-                    <div class="flex flex-col items-end gap-2"><div class="text-xs text-slate-500 font-mono bg-slate-900/50 px-2 py-1 rounded">${h.date.split(' ')[0]}</div><button class="text-red-400 hover:text-red-300 p-1" onclick="deleteEntry('${h.row}')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></button></div>`;
+                    <div class="flex flex-col items-end gap-2">
+                        <div class="text-right text-xs text-slate-500 font-mono bg-slate-900/50 px-2 py-1 rounded">
+                            <div>${datePart}</div>
+                            <div class="text-indigo-400 font-bold">${timePart}</div>
+                        </div>
+                        <button class="text-red-400 hover:text-red-300 p-1" onclick="deleteEntry('${h.row}')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></button>
+                    </div>`;
                     els.historyList.appendChild(card);
                 });
-            }
+            } else { els.historyList.innerHTML = '<div class="text-center text-slate-500">No history found.</div>'; }
         }
 
         async function deleteEntry(rowId) {
@@ -295,9 +309,7 @@
             for(let i=6; i>=0; i--) {
                 const d = new Date(today); d.setDate(today.getDate() - i);
                 const dateStr = d.toISOString().split('T')[0];
-                // Check if a log exists with this isoDate
                 const hasLog = history.some(h => h.isoDate === dateStr);
-                
                 const circle = document.createElement('div');
                 circle.className = `w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${hasLog ? 'bg-green-500 text-white shadow-lg shadow-green-500/30' : 'bg-slate-700 text-slate-500'}`;
                 circle.textContent = d.getDate();
@@ -314,11 +326,11 @@
             const data = { action: 'logInjection', peptide: pName, dosage: dose, site: sName, timestamp: document.getElementById('timestamp').value };
             const res = await api(data);
             btn.innerHTML = originalText; btn.disabled = false;
-            if(res.success) { alert("Log Saved!"); document.getElementById('log-form').reset(); loadHistory(); }
+            if(res.success) { alert("Log Saved!"); els.logForm.reset(); document.getElementById('timestamp').value = new Date(new Date() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0,16); loadHistory(); }
         }
 
         async function finalizeQuickLog(site) {
-            closeModal();
+            els.modal.classList.add('hidden');
             if(!pendingPreset) return;
             const data = { action: 'logInjection', peptide: pendingPreset.peptide, dosage: `${pendingPreset.value} ${pendingPreset.unit}`, site: site, timestamp: new Date().toISOString() };
             const res = await api(data);
