@@ -1,73 +1,99 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Peptide Log Book</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: { gray: { 750: '#2d3748', 850: '#1a202c' }, indigo: { 450: '#7f9cf5' } },
+                    boxShadow: { 'soft-xl': '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)', 'inner-soft': 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)' }
+                }
+            }
+        }
+    </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #1f2937; color: #e5e7eb; }
-        .card { background-color: #374151; border-radius: 1rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4); border: 1px solid #4b5563; }
-        .btn-primary { background-color: #6366f1; transition: background-color 0.2s; }
-        .btn-primary:hover { background-color: #4f46e5; }
-        .btn-quick-log { background-color: #4b5563; color: #e5e7eb; font-weight: 600; padding: 0.75rem 1rem; border-radius: 0.5rem; transition: background-color 0.2s, transform 0.1s; }
-        .btn-quick-log:hover { background-color: #374151; transform: translateY(-1px); }
-        .btn-site-select { background-color: #374151; border: 1px solid #4b5563; color: #e5e7eb; font-weight: 500; padding: 0.75rem; border-radius: 0.5rem; transition: all 0.2s; text-align: left; }
-        .btn-site-select:hover { background-color: #4b5563; border-color: #6366f1; }
-        .input-field { background-color: #4b5563; color: #f3f4f6; border: 1px solid #6b7280; border-radius: 0.5rem; padding: 0.75rem; transition: border-color 0.2s; }
-        .input-field:focus { border-color: #6366f1; outline: none; box-shadow: 0 0 0 1px #6366f1; }
-        .input-field option { background-color: #374151; color: #f3f4f6; }
-        .tab-btn { padding: 0.75rem 1.5rem; font-weight: 600; border-radius: 0.75rem 0.75rem 0 0; transition: background-color 0.2s, color 0.2s; border-bottom: 2px solid transparent; }
-        .tab-btn.active { background-color: #374151; color: #6366f1; border-bottom: 2px solid #6366f1; }
-        .tab-btn:not(.active):hover { background-color: #4b5563; }
-        .unit-select { border-left: none; border-top-left-radius: 0; border-bottom-left-radius: 0; padding: 0.75rem 0.5rem; width: 5rem; text-align: center; }
-        .input-with-unit { border-right: none; border-top-right-radius: 0; border-bottom-right-radius: 0; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .card { @apply bg-gray-800 border border-gray-700 rounded-2xl shadow-soft-xl p-6 md:p-8 transition-all duration-300; }
+        .btn-primary { @apply bg-gradient-to-r from-indigo-600 to-indigo-500 text-white font-bold py-3 px-6 rounded-xl hover:from-indigo-700 hover:to-indigo-600 transition-all duration-300 shadow-md; }
+        .btn-secondary { @apply bg-gray-700 text-gray-100 font-semibold py-3 px-4 rounded-xl border border-gray-600 hover:bg-gray-600 transition-all duration-300 text-left flex items-center shadow-sm; }
+        .input-field { @apply bg-gray-750 text-gray-100 border border-gray-600 rounded-xl py-3 px-4 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 outline-none transition-all duration-200 shadow-inner-soft placeholder-gray-500 font-size: 16px; }
         
-        /* History Item Style */
-        .history-item { border-left: 4px solid #6366f1; background-color: #374151; padding: 1rem; border-radius: 0.5rem; margin-bottom: 0.75rem; }
-        
-        /* Modal Styles */
-        #site-modal { backdrop-filter: blur(4px); }
+        /* Fix mobile dropdowns */
+        select.input-field { -webkit-appearance: none; appearance: none; background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%239ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E"); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2.5rem; }
+        .input-field option { background-color: #1f2937 !important; color: #f3f4f6 !important; }
+        .input-field optgroup { background-color: #1f2937 !important; color: #9ca3af !important; font-weight: 700; }
+
+        .tab-btn { @apply pb-3 px-4 font-semibold text-gray-400 transition-all duration-300 border-b-2 border-transparent hover:text-gray-200 whitespace-nowrap; }
+        .tab-btn.active { @apply text-indigo-400 border-indigo-500; }
+        .unit-select { @apply border-l-0 rounded-l-none text-center font-medium bg-gray-700 text-gray-200 pl-2 pr-4; }
+        .input-with-unit { @apply border-r-0 rounded-r-none z-10 relative focus:z-20; }
+        .history-item { @apply bg-gray-750 border-l-4 border-indigo-500 p-4 rounded-r-xl shadow-sm mb-3; }
+        #site-modal { backdrop-filter: blur(8px); }
+        .modal-card { @apply bg-gray-850 border border-gray-700 rounded-3xl shadow-2xl max-h-[85vh] flex flex-col; }
+        .setup-screen { @apply fixed inset-0 bg-gray-900 z-50 flex flex-col items-center justify-center p-6 text-center; }
     </style>
 </head>
-<body class="p-4 md:p-8 min-h-screen">
+<body class="p-4 md:p-8 min-h-screen bg-gray-850 text-gray-100 selection:bg-indigo-500/30 selection:text-white">
 
-    <div class="max-w-xl mx-auto">
-        <header class="text-center mb-6">
-            <h1 class="text-4xl font-extrabold text-gray-100 mb-2">Peptide Log Book</h1>
+    <!-- SETUP SCREEN -->
+    <div id="setup-screen" class="setup-screen hidden">
+        <div class="max-w-md w-full card space-y-6">
+            <div class="flex justify-center mb-4">
+                <span class="p-3 bg-indigo-500/20 rounded-2xl text-indigo-400"><svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg></span>
+            </div>
+            <h1 class="text-3xl font-extrabold text-white">Welcome</h1>
+            <p class="text-gray-400">To start logging, please paste your Google Apps Script URL (Deployment Link) below.</p>
+            <form id="setup-form" class="space-y-4 text-left">
+                <div>
+                    <label for="setup-url" class="block text-sm font-medium text-gray-300 mb-1">App URL</label>
+                    <input type="url" id="setup-url" required placeholder="https://script.google.com/macros/s/..." class="input-field w-full">
+                </div>
+                <button type="submit" class="btn-primary w-full">Connect</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MAIN APP -->
+    <div id="app-container" class="max-w-xl mx-auto pb-12 hidden">
+        <header class="text-center mb-8 pt-4">
+            <h1 class="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-200 to-white mb-2">Peptide Log Book</h1>
             <p class="text-gray-400">Simplified logging and dosage tools.</p>
         </header>
 
-        <!-- Tab Navigation -->
-        <div class="flex border-b border-gray-600 mb-6 overflow-x-auto">
-            <button id="tab-log" class="tab-btn active text-gray-100 whitespace-nowrap" data-tab="log">Log</button>
-            <button id="tab-history" class="tab-btn text-gray-400 whitespace-nowrap" data-tab="history">History</button>
-            <button id="tab-calculator" class="tab-btn text-gray-400 whitespace-nowrap" data-tab="calculator">Calc</button>
-            <button id="tab-config" class="tab-btn text-gray-400 whitespace-nowrap" data-tab="config">Config</button>
+        <!-- Tabs -->
+        <div class="flex border-b border-gray-700 mb-8 overflow-x-auto scrollbar-hide justify-start md:justify-center space-x-2 sm:space-x-6 px-2">
+            <button id="tab-log" class="tab-btn active" data-tab="log">Log</button>
+            <button id="tab-history" class="tab-btn" data-tab="history">History</button>
+            <button id="tab-calculator" class="tab-btn" data-tab="calculator">Calc</button>
+            <button id="tab-config" class="tab-btn" data-tab="config">Config</button>
         </div>
 
         <!-- Status -->
-        <div class="mb-6 p-4 text-sm card border-gray-700">
-            <p id="status-message" class="text-center font-medium text-gray-400">
-                Status: <span id="log-status" class="text-yellow-400">Loading application...</span>
+        <div class="mb-8 p-4 text-sm card border-l-4 border-indigo-500 bg-gray-800/50">
+            <p id="status-message" class="text-center font-medium text-gray-400 flex items-center justify-center space-x-2">
+                <span id="log-status" class="text-indigo-400 font-semibold">Ready to log.</span>
             </p>
         </div>
         
         <div id="tab-content">
             <!-- 1. Log Injection -->
-            <div id="content-log" class="tab-pane">
-                <section class="mb-10 card p-6 md:p-8">
-                    <h2 class="text-2xl font-semibold mb-6 text-gray-100">Quick Log (1-Click)</h2>
-                    <div id="quick-log-buttons" class="grid grid-cols-2 md:grid-cols-3 gap-3">
-                        <p class="text-gray-500 col-span-full text-center py-4">Loading presets...</p>
+            <div id="content-log" class="tab-pane space-y-8">
+                <section class="card">
+                    <h2 class="text-2xl font-bold text-white mb-6 flex items-center space-x-3"><span>Quick Log (1-Click)</span></h2>
+                    <div id="quick-log-buttons" class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                        <p class="text-gray-500 col-span-full text-center py-6 italic animate-pulse">Loading presets...</p>
                     </div>
-                    <p class="text-sm text-gray-500 mt-4 text-center">Logs at current time. Select site after clicking.</p>
                 </section>
                 
-                <section class="mb-10 card p-6 md:p-8">
-                    <h2 class="text-2xl font-semibold mb-6 text-gray-100">Manual Log</h2>
-                    <form id="log-form" class="grid grid-cols-1 gap-4">
+                <section class="card">
+                    <h2 class="text-2xl font-bold text-white mb-6">Manual Log</h2>
+                    <form id="log-form" class="grid grid-cols-1 gap-5">
                         <div>
                             <label class="block text-sm font-medium text-gray-300 mb-1">Peptide</label>
                             <select id="peptide-name" required class="input-field w-full">
@@ -87,9 +113,9 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-300 mb-1">Dosage</label>
-                            <div class="flex">
-                                <input type="number" id="dosage-value" min="0.1" step="0.1" required class="input-field w-full input-with-unit">
-                                <select id="dosage-unit" class="input-field unit-select" required>
+                            <div class="flex shadow-sm rounded-xl">
+                                <input type="number" id="dosage-value" min="0.01" step="0.01" required placeholder="250" class="input-field w-full input-with-unit rounded-l-xl">
+                                <select id="dosage-unit" class="input-field unit-select rounded-r-xl" required>
                                     <option value="mcg">mcg</option>
                                     <option value="mg">mg</option>
                                     <option value="IU">IU</option>
@@ -100,28 +126,11 @@
                             <label class="block text-sm font-medium text-gray-300 mb-1">Injection Site</label>
                             <select id="injection-site" required class="input-field w-full">
                                 <option value="" disabled selected>Select site</option>
-                                <optgroup label="Abdomen">
-                                    <option value="Abdomen Droit (Haut)">Abdomen Droit (Haut)</option>
-                                    <option value="Abdomen Droit (Bas)">Abdomen Droit (Bas)</option>
-                                    <option value="Abdomen Gauche (Haut)">Abdomen Gauche (Haut)</option>
-                                    <option value="Abdomen Gauche (Bas)">Abdomen Gauche (Bas)</option>
-                                </optgroup>
-                                <optgroup label="Flancs">
-                                    <option value="Flanc Droit">Flanc Droit</option>
-                                    <option value="Flanc Gauche">Flanc Gauche</option>
-                                </optgroup>
-                                <optgroup label="Cuisses">
-                                    <option value="Cuisse Droite">Cuisse Droite</option>
-                                    <option value="Cuisse Gauche">Cuisse Gauche</option>
-                                </optgroup>
-                                <optgroup label="Bras">
-                                    <option value="Deltoïde Droit">Deltoïde Droit</option>
-                                    <option value="Deltoïde Gauche">Deltoïde Gauche</option>
-                                </optgroup>
-                                <optgroup label="Autres">
-                                    <option value="Nasal Spray">Nasal Spray</option>
-                                    <option value="Other">Other</option>
-                                </optgroup>
+                                <optgroup label="Abdomen"><option value="Right Abdomen (Upper)">Right Abdomen (Upper)</option><option value="Right Abdomen (Lower)">Right Abdomen (Lower)</option><option value="Left Abdomen (Upper)">Left Abdomen (Upper)</option><option value="Left Abdomen (Lower)">Left Abdomen (Lower)</option></optgroup>
+                                <optgroup label="Flanks"><option value="Right Flank">Right Flank</option><option value="Left Flank">Left Flank</option></optgroup>
+                                <optgroup label="Thighs"><option value="Right Thigh">Right Thigh</option><option value="Left Thigh">Left Thigh</option></optgroup>
+                                <optgroup label="Arms"><option value="Right Deltoid">Right Deltoid</option><option value="Left Deltoid">Left Deltoid</option></optgroup>
+                                <optgroup label="Others"><option value="Nasal Spray">Nasal Spray</option><option value="Other">Other</option></optgroup>
                             </select>
                         </div>
                         <div id="custom-site-group" class="hidden">
@@ -130,202 +139,205 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-300 mb-1">Date and Time</label>
-                            <input type="datetime-local" id="timestamp" required class="input-field w-full">
+                            <input type="datetime-local" id="timestamp" required class="input-field w-full" style="color-scheme: dark;">
                         </div>
-                        <div class="mt-4">
-                            <button type="submit" id="submit-btn" class="btn-primary text-white font-bold py-3 px-6 w-full rounded-xl">
-                                <span id="btn-text">Log Injection</span>
-                            </button>
-                            <p id="response-message" class="text-sm mt-2 hidden text-center"></p>
+                        <div class="mt-6">
+                            <button type="submit" id="submit-btn" class="btn-primary w-full">Log Injection</button>
+                            <p id="response-message" class="text-sm mt-3 hidden text-center font-medium"></p>
                         </div>
                     </form>
                 </section>
             </div>
 
-            <!-- 2. HISTORY (NEW TAB) -->
+            <!-- 2. HISTORY -->
             <div id="content-history" class="tab-pane hidden">
-                <section class="mb-10 card p-6 md:p-8">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-semibold text-gray-100">Recent Logs</h2>
-                        <button id="refresh-history" class="text-sm bg-gray-600 hover:bg-gray-500 px-3 py-1 rounded">Refresh</button>
+                <section class="card">
+                    <div class="flex justify-between items-center mb-8">
+                        <h2 class="text-2xl font-bold text-white">Recent Logs</h2>
+                        <button id="refresh-history" class="btn-secondary py-2 px-4 text-sm">Refresh</button>
                     </div>
-                    <div id="history-list" class="space-y-3">
-                        <p class="text-gray-500 text-center">Loading history...</p>
+                    <div id="history-list" class="space-y-4">
+                        <p class="text-gray-500 text-center py-6 italic">Loading history...</p>
                     </div>
                 </section>
             </div>
             
             <!-- 3. Calculator -->
             <div id="content-calculator" class="tab-pane hidden">
-                <section class="mb-10 card p-6 md:p-8">
-                    <h2 class="text-2xl font-semibold mb-6 text-gray-100">Dosage Calculator (IU)</h2>
-                    <form id="calculator-form" class="grid grid-cols-1 gap-6 mt-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-300 mb-1">Peptide Mass (Vial)</label>
-                            <div class="flex"><input type="number" id="vial-mass-input" class="input-field w-full input-with-unit"><select id="vial-mass-unit" class="input-field unit-select"><option value="mg">mg</option><option value="mcg">mcg</option></select></div>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-300 mb-1">Dilution Volume (Water)</label>
-                            <div class="flex"><input type="number" id="dilution-volume-input" class="input-field w-full input-with-unit"><select id="dilution-volume-unit" class="input-field unit-select"><option value="ml">mL</option><option value="cc">cc</option></select></div>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-300 mb-1">Target Dose</label>
-                            <div class="flex"><input type="number" id="target-dose-input" class="input-field w-full input-with-unit"><select id="target-dose-unit" class="input-field unit-select"><option value="mcg">mcg</option><option value="mg">mg</option></select></div>
-                        </div>
+                <section class="card">
+                    <h2 class="text-2xl font-bold text-white mb-6">Dosage Calculator (IU)</h2>
+                    <form id="calculator-form" class="grid grid-cols-1 gap-6 mt-6">
+                        <div><label class="block text-sm font-medium text-gray-300 mb-1">Peptide Mass (Vial)</label><div class="flex shadow-sm rounded-xl"><input type="number" id="vial-mass-input" min="0.01" step="0.01" placeholder="5" class="input-field w-full input-with-unit rounded-l-xl"><select id="vial-mass-unit" class="input-field unit-select rounded-r-xl"><option value="mg">mg</option><option value="mcg">mcg</option></select></div></div>
+                        <div><label class="block text-sm font-medium text-gray-300 mb-1">Dilution Volume (Water)</label><div class="flex shadow-sm rounded-xl"><input type="number" id="dilution-volume-input" min="0.1" step="0.1" placeholder="2" class="input-field w-full input-with-unit rounded-l-xl"><select id="dilution-volume-unit" class="input-field unit-select rounded-r-xl"><option value="ml">mL</option><option value="cc">cc</option></select></div></div>
+                        <div><label class="block text-sm font-medium text-gray-300 mb-1">Target Dose</label><div class="flex shadow-sm rounded-xl"><input type="number" id="target-dose-input" min="0.01" step="0.01" placeholder="250" class="input-field w-full input-with-unit rounded-l-xl"><select id="target-dose-unit" class="input-field unit-select rounded-r-xl"><option value="mcg">mcg</option><option value="mg">mg</option></select></div></div>
                     </form>
-                    <div class="mt-8 p-6 card border-indigo-500 bg-gray-800 text-center">
-                        <p class="text-xl font-medium text-gray-300 mb-2">Draw to:</p>
-                        <p id="calculator-result" class="text-5xl font-extrabold text-indigo-400">-- IU</p>
-                        <p id="calculator-microliters" class="text-sm text-gray-500 mt-2">(-- µL)</p>
+                    <div class="mt-10 p-8 rounded-3xl border border-indigo-500/30 bg-gradient-to-br from-gray-800 to-indigo-900/20 text-center shadow-lg">
+                        <p class="text-xl font-medium text-indigo-200 mb-3 uppercase tracking-wider">Draw to:</p>
+                        <p id="calculator-result" class="text-6xl font-black text-white">-- IU</p>
+                        <p id="calculator-microliters" class="text-lg text-indigo-300 mt-3 font-medium">(-- µL)</p>
                     </div>
                 </section>
             </div>
 
             <!-- 4. Config -->
             <div id="content-config" class="tab-pane hidden">
-                <section class="mb-10 card p-6 md:p-8">
-                    <h2 class="text-2xl font-semibold mb-6 text-gray-100">Quick Log Configuration</h2>
-                    <p class="text-gray-400 mb-4">Create a button for a specific peptide and dose. The injection site will be asked each time you log.</p>
-                    <form id="config-form" class="grid grid-cols-1 gap-4 mt-4">
+                <section class="card mb-8">
+                    <h2 class="text-2xl font-bold text-white mb-6">Quick Log Configuration</h2>
+                    <form id="config-form" class="grid grid-cols-1 gap-5">
                         <div><label class="block text-sm font-medium text-gray-300 mb-1">Button Label</label><input type="text" id="config-label" placeholder="e.g. GHK-Cu Daily" class="input-field w-full"></div>
                         <div><label class="block text-sm font-medium text-gray-300 mb-1">Peptide Name</label><input type="text" id="config-peptide" placeholder="e.g. GHK-Cu" class="input-field w-full"></div>
-                        <div><label class="block text-sm font-medium text-gray-300 mb-1">Dosage</label><div class="flex"><input type="number" id="config-value" class="input-field w-full input-with-unit"><select id="config-unit" class="input-field unit-select"><option value="mcg">mcg</option><option value="mg">mg</option><option value="IU">IU</option></select></div></div>
-                        <div class="mt-4">
-                            <button type="submit" id="config-submit-btn" class="btn-primary text-white font-bold py-3 px-6 w-full rounded-xl"><span id="config-btn-text">Save New Preset</span></button>
-                            <p id="config-message" class="text-sm mt-2 hidden text-center"></p>
+                        <div><label class="block text-sm font-medium text-gray-300 mb-1">Dosage</label><div class="flex shadow-sm rounded-xl"><input type="number" id="config-value" min="0.01" step="0.01" placeholder="2" class="input-field w-full input-with-unit rounded-l-xl"><select id="config-unit" class="input-field unit-select rounded-r-xl"><option value="mcg">mcg</option><option value="mg">mg</option><option value="IU">IU</option></select></div></div>
+                        <div class="mt-8">
+                            <button type="submit" id="config-submit-btn" class="btn-primary w-full">Save New Preset</button>
+                            <p id="config-message" class="text-sm mt-3 hidden text-center font-medium"></p>
                         </div>
                     </form>
+                </section>
+                
+                <section class="card border-red-900/30 bg-red-900/10">
+                    <h3 class="text-xl font-bold text-red-200 mb-4">App Settings</h3>
+                    <p class="text-gray-400 text-sm mb-4">Disconnect to switch to a different Google Sheet database.</p>
+                    <button id="reset-app-btn" class="w-full py-3 px-4 border border-red-700 text-red-400 rounded-xl hover:bg-red-900/20 transition-colors font-semibold">Disconnect & Reset App</button>
                 </section>
             </div>
         </div>
     </div>
 
-    <!-- SITE SELECTION MODAL -->
-    <div id="site-modal" class="fixed inset-0 bg-gray-900 bg-opacity-90 hidden flex items-center justify-center z-50 p-4">
-        <div class="card w-full max-w-lg max-h-[90vh] flex flex-col">
-            <div class="p-4 border-b border-gray-600 flex justify-between items-center">
+    <!-- MODAL -->
+    <div id="site-modal" class="fixed inset-0 bg-gray-900/60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity duration-300">
+        <div class="modal-card w-full max-w-md scale-95 transition-transform duration-300" id="modal-content">
+            <div class="modal-header p-5 border-b border-gray-700 flex justify-between items-center bg-gray-800 rounded-t-3xl">
                 <h3 class="text-xl font-bold text-white">Select Injection Site</h3>
                 <button id="close-modal" class="text-gray-400 hover:text-white text-2xl">&times;</button>
             </div>
-            <div class="p-4 overflow-y-auto grid grid-cols-1 gap-2" id="modal-sites-list"></div>
+            <div class="p-5 overflow-y-auto grid grid-cols-1 gap-2 bg-gray-850 rounded-b-3xl" id="modal-sites-list"></div>
         </div>
     </div>
 
     <script>
-        // --- ⚠️ PASTE YOUR GOOGLE APPS SCRIPT URL HERE ⚠️ ---
-        const SHEETS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwjH-bUThD7WtuU2SAoqmmJev_hRKDxC3Qm6wfUJaIb1zU9lGcecBuJju_u8jClWZS7/exec";
-        // ----------------------------------------------------
-        
+        // --- CONFIG LOGIC ---
+        let APP_URL = localStorage.getItem('pep_log_url');
         const els = {
+            setup: { screen: document.getElementById('setup-screen'), form: document.getElementById('setup-form'), input: document.getElementById('setup-url') },
+            app: { container: document.getElementById('app-container') },
             tabs: { log: document.getElementById('tab-log'), hist: document.getElementById('tab-history'), calc: document.getElementById('tab-calculator'), conf: document.getElementById('tab-config') },
             panes: { log: document.getElementById('content-log'), hist: document.getElementById('content-history'), calc: document.getElementById('content-calculator'), conf: document.getElementById('content-config') },
-            log: { form: document.getElementById('log-form'), status: document.getElementById('log-status'), msg: document.getElementById('response-message'), btn: document.getElementById('submit-btn'), btnTxt: document.getElementById('btn-text') },
+            log: { form: document.getElementById('log-form'), status: document.getElementById('log-status'), msg: document.getElementById('response-message'), btn: document.getElementById('submit-btn') },
             inputs: { pep: document.getElementById('peptide-name'), custPep: document.getElementById('custom-peptide'), custPepGrp: document.getElementById('custom-peptide-group'), site: document.getElementById('injection-site'), custSite: document.getElementById('custom-site'), custSiteGrp: document.getElementById('custom-site-group'), doseVal: document.getElementById('dosage-value'), doseUnit: document.getElementById('dosage-unit'), time: document.getElementById('timestamp') },
             quick: { container: document.getElementById('quick-log-buttons') },
             hist: { list: document.getElementById('history-list'), refresh: document.getElementById('refresh-history') },
-            conf: { form: document.getElementById('config-form'), btn: document.getElementById('config-submit-btn'), btnTxt: document.getElementById('config-btn-text'), msg: document.getElementById('config-message') },
+            conf: { form: document.getElementById('config-form'), btn: document.getElementById('config-submit-btn'), msg: document.getElementById('config-message'), resetBtn: document.getElementById('reset-app-btn') },
             calc: { m: document.getElementById('vial-mass-input'), mu: document.getElementById('vial-mass-unit'), v: document.getElementById('dilution-volume-input'), vu: document.getElementById('dilution-volume-unit'), d: document.getElementById('target-dose-input'), du: document.getElementById('target-dose-unit'), res: document.getElementById('calculator-result'), mic: document.getElementById('calculator-microliters') },
-            modal: { el: document.getElementById('site-modal'), list: document.getElementById('modal-sites-list'), close: document.getElementById('close-modal') }
+            modal: { el: document.getElementById('site-modal'), content: document.getElementById('modal-content'), list: document.getElementById('modal-sites-list'), close: document.getElementById('close-modal') }
         };
 
-        const injectionSites = [
-            "Abdomen Droit (Haut)", "Abdomen Droit (Bas)", "Abdomen Gauche (Haut)", "Abdomen Gauche (Bas)",
-            "Flanc Droit", "Flanc Gauche", "Cuisse Droite", "Cuisse Gauche",
-            "Deltoïde Droit", "Deltoïde Gauche", "Nasal Spray", "Other"
-        ];
-        let pendingQuickLog = null;
+        // 1. INIT
+        function init() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const magicLink = urlParams.get('db');
+            if (magicLink && magicLink.startsWith('https://script.google.com')) {
+                localStorage.setItem('pep_log_url', magicLink);
+                APP_URL = magicLink;
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+            if (!APP_URL) {
+                els.setup.screen.classList.remove('hidden');
+                els.app.container.classList.add('hidden');
+            } else {
+                els.setup.screen.classList.add('hidden');
+                els.app.container.classList.remove('hidden');
+                loadConfig();
+            }
+        }
 
+        // 2. SETUP
+        els.setup.form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const url = els.setup.input.value.trim();
+            if (url && url.startsWith('https://script.google.com')) {
+                localStorage.setItem('pep_log_url', url);
+                APP_URL = url;
+                init();
+            } else { alert('Invalid URL.'); }
+        });
+
+        // 3. RESET
+        els.conf.resetBtn.addEventListener('click', () => {
+            if(confirm('Disconnect from database?')) {
+                localStorage.removeItem('pep_log_url');
+                location.reload();
+            }
+        });
+
+        // 4. LOGIC
+        const injectionSites = [ "Right Abdomen (Upper)", "Right Abdomen (Lower)", "Left Abdomen (Upper)", "Left Abdomen (Lower)", "Right Flank", "Left Flank", "Right Thigh", "Left Thigh", "Right Deltoid", "Left Deltoid", "Nasal Spray", "Other" ];
+        let pendingQuickLog = null;
         els.inputs.time.value = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16);
 
         function switchTab(t) {
-            Object.values(els.tabs).forEach(b => { b.classList.remove('active', 'text-gray-100'); b.classList.add('text-gray-400'); });
+            Object.values(els.tabs).forEach(b => b.classList.remove('active'));
             Object.values(els.panes).forEach(p => p.classList.add('hidden'));
-            els.tabs[t].classList.add('active', 'text-gray-100');
-            els.tabs[t].classList.remove('text-gray-400');
+            els.tabs[t].classList.add('active');
             els.panes[t].classList.remove('hidden');
             if(t === 'history') loadHistory();
+            window.scrollTo(0,0);
         }
         ['log', 'hist', 'calc', 'conf'].forEach(t => els.tabs[t].addEventListener('click', () => switchTab(t)));
 
-        els.inputs.pep.addEventListener('change', () => {
-            const isOther = els.inputs.pep.value === 'Other';
-            els.inputs.custPepGrp.classList.toggle('hidden', !isOther);
-            els.inputs.custPep.required = isOther;
-        });
-        els.inputs.site.addEventListener('change', () => {
-            const isOther = els.inputs.site.value === 'Other';
-            els.inputs.custSiteGrp.classList.toggle('hidden', !isOther);
-            els.inputs.custSite.required = isOther;
-        });
+        els.inputs.pep.addEventListener('change', () => { const isOther = els.inputs.pep.value === 'Other'; els.inputs.custPepGrp.classList.toggle('hidden', !isOther); els.inputs.custPep.required = isOther; });
+        els.inputs.site.addEventListener('change', () => { const isOther = els.inputs.site.value === 'Other'; els.inputs.custSiteGrp.classList.toggle('hidden', !isOther); els.inputs.custSite.required = isOther; });
 
         injectionSites.forEach(site => {
             const btn = document.createElement('button');
-            btn.className = 'btn-site-select'; btn.textContent = site; btn.onclick = () => confirmQuickLog(site);
+            btn.className = 'btn-secondary w-full justify-between group mb-2';
+            btn.innerHTML = `<span>${site}</span><svg class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>`;
+            btn.onclick = () => confirmQuickLog(site);
             els.modal.list.appendChild(btn);
         });
-        els.modal.close.onclick = () => els.modal.el.classList.add('hidden');
+        
+        function closeModal() { els.modal.el.classList.add('opacity-0'); els.modal.content.classList.remove('scale-100'); els.modal.content.classList.add('scale-95'); setTimeout(() => { els.modal.el.classList.add('hidden'); els.modal.el.classList.remove('opacity-0'); }, 300); }
+        els.modal.close.onclick = closeModal; els.modal.el.onclick = (e) => { if(e.target === els.modal.el) closeModal(); };
 
-        // --- DATA HANDLING ---
-        // Send Data (POST)
-        async function sendData(data) {
-            return fetch(SHEETS_WEB_APP_URL, { method: 'POST', body: JSON.stringify(data) }).then(res => res.json());
-        }
-        // Get Data (GET) for History or Config
-        async function getData(action) {
-            // Append action to URL for GET request
-            return fetch(`${SHEETS_WEB_APP_URL}?action=${action}`).then(res => res.json());
-        }
+        async function sendData(data) { return fetch(APP_URL, { method: 'POST', body: JSON.stringify(data) }).then(res => res.json()); }
+        async function getData(action) { return fetch(`${APP_URL}?action=${action}`).then(res => res.json()); }
 
-        // --- LOAD PRESETS ---
         async function loadConfig() {
             try {
-                const data = await getData('getConfig'); // default GET logic in script handles config if no param, but cleaner to be explicit if we could. 
-                // Actually, current script default GET is config. 
+                const data = await getData('getConfig');
                 if (data.success && data.presets && data.presets.length) {
                     els.quick.container.innerHTML = '';
                     data.presets.forEach(p => {
                         const b = document.createElement('button');
-                        b.className = 'btn-quick-log truncate w-full'; b.textContent = p.label; b.onclick = () => openSiteModal(p);
+                        b.className = 'btn-secondary w-full justify-between group';
+                        b.innerHTML = `<span class="font-medium truncate">${p.label}</span><span class="text-xs text-indigo-300 bg-indigo-900/30 px-2 py-1 rounded-full">${p.value}${p.unit}</span>`;
+                        b.onclick = () => openSiteModal(p);
                         els.quick.container.appendChild(b);
                     });
-                    els.log.status.textContent = 'Ready.'; els.log.status.className = 'text-green-400';
-                } else {
-                    els.quick.container.innerHTML = '<p class="text-gray-500 col-span-full text-center py-4">No presets. Add in Config tab.</p>';
-                    els.log.status.textContent = 'Ready.';
-                }
-            } catch (e) {
-                els.quick.container.innerHTML = '<p class="text-red-400 col-span-full text-center py-4">Connection Error.</p>';
-            }
+                    els.log.status.textContent = 'Ready.'; els.log.status.className = 'text-green-400 font-semibold';
+                } else { els.quick.container.innerHTML = '<p class="text-gray-500 col-span-full text-center py-6 italic">No presets found.</p>'; els.log.status.textContent = 'Ready (No presets).'; }
+            } catch (e) { els.quick.container.innerHTML = '<p class="text-red-400 col-span-full text-center py-6">Connection Error.</p>'; }
         }
 
-        // --- LOAD HISTORY ---
         async function loadHistory() {
-            els.hist.list.innerHTML = '<p class="text-gray-500 text-center">Loading history...</p>';
+            els.hist.list.innerHTML = '<p class="text-gray-500 text-center py-6 italic animate-pulse">Loading history...</p>';
             try {
                 const data = await getData('getHistory');
                 els.hist.list.innerHTML = '';
                 if (data.success && data.history && data.history.length) {
                     data.history.forEach(h => {
                         const item = document.createElement('div');
-                        item.className = 'history-item';
-                        item.innerHTML = `<div class="flex justify-between font-bold text-white"><span>${h.peptide}</span><span>${h.dosage}</span></div>
-                                          <div class="flex justify-between text-sm text-gray-400 mt-1"><span>${h.site}</span><span>${h.date}</span></div>`;
+                        item.className = 'history-item flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-2 sm:space-y-0 mb-3';
+                        item.innerHTML = `<div class="flex-1"><div class="flex items-baseline space-x-2"><span class="font-bold text-lg text-white">${h.peptide}</span><span class="text-indigo-400 font-semibold bg-indigo-900/30 px-2 py-0.5 rounded-full text-sm">${h.dosage}</span></div><div class="text-sm text-gray-400 mt-1 flex items-center space-x-1"><span>${h.site}</span></div></div><div class="text-sm text-gray-500 font-medium bg-gray-800/50 px-3 py-1.5 rounded-lg self-start sm:self-auto"><span>${h.date}</span></div>`;
                         els.hist.list.appendChild(item);
                     });
-                } else {
-                    els.hist.list.innerHTML = '<p class="text-gray-500 text-center">No logs found.</p>';
-                }
-            } catch (e) {
-                els.hist.list.innerHTML = '<p class="text-red-400 text-center">Failed to load history.</p>';
-            }
+                } else { els.hist.list.innerHTML = '<p class="text-gray-500 text-center py-8 italic">No logs found.</p>'; }
+            } catch (e) { els.hist.list.innerHTML = '<p class="text-red-400 text-center py-8">Failed to load history.</p>'; }
         }
         els.hist.refresh.addEventListener('click', loadHistory);
 
-        // --- LOGIC ---
-        function openSiteModal(preset) { pendingQuickLog = preset; els.modal.el.classList.remove('hidden'); }
-        
+        function openSiteModal(preset) { pendingQuickLog = preset; els.modal.el.classList.remove('hidden'); setTimeout(() => { els.modal.content.classList.remove('scale-95'); els.modal.content.classList.add('scale-100'); }, 10); }
         async function confirmQuickLog(site) {
-            els.modal.el.classList.add('hidden');
+            closeModal();
             if (!pendingQuickLog) return;
             const ts = new Date(new Date() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16);
             await submit({ action: 'logInjection', peptide: pendingQuickLog.peptide, dosage: `${pendingQuickLog.value} ${pendingQuickLog.unit}`, site: site, timestamp: ts });
@@ -336,7 +348,9 @@
             e.preventDefault();
             const p = els.inputs.pep.value === 'Other' ? els.inputs.custPep.value : els.inputs.pep.value;
             const s = els.inputs.site.value === 'Other' ? els.inputs.custSite.value : els.inputs.site.value;
-            await submit({ action: 'logInjection', peptide: p, dosage: `${els.inputs.doseVal.value} ${els.inputs.doseUnit.value}`, site: s, timestamp: els.inputs.time.value });
+            const dVal = els.inputs.doseVal.value;
+            if(!p || !s || !dVal) return;
+            await submit({ action: 'logInjection', peptide: p, dosage: `${dVal} ${els.inputs.doseUnit.value}`, site: s, timestamp: els.inputs.time.value });
         });
 
         els.conf.form.addEventListener('submit', async (e) => {
@@ -344,9 +358,9 @@
             els.conf.btn.textContent = 'Saving...'; els.conf.btn.disabled = true;
             try {
                 const res = await sendData({ action: 'saveConfig', label: document.getElementById('config-label').value, peptide: document.getElementById('config-peptide').value, value: document.getElementById('config-value').value, unit: document.getElementById('config-unit').value, site: "Ask" });
-                if (res.success) { els.conf.msg.textContent = 'Saved!'; els.conf.msg.className = 'text-green-400 block text-center mt-2'; loadConfig(); document.getElementById('config-label').value = ''; } 
+                if (res.success) { els.conf.msg.textContent = 'Saved!'; els.conf.msg.className = 'text-green-400 block text-center mt-3'; loadConfig(); els.conf.form.reset(); setTimeout(() => { els.conf.msg.classList.add('hidden'); switchTab('log'); }, 1500); } 
                 else throw new Error(res.error);
-            } catch (err) { els.conf.msg.textContent = 'Error'; els.conf.msg.className = 'text-red-400 block text-center mt-2'; }
+            } catch (err) { els.conf.msg.textContent = 'Error'; els.conf.msg.className = 'text-red-400 block text-center mt-3'; }
             els.conf.btn.textContent = 'Save New Preset'; els.conf.btn.disabled = false;
         });
 
@@ -354,27 +368,25 @@
             els.log.btn.textContent = 'Saving...'; els.log.btn.disabled = true; els.log.msg.classList.add('hidden');
             try {
                 const res = await sendData(data);
-                if (res.success) { els.log.msg.textContent = 'Log Saved!'; els.log.msg.className = 'text-green-400 block text-center mt-2'; } 
+                if (res.success) { els.log.msg.textContent = 'Saved!'; els.log.msg.className = 'text-green-400 block text-center mt-3 font-medium'; if(data.action === 'logInjection' && !pendingQuickLog) els.log.form.reset(); els.inputs.time.value = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16); setTimeout(() => els.log.msg.classList.add('hidden'), 3000); loadHistory(); } 
                 else throw new Error(res.error);
-            } catch (err) { els.log.msg.textContent = 'Error'; els.log.msg.className = 'text-red-400 block text-center mt-2'; }
+            } catch (err) { els.log.msg.textContent = 'Error'; els.log.msg.className = 'text-red-400 block text-center mt-3'; }
             els.log.btn.textContent = 'Log Injection'; els.log.btn.disabled = false;
         }
 
         function calc() {
             try {
                 const vm = parseFloat(els.calc.m.value), dv = parseFloat(els.calc.v.value), td = parseFloat(els.calc.d.value);
-                if (!vm || !dv || !td) return;
-                const m_ug = els.calc.mu.value === 'mg' ? vm * 1000 : vm;
-                const v_ul = els.calc.vu.value === 'ml' ? dv * 1000 : dv * 1000; 
-                const d_ug = els.calc.du.value === 'mg' ? td * 1000 : td;
-                const vol = (d_ug / (m_ug / v_ul));
+                if (!vm || !dv || !td) { els.calc.res.textContent = '-- IU'; els.calc.mic.textContent = '(-- µL)'; return; }
+                const vol = ((els.calc.du.value === 'mg' ? td * 1000 : td) / ((els.calc.mu.value === 'mg' ? vm * 1000 : vm) / (els.calc.vu.value === 'ml' ? dv * 1000 : dv * 1000)));
                 els.calc.res.textContent = (vol / 10).toFixed(1) + ' IU'; els.calc.mic.textContent = '(' + vol.toFixed(1) + ' µL)';
             } catch (e) {}
         }
         Object.values(els.calc).forEach(i => i.addEventListener && i.addEventListener('input', calc));
+        ['vial-mass-unit', 'dilution-volume-unit', 'target-dose-unit'].forEach(id => document.getElementById(id).addEventListener('change', calc));
 
+        init();
         switchTab('log');
-        loadConfig();
     </script>
 </body>
 </html>
