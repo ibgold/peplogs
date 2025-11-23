@@ -2,8 +2,16 @@
 <html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Peptide Log Book</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Peptide Log</title>
+    
+    <!-- PWA Config -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0f172a">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%236366f1'/><path d='M50 20v40m0 0l-15-15m15 15l15-15' stroke='white' stroke-width='8' stroke-linecap='round'/><circle cx='50' cy='75' r='10' fill='white'/></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%230f172a'/><rect x='20' y='20' width='60' height='60' rx='15' fill='%236366f1'/><path d='M50 35v30M35 50h30' stroke='white' stroke-width='8' stroke-linecap='round'/></svg>">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -11,8 +19,8 @@
             theme: {
                 extend: {
                     fontFamily: { sans: ['Outfit', 'sans-serif'] },
-                    colors: { background: '#0f172a', surface: '#1e293b', primary: '#6366f1', secondary: '#334155' },
-                    animation: { 'fade-in': 'fadeIn 0.3s ease-out', 'slide-up': 'slideUp 0.4s ease-out' },
+                    colors: { background: '#0f172a', surface: '#1e293b', primary: '#6366f1' },
+                    animation: { 'fade-in': 'fadeIn 0.3s ease-out', 'slide-up': 'slideUp 0.4s ease-out', 'pulse-slow': 'pulse 3s infinite' },
                     keyframes: { fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } }, slideUp: { '0%': { transform: 'translateY(20px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } } }
                 }
             }
@@ -20,22 +28,28 @@
     </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Outfit', sans-serif; background-color: #0f172a; background-image: radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%); color: #f8fafc; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Outfit', sans-serif; background-color: #0f172a; background-image: radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%); color: #f8fafc; -webkit-tap-highlight-color: transparent; padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
+        
         .glass-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); }
         .suggestion-glass { background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(30, 41, 59, 0.7) 100%); border: 1px solid rgba(99, 102, 241, 0.3); box-shadow: 0 0 20px rgba(99, 102, 241, 0.1); }
+        
         .input-group { position: relative; transition: all 0.3s ease; }
         .input-field { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(148, 163, 184, 0.2); color: white; border-radius: 1rem; padding: 0.75rem 1rem 0.75rem 2.5rem; width: 100%; font-size: 16px; transition: all 0.2s; }
         .input-field:focus { border-color: #6366f1; box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2); outline: none; background: rgba(15, 23, 42, 0.9); }
         .input-icon { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: #94a3b8; pointer-events: none; }
+        
         select.input-field { appearance: none; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3c/svg%3e"); background-position: right 0.75rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; }
         select.input-field option { background-color: #1e293b; color: #f8fafc; padding: 10px; }
         select.input-field optgroup { background-color: #0f172a; color: #94a3b8; font-weight: bold; }
+
         .btn-primary { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3); transition: transform 0.2s, box-shadow 0.2s; }
         .btn-primary:active { transform: scale(0.98); }
         .btn-quick { background: rgba(51, 65, 85, 0.5); border: 1px solid rgba(255,255,255,0.05); transition: all 0.2s; position: relative; overflow: hidden; }
         .btn-quick:active { background: rgba(99, 102, 241, 0.2); border-color: #6366f1; }
+
         .nav-pill { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .nav-pill.active { background: #6366f1; color: white; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25); }
+        
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
@@ -69,13 +83,20 @@
         <header class="pt-6 pb-2 px-6 flex justify-between items-center">
             <div>
                 <h1 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-white">Peptide Log</h1>
-                <p id="status-text" class="text-xs text-slate-400 flex items-center gap-1">
-                    <span class="w-2 h-2 rounded-full bg-green-500"></span> Ready
+                <p id="status-text" class="text-xs text-slate-400 flex items-center gap-1 transition-all duration-300">
+                    <span id="status-dot" class="w-2 h-2 rounded-full bg-green-500"></span> <span id="status-label">Ready</span>
                 </p>
             </div>
-            <button id="refresh-app" class="p-2 bg-slate-800 rounded-full text-slate-400 hover:text-white active:scale-90 transition">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
-            </button>
+            <div class="flex gap-2">
+                <!-- Offline Pending Badge -->
+                <div id="pending-badge" class="hidden bg-amber-500/20 text-amber-400 border border-amber-500/30 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 animate-pulse-slow">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4"/><path d="m16.2 7.8 2.9-2.9"/><path d="M18 12h4"/><path d="m16.2 16.2 2.9 2.9"/><path d="M12 18v4"/><path d="m4.9 19.1 2.9-2.9"/><path d="M2 12h4"/><path d="m4.9 4.9 2.9 2.9"/></svg>
+                    <span id="pending-count">0</span>
+                </div>
+                <button id="refresh-app" class="p-2 bg-slate-800 rounded-full text-slate-400 hover:text-white active:scale-90 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+                </button>
+            </div>
         </header>
 
         <nav class="px-4 py-2">
@@ -95,10 +116,7 @@
                 <div id="suggestion-box" class="suggestion-glass glass-card p-4 rounded-2xl flex justify-between items-center hidden relative overflow-hidden">
                     <div class="absolute top-0 left-0 w-1 h-full bg-indigo-500"></div>
                     <div class="pl-2 relative z-10">
-                        <p class="text-indigo-300 text-xs font-bold uppercase tracking-wider mb-1 flex items-center gap-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M21.54 15H17a2 2 0 0 0-2 2v4.54"/><path d="M7 3.34V5a3 3 0 0 0 3 3a2 2 0 0 1 2 2c0 1.1.9 2 2 2a2 2 0 0 0 2-2c0-1.1.9-2 2-2h3.17"/><path d="M11 21.95V18a2 2 0 0 0-2-2a2 2 0 0 1-2-2v-1a2 2 0 0 0-2-2H2.05"/></svg>
-                            Suggested Rotation
-                        </p>
+                        <p class="text-indigo-300 text-xs font-bold uppercase tracking-wider mb-1 flex items-center gap-1">Suggested Rotation</p>
                         <p id="suggestion-text" class="text-white font-bold text-lg tracking-tight">Loading...</p>
                     </div>
                     <button onclick="useSuggestion()" class="bg-indigo-600/90 hover:bg-indigo-500 text-white text-xs font-bold py-2 px-4 rounded-lg transition shadow-lg shadow-indigo-500/30 backdrop-blur-sm">Use</button>
@@ -160,19 +178,15 @@
                         <div id="custom-site-group" class="hidden animate-fade-in">
                             <input type="text" id="custom-site" placeholder="Site Name" class="input-field pl-4">
                         </div>
-                        
-                        <!-- Notes (NEW) -->
                         <div class="input-group">
                             <svg class="input-icon w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                             <input type="text" id="manual-notes" placeholder="Notes (optional)..." class="input-field">
                         </div>
-
                         <div class="input-group">
                             <svg class="input-icon w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                             <input type="datetime-local" id="timestamp" required class="input-field" style="color-scheme: dark;">
                         </div>
                         <button type="submit" id="submit-btn" class="btn-primary w-full py-4 rounded-2xl font-bold text-lg shadow-lg shadow-indigo-500/20 mt-2">Log Injection</button>
-                        <p id="response-message" class="text-center text-sm font-medium hidden mt-2"></p>
                     </form>
                 </section>
             </div>
@@ -207,13 +221,7 @@
                 <section class="glass-card rounded-3xl p-6">
                     <h2 class="text-xl font-bold mb-4">Add Quick Log</h2>
                     <form id="config-form" class="space-y-4">
-                        <div class="flex items-center justify-between bg-slate-800/50 p-3 rounded-xl border border-slate-700/50">
-                            <span class="text-sm font-medium text-gray-300">Track Cycle?</span>
-                            <label class="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" id="cycle-toggle" class="sr-only peer">
-                                <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-                            </label>
-                        </div>
+                        <div class="flex items-center justify-between bg-slate-800/50 p-3 rounded-xl border border-slate-700/50"><span class="text-sm font-medium text-gray-300">Track Cycle?</span><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" id="cycle-toggle" class="sr-only peer"><div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div></label></div>
                         <input type="text" id="config-label" placeholder="Label (e.g. Daily GHK)" class="input-field">
                         <input type="text" id="config-peptide" placeholder="Peptide Name (e.g. GHK-Cu)" class="input-field">
                         <div class="flex gap-2"><input type="number" id="config-value" placeholder="Dose" class="input-field flex-1"><select id="config-unit" class="bg-slate-700 text-white rounded-xl px-3 font-bold w-24"><option value="mcg">mcg</option><option value="mg">mg</option><option value="IU">IU</option></select></div>
@@ -230,13 +238,10 @@
         </main>
     </div>
 
-    <!-- MODAL FOR SITE SELECTION -->
+    <!-- MODAL SITE SELECTION -->
     <div id="site-modal" class="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-4 animate-fade-in">
         <div class="bg-slate-800 w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl border-t border-slate-700 max-h-[80vh] flex flex-col">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold">Select Injection Site</h3>
-                <button onclick="closeModal()" class="p-2 bg-slate-700 rounded-full text-slate-300 hover:text-white">&times;</button>
-            </div>
+            <div class="flex justify-between items-center mb-4"><h3 class="text-xl font-bold">Select Site</h3><button onclick="closeModal()" class="p-2 bg-slate-700 rounded-full text-slate-300 hover:text-white">&times;</button></div>
             
             <!-- NOTES INPUT FOR QUICK LOG -->
             <div class="mb-4 relative">
@@ -244,9 +249,7 @@
                 <input type="text" id="modal-note" placeholder="Add optional note..." class="w-full bg-slate-900 border border-slate-700 rounded-xl py-3 px-4 pl-10 text-white focus:border-indigo-500 outline-none">
             </div>
 
-            <div id="modal-sites-list" class="grid grid-cols-2 gap-3 overflow-y-auto pb-4">
-                <!-- Buttons injected here -->
-            </div>
+            <div id="modal-sites-list" class="grid grid-cols-2 gap-3 overflow-y-auto pb-4"></div>
         </div>
     </div>
 
@@ -255,47 +258,90 @@
         
         const els = {
             setup: document.getElementById('setup-screen'), app: document.getElementById('app-container'),
-            status: document.getElementById('status-text'),
+            statusDot: document.getElementById('status-dot'), statusLabel: document.getElementById('status-label'),
+            pendingBadge: document.getElementById('pending-badge'), pendingCount: document.getElementById('pending-count'),
             tabs: { log: document.getElementById('tab-log'), history: document.getElementById('tab-history'), calculator: document.getElementById('tab-calculator'), config: document.getElementById('tab-config') },
             views: { log: document.getElementById('view-log'), history: document.getElementById('view-history'), calculator: document.getElementById('view-calculator'), config: document.getElementById('view-config') },
-            quickContainer: document.getElementById('quick-log-buttons'),
-            historyList: document.getElementById('history-list'),
-            modal: document.getElementById('site-modal'),
-            modalList: document.getElementById('modal-sites-list'),
-            modalNote: document.getElementById('modal-note'),
-            
-            // Forms
-            logForm: document.getElementById('log-form'),
-            configForm: document.getElementById('config-form'),
-            
-            // Inputs
-            pep: document.getElementById('peptide-name'),
-            custPep: document.getElementById('custom-peptide'),
-            custPepGrp: document.getElementById('custom-peptide-group'),
-            site: document.getElementById('injection-site'),
-            custSite: document.getElementById('custom-site'),
-            custSiteGrp: document.getElementById('custom-site-group'),
-            manualNote: document.getElementById('manual-notes'),
-            
-            // Calc
+            quickContainer: document.getElementById('quick-log-buttons'), historyList: document.getElementById('history-list'), streakContainer: document.getElementById('streak-container'),
+            modal: document.getElementById('site-modal'), modalList: document.getElementById('modal-sites-list'), modalNote: document.getElementById('modal-note'),
+            logForm: document.getElementById('log-form'), configForm: document.getElementById('config-form'),
+            pep: document.getElementById('peptide-name'), custPep: document.getElementById('custom-peptide'), custPepGrp: document.getElementById('custom-peptide-group'),
+            site: document.getElementById('injection-site'), custSite: document.getElementById('custom-site'), custSiteGrp: document.getElementById('custom-site-group'), manualNote: document.getElementById('manual-notes'),
             calc: { m: document.getElementById('vial-mass-input'), mu: document.getElementById('vial-mass-unit'), v: document.getElementById('dilution-volume-input'), vu: document.getElementById('dilution-volume-unit'), d: document.getElementById('target-dose-input'), du: document.getElementById('target-dose-unit'), res: document.getElementById('calculator-result'), mic: document.getElementById('calculator-microliters') },
-            // Suggestion & Streak
-            suggestionBox: document.getElementById('suggestion-box'), suggestionText: document.getElementById('suggestion-text'), streakContainer: document.getElementById('streak-container'),
-            // Cycle
+            suggestionBox: document.getElementById('suggestion-box'), suggestionText: document.getElementById('suggestion-text'),
             cycleToggle: document.getElementById('cycle-toggle'), cycleOptions: document.getElementById('cycle-options'), cycleStart: document.getElementById('config-cycle-start'), cycleWeeks: document.getElementById('config-cycle-weeks')
         };
 
         const sites = [ {name: "Right Abdomen (Upper)", icon: "R"}, {name: "Right Abdomen (Lower)", icon: "R"}, {name: "Left Abdomen (Upper)", icon: "L"}, {name: "Left Abdomen (Lower)", icon: "L"}, {name: "Right Flank", icon: "R"}, {name: "Left Flank", icon: "L"}, {name: "Right Thigh", icon: "R"}, {name: "Left Thigh", icon: "L"}, {name: "Right Deltoid", icon: "R"}, {name: "Left Deltoid", icon: "L"} ];
         const extraSites = [{name: "Nasal Spray", icon: "👃"}, {name: "Other", icon: "?"}];
 
-        let pendingPreset = null;
-        let currentSuggestion = null;
+        let pendingPreset = null, currentSuggestion = null;
+
+        // --- OFFLINE QUEUE SYSTEM ---
+        function getQueue() { return JSON.parse(localStorage.getItem('pep_log_queue') || '[]'); }
+        function saveQueue(q) { localStorage.setItem('pep_log_queue', JSON.stringify(q)); updateNetworkUI(); }
+        function addToQueue(data) { const q = getQueue(); q.push(data); saveQueue(q); }
+        
+        function updateNetworkUI() {
+            const q = getQueue();
+            const isOnline = navigator.onLine;
+            
+            if (!isOnline) {
+                els.statusDot.className = "w-2 h-2 rounded-full bg-amber-500";
+                els.statusLabel.innerText = "Offline";
+                els.statusLabel.className = "text-amber-500 font-bold";
+            } else {
+                if (q.length > 0) {
+                    els.statusDot.className = "w-2 h-2 rounded-full bg-blue-500 animate-pulse";
+                    els.statusLabel.innerText = "Syncing...";
+                    els.statusLabel.className = "text-blue-400 font-bold";
+                    syncQueue(); // Trigger sync
+                } else {
+                    els.statusDot.className = "w-2 h-2 rounded-full bg-green-500";
+                    els.statusLabel.innerText = "Ready";
+                    els.statusLabel.className = "text-slate-400";
+                }
+            }
+
+            if (q.length > 0) {
+                els.pendingBadge.classList.remove('hidden');
+                els.pendingCount.innerText = q.length;
+            } else {
+                els.pendingBadge.classList.add('hidden');
+            }
+        }
+
+        async function syncQueue() {
+            if (!navigator.onLine) return;
+            const q = getQueue();
+            if (q.length === 0) return;
+
+            // Process queue
+            const newQueue = [];
+            for (const item of q) {
+                try {
+                    const res = await fetch(APP_URL, { method: 'POST', body: JSON.stringify(item) });
+                    const json = await res.json();
+                    if (!json.success) newQueue.push(item); // Keep if API error
+                } catch (e) {
+                    newQueue.push(item); // Keep if Network error
+                }
+            }
+            
+            localStorage.setItem('pep_log_queue', JSON.stringify(newQueue));
+            updateNetworkUI();
+            if (newQueue.length === 0) loadHistory(); // Refresh UI
+        }
+
+        window.addEventListener('online', updateNetworkUI);
+        window.addEventListener('offline', updateNetworkUI);
+        // ----------------------------
 
         function init() {
             const params = new URLSearchParams(window.location.search);
             const magic = params.get('db');
             if(magic && magic.startsWith('https')) { localStorage.setItem('pep_log_url', magic); APP_URL = magic; window.history.replaceState({}, '', window.location.pathname); }
-            if(!APP_URL) { els.setup.classList.remove('hidden'); } else { els.app.classList.remove('hidden'); setupEvents(); loadConfig(); loadHistory(); }
+            if(!APP_URL) { els.setup.classList.remove('hidden'); } else { els.app.classList.remove('hidden'); setupEvents(); loadConfig(); loadHistory(); updateNetworkUI(); }
         }
 
         document.getElementById('setup-form').addEventListener('submit', (e) => { e.preventDefault(); const url = document.getElementById('setup-url').value.trim(); if(url) { localStorage.setItem('pep_log_url', url); APP_URL = url; location.reload(); } });
@@ -331,7 +377,23 @@
             if(view === 'history') loadHistory();
         }
 
-        async function api(data) { try { const res = await fetch(APP_URL, { method: 'POST', body: JSON.stringify(data) }); return await res.json(); } catch(e) { return { success: false, error: "Connection Failed" }; } }
+        // --- API (MODIFIED FOR OFFLINE) ---
+        async function api(data) {
+            // If Offline, Queue Immediately
+            if (!navigator.onLine) {
+                addToQueue(data);
+                return { success: true, offline: true };
+            }
+
+            try {
+                const res = await fetch(APP_URL, { method: 'POST', body: JSON.stringify(data) });
+                return await res.json();
+            } catch(e) {
+                // If Fetch Fails (Network Error), Queue it
+                addToQueue(data);
+                return { success: true, offline: true };
+            }
+        }
 
         function getCycleProgress(startDateStr, totalWeeks) {
             if (!startDateStr || !totalWeeks) return null;
@@ -341,6 +403,7 @@
         }
 
         async function loadConfig() {
+            if (!navigator.onLine) { els.quickContainer.innerHTML = `<div class="col-span-2 text-center p-4 border border-dashed border-slate-700/50 rounded-xl text-slate-500 text-sm">Offline mode.</div>`; return; }
             const res = await fetch(`${APP_URL}?action=getConfig`).then(r=>r.json()).catch(e=>({}));
             if(res.success && res.presets) {
                 els.quickContainer.innerHTML = '';
@@ -360,6 +423,7 @@
         }
 
         async function loadHistory() {
+            if (!navigator.onLine) { els.historyList.innerHTML = '<div class="text-center text-slate-500 py-4">Offline mode. Cannot load history.</div>'; return; }
             els.historyList.innerHTML = '<div class="text-center p-4 animate-pulse text-slate-500">Loading...</div>';
             const res = await fetch(`${APP_URL}?action=getHistory`).then(r=>r.json()).catch(e=>({}));
             els.historyList.innerHTML = '';
@@ -375,21 +439,9 @@
                     } 
                     
                     const noteHtml = h.notes ? `<div class="mt-2 text-xs text-indigo-300 italic flex items-center gap-1"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> ${h.notes}</div>` : '';
-
                     const card = document.createElement('div');
                     card.className = "bg-slate-800/50 p-4 rounded-2xl border border-slate-700/50 flex justify-between items-start";
-                    card.innerHTML = `
-                        <div>
-                            <div class="font-bold text-white flex items-center gap-2">${h.peptide} <span class="text-xs bg-indigo-500/10 text-indigo-400 px-2 py-0.5 rounded font-mono border border-indigo-500/20">${h.dosage}</span></div>
-                            <div class="text-xs text-slate-400 mt-1 flex items-center gap-1"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>${h.site}</div>
-                            ${noteHtml}
-                        </div>
-                        <div class="flex flex-col items-end gap-2">
-                            <div class="text-right text-xs text-slate-500 font-mono bg-slate-900/50 px-2 py-1 rounded border border-slate-800">
-                                <div class="text-slate-400">${dateStr}</div><div class="text-indigo-400 font-bold">${timeStr}</div>
-                            </div>
-                            <button class="text-slate-600 hover:text-red-400 transition p-1" onclick="deleteEntry('${h.row}')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></button>
-                        </div>`;
+                    card.innerHTML = `<div><div class="font-bold text-white flex items-center gap-2">${h.peptide} <span class="text-xs bg-indigo-500/10 text-indigo-400 px-2 py-0.5 rounded font-mono border border-indigo-500/20">${h.dosage}</span></div><div class="text-xs text-slate-400 mt-1 flex items-center gap-1"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>${h.site}</div>${noteHtml}</div><div class="flex flex-col items-end gap-2"><div class="text-right text-xs text-slate-500 font-mono bg-slate-900/50 px-2 py-1 rounded border border-slate-800"><div class="text-slate-400">${dateStr}</div><div class="text-indigo-400 font-bold">${timeStr}</div></div><button class="text-slate-600 hover:text-red-400 transition p-1" onclick="deleteEntry('${h.row}')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></button></div>`;
                     els.historyList.appendChild(card);
                 });
             } else { els.historyList.innerHTML = '<div class="text-center text-slate-500">No logs found.</div>'; }
@@ -405,58 +457,12 @@
                 showSuggestion(idx === -1 ? sites[0].name : sites[(idx + 1) % sites.length].name);
             }
         }
+        function showSuggestion(siteName) { currentSuggestion = siteName; els.suggestionText.textContent = siteName; els.suggestionBox.classList.remove('hidden'); }
+        function useSuggestion() { if(!currentSuggestion) return; els.site.value = currentSuggestion; els.site.focus(); }
+        function openSiteModal() { els.modalNote.value = ""; const buttons = els.modalList.querySelectorAll('button'); buttons.forEach(btn => { if(currentSuggestion && btn.dataset.site === currentSuggestion) { btn.classList.remove('bg-slate-800/50', 'border-slate-700/50'); btn.classList.add('bg-indigo-900/40', 'border-indigo-500/50', 'ring-1', 'ring-indigo-500/50'); if(!btn.querySelector('.badge')) { const badge = document.createElement('span'); badge.className = 'badge text-[10px] uppercase bg-indigo-500 text-white px-1.5 py-0.5 rounded ml-auto font-bold tracking-wide'; badge.innerText = 'Rec.'; btn.appendChild(badge); } } else { btn.className = "w-full p-4 bg-slate-800/50 hover:bg-indigo-600/80 rounded-xl text-left transition flex items-center gap-3 border border-slate-700/50"; const badge = btn.querySelector('.badge'); if(badge) badge.remove(); } }); els.modal.classList.remove('hidden'); }
 
-        function showSuggestion(siteName) {
-            currentSuggestion = siteName; els.suggestionText.textContent = siteName; els.suggestionBox.classList.remove('hidden');
-        }
-
-        function useSuggestion() {
-            if(!currentSuggestion) return;
-            els.site.value = currentSuggestion;
-            els.site.focus();
-        }
-        
-        function openSiteModal() {
-            els.modalNote.value = ""; // Clear previous notes
-            const buttons = els.modalList.querySelectorAll('button');
-            buttons.forEach(btn => {
-                if(currentSuggestion && btn.dataset.site === currentSuggestion) {
-                    btn.classList.remove('bg-slate-800/50', 'border-slate-700/50');
-                    btn.classList.add('bg-indigo-900/40', 'border-indigo-500/50', 'ring-1', 'ring-indigo-500/50');
-                    if(!btn.querySelector('.badge')) {
-                        const badge = document.createElement('span');
-                        badge.className = 'badge text-[10px] uppercase bg-indigo-500 text-white px-1.5 py-0.5 rounded ml-auto font-bold tracking-wide';
-                        badge.innerText = 'Rec.';
-                        btn.appendChild(badge);
-                    }
-                } else {
-                    btn.className = "w-full p-4 bg-slate-800/50 hover:bg-indigo-600/80 rounded-xl text-left transition flex items-center gap-3 border border-slate-700/50";
-                    const badge = btn.querySelector('.badge');
-                    if(badge) badge.remove();
-                }
-            });
-            els.modal.classList.remove('hidden');
-        }
-
-        async function deleteEntry(rowId) {
-            if(!confirm("Delete log?")) return;
-            const res = await api({ action: 'deleteLog', row: rowId });
-            if(res.success) loadHistory();
-        }
-
-        function renderStreak(history) {
-            const today = new Date();
-            els.streakContainer.innerHTML = '';
-            for(let i=6; i>=0; i--) {
-                const d = new Date(today); d.setDate(today.getDate() - i);
-                const dateStr = d.toISOString().split('T')[0];
-                const hasLog = history.some(h => { if(!h.date) return false; return h.date.startsWith(dateStr); });
-                const circle = document.createElement('div');
-                circle.className = `w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border ${hasLog ? 'bg-green-500/20 border-green-500/50 text-green-400 shadow-[0_0_10px_rgba(34,197,94,0.2)]' : 'bg-slate-800 border-slate-700 text-slate-600'}`;
-                circle.textContent = d.getDate();
-                els.streakContainer.appendChild(circle);
-            }
-        }
+        async function deleteEntry(rowId) { if(!confirm("Delete log?")) return; const res = await api({ action: 'deleteLog', row: rowId }); if(res.success) loadHistory(); }
+        function renderStreak(history) { const today = new Date(); els.streakContainer.innerHTML = ''; for(let i=6; i>=0; i--) { const d = new Date(today); d.setDate(today.getDate() - i); const dateStr = d.toISOString().split('T')[0]; const hasLog = history.some(h => { if(!h.date) return false; return h.date.startsWith(dateStr); }); const circle = document.createElement('div'); circle.className = `w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border ${hasLog ? 'bg-green-500/20 border-green-500/50 text-green-400 shadow-[0_0_10px_rgba(34,197,94,0.2)]' : 'bg-slate-800 border-slate-700 text-slate-600'}`; circle.textContent = d.getDate(); els.streakContainer.appendChild(circle); } }
 
         async function handleManualLog(e) {
             e.preventDefault();
@@ -464,27 +470,27 @@
             const pName = els.pep.value === 'Other' ? document.getElementById('custom-peptide').value : els.pep.value;
             const sName = els.site.value === 'Other' ? document.getElementById('custom-site').value : els.site.value;
             const dose = `${document.getElementById('dosage-value').value} ${document.getElementById('dosage-unit').value}`;
-            const data = { 
-                action: 'logInjection', peptide: pName, dosage: dose, site: sName, 
-                timestamp: document.getElementById('timestamp').value,
-                notes: els.manualNote.value 
-            };
+            const data = { action: 'logInjection', peptide: pName, dosage: dose, site: sName, timestamp: document.getElementById('timestamp').value, notes: els.manualNote.value };
             const res = await api(data);
             btn.innerHTML = originalText; btn.disabled = false;
-            if(res.success) { alert("Log Saved!"); els.logForm.reset(); document.getElementById('timestamp').value = new Date(new Date() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0,16); loadHistory(); }
+            if(res.success) {
+                if(res.offline) alert("Offline. Saved to queue.");
+                else alert("Log Saved!");
+                els.logForm.reset(); document.getElementById('timestamp').value = new Date(new Date() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0,16); if(!res.offline) loadHistory();
+            } else alert("Error.");
         }
 
         async function finalizeQuickLog(site) {
             els.modal.classList.add('hidden');
             if(!pendingPreset) return;
             const ts = new Date(new Date() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0,16);
-            const data = { 
-                action: 'logInjection', peptide: pendingPreset.peptide, dosage: `${pendingPreset.value} ${pendingPreset.unit}`, 
-                site: site, timestamp: ts,
-                notes: els.modalNote.value 
-            };
+            const data = { action: 'logInjection', peptide: pendingPreset.peptide, dosage: `${pendingPreset.value} ${pendingPreset.unit}`, site: site, timestamp: ts, notes: els.modalNote.value };
             const res = await api(data);
-            if(res.success) { alert(`Saved: ${pendingPreset.peptide}`); loadHistory(); }
+            if(res.success) {
+                if(res.offline) alert("Offline. Saved to queue.");
+                else alert(`Saved: ${pendingPreset.peptide}`);
+                if(!res.offline) loadHistory();
+            } else alert("Error.");
             pendingPreset = null;
         }
 
@@ -492,24 +498,13 @@
             e.preventDefault();
             const btn = document.getElementById('config-submit-btn'); btn.textContent = "Saving..."; btn.disabled = true;
             const isCycle = els.cycleToggle.checked;
-            const data = { 
-                action: 'saveConfig', label: document.getElementById('config-label').value, peptide: document.getElementById('config-peptide').value, 
-                value: document.getElementById('config-value').value, unit: document.getElementById('config-unit').value, site: 'Ask',
-                cycleStart: isCycle ? els.cycleStart.value : null, cycleWeeks: isCycle ? els.cycleWeeks.value : null
-            };
+            const data = { action: 'saveConfig', label: document.getElementById('config-label').value, peptide: document.getElementById('config-peptide').value, value: document.getElementById('config-value').value, unit: document.getElementById('config-unit').value, site: 'Ask', cycleStart: isCycle ? els.cycleStart.value : null, cycleWeeks: isCycle ? els.cycleWeeks.value : null };
             const res = await api(data);
             btn.textContent = "Save Preset"; btn.disabled = false;
-            if(res.success) { alert("Preset Saved"); els.configForm.reset(); els.cycleToggle.checked = false; els.cycleOptions.classList.add('hidden'); loadConfig(); switchView('log'); }
+            if(res.success) { alert("Preset Saved"); els.configForm.reset(); els.cycleToggle.checked = false; els.cycleOptions.classList.add('hidden'); loadConfig(); switchView('log'); } else alert("Error");
         }
 
-        function runCalc() {
-            const vm = parseFloat(els.calc.m.value), dv = parseFloat(els.calc.v.value), td = parseFloat(els.calc.d.value);
-            if(!vm || !dv || !td) { els.calc.res.innerText = "0 IU"; els.calc.mic.innerText = "(0 µL)"; return; }
-            const m_ug = els.calc.mu.value === 'mg' ? vm * 1000 : vm;
-            const vol = ((els.calc.du.value === 'mg' ? td * 1000 : td) / ((els.calc.mu.value === 'mg' ? vm * 1000 : vm) / (els.calc.vu.value === 'ml' ? dv * 1000 : dv * 1000)));
-            els.calc.res.innerText = `${(vol * 100).toFixed(1)} IU`; els.calc.mic.innerText = `(${vol.toFixed(2) * 1000} µL)`;
-        }
-
+        function runCalc() { const vm = parseFloat(els.calc.m.value), dv = parseFloat(els.calc.v.value), td = parseFloat(els.calc.d.value); if(!vm || !dv || !td) { els.calc.res.innerText = "0 IU"; els.calc.mic.innerText = "(0 µL)"; return; } const m_ug = els.calc.mu.value === 'mg' ? vm * 1000 : vm; const d_ug = els.calc.du.value === 'mg' ? td * 1000 : td; const vol = (d_ug / (m_ug / dv)); els.calc.res.innerText = `${(vol * 100).toFixed(1)} IU`; els.calc.mic.innerText = `(${vol.toFixed(2) * 1000} µL)`; }
         function closeModal() { els.modal.classList.add('hidden'); }
         init(); switchView('log');
     </script>
