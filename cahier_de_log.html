@@ -26,13 +26,21 @@
         .input-field { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(148, 163, 184, 0.2); color: white; border-radius: 1rem; padding: 0.75rem 1rem 0.75rem 2.5rem; width: 100%; font-size: 16px; transition: all 0.2s; }
         .input-field:focus { border-color: #6366f1; box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2); outline: none; background: rgba(15, 23, 42, 0.9); }
         .input-icon { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: #94a3b8; pointer-events: none; }
-        select.input-field { appearance: none; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3e"); background-position: right 0.75rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; }
+        select.input-field { appearance: none; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3c/svg%3e"); background-position: right 0.75rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; }
         select.input-field option { background-color: #1e293b; color: #f8fafc; padding: 10px; }
         select.input-field optgroup { background-color: #0f172a; color: #94a3b8; font-weight: bold; }
         .btn-primary { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3); transition: transform 0.2s, box-shadow 0.2s; }
         .btn-primary:active { transform: scale(0.98); }
-        .btn-quick { background: rgba(51, 65, 85, 0.5); border: 1px solid rgba(255,255,255,0.05); transition: all 0.2s; }
-        .btn-quick:active { background: rgba(99, 102, 241, 0.2); border-color: #6366f1; }
+        
+        /* Enhanced Quick Log Buttons */
+        .btn-quick { 
+            background: linear-gradient(145deg, rgba(51, 65, 85, 0.6), rgba(30, 41, 59, 0.8));
+            border: 1px solid rgba(255,255,255,0.08); 
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .btn-quick:active { background: rgba(99, 102, 241, 0.1); border-color: #6366f1; transform: scale(0.98); }
+
         .nav-pill { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .nav-pill.active { background: #6366f1; color: white; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25); }
         ::-webkit-scrollbar { width: 6px; }
@@ -279,10 +287,15 @@
                 renderStreak(res.history);
                 els.historyList.innerHTML = '';
                 res.history.forEach(h => {
-                    // ENGLISH DATE FORMATTING
+                    // FIX FOR INVALID DATE: Check if date is valid, otherwise show raw string
+                    let dateStr = h.date;
+                    let timeStr = "";
+                    
                     const dateObj = new Date(h.date);
-                    const dateStr = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-                    const timeStr = dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+                    if (!isNaN(dateObj.getTime())) {
+                        dateStr = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+                        timeStr = dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+                    }
 
                     const card = document.createElement('div'); card.className = "bg-slate-800 p-4 rounded-2xl border border-slate-700/50 flex justify-between items-center";
                     card.innerHTML = `
@@ -322,7 +335,14 @@
             for(let i=6; i>=0; i--) {
                 const d = new Date(today); d.setDate(today.getDate() - i);
                 const dateStr = d.toISOString().split('T')[0];
-                const hasLog = history.some(h => h.date.startsWith(dateStr));
+                
+                // Robust check for ISO dates
+                const hasLog = history.some(h => {
+                    if(!h.date) return false;
+                    // If h.date is ISO string
+                    return h.date.startsWith(dateStr);
+                });
+                
                 const circle = document.createElement('div');
                 circle.className = `w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${hasLog ? 'bg-green-500 text-white shadow-lg shadow-green-500/30' : 'bg-slate-700 text-slate-500'}`;
                 circle.textContent = d.getDate();
