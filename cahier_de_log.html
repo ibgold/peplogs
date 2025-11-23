@@ -88,7 +88,6 @@
                 </p>
             </div>
             <div class="flex gap-2">
-                <!-- Offline Pending Badge -->
                 <div id="pending-badge" class="hidden bg-amber-500/20 text-amber-400 border border-amber-500/30 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 animate-pulse-slow">
                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4"/><path d="m16.2 7.8 2.9-2.9"/><path d="M18 12h4"/><path d="m16.2 16.2 2.9 2.9"/><path d="M12 18v4"/><path d="m4.9 19.1 2.9-2.9"/><path d="M2 12h4"/><path d="m4.9 4.9 2.9 2.9"/></svg>
                     <span id="pending-count">0</span>
@@ -163,16 +162,33 @@
                                 <input type="number" id="dosage-value" min="0.01" step="0.01" placeholder="Dose" class="input-field">
                             </div>
                             <select id="dosage-unit" class="bg-slate-700 text-white rounded-xl px-3 border border-slate-600 focus:border-indigo-500 outline-none font-bold w-24">
-                                <option value="mcg">mcg</option><option value="mg">mg</option><option value="IU">IU</option>
+                                <option value="mcg">mcg</option>
+                                <option value="mg">mg</option>
+                                <option value="IU">IU</option>
                             </select>
                         </div>
                         <div class="input-group">
                             <svg class="input-icon w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                             <select id="injection-site" required class="input-field">
                                 <option value="" disabled selected>Select Site</option>
-                                <optgroup label="Abdomen"><option value="Right Abdomen (Upper)">Right Abdomen (Upper)</option><option value="Right Abdomen (Lower)">Right Abdomen (Lower)</option><option value="Left Abdomen (Upper)">Left Abdomen (Upper)</option><option value="Left Abdomen (Lower)">Left Abdomen (Lower)</option></optgroup>
-                                <optgroup label="Flanks & Thighs"><option value="Right Flank">Right Flank</option><option value="Left Flank">Left Flank</option><option value="Right Thigh">Right Thigh</option><option value="Left Thigh">Left Thigh</option></optgroup>
-                                <optgroup label="Arms & Other"><option value="Right Deltoid">Right Deltoid</option><option value="Left Deltoid">Left Deltoid</option><option value="Nasal Spray">Nasal Spray</option><option value="Other">Other</option></optgroup>
+                                <optgroup label="Abdomen">
+                                    <option value="Right Abdomen (Upper)">Right Abdomen (Upper)</option>
+                                    <option value="Right Abdomen (Lower)">Right Abdomen (Lower)</option>
+                                    <option value="Left Abdomen (Upper)">Left Abdomen (Upper)</option>
+                                    <option value="Left Abdomen (Lower)">Left Abdomen (Lower)</option>
+                                </optgroup>
+                                <optgroup label="Flanks & Thighs">
+                                    <option value="Right Flank">Right Flank</option>
+                                    <option value="Left Flank">Left Flank</option>
+                                    <option value="Right Thigh">Right Thigh</option>
+                                    <option value="Left Thigh">Left Thigh</option>
+                                </optgroup>
+                                <optgroup label="Arms & Other">
+                                    <option value="Right Deltoid">Right Deltoid</option>
+                                    <option value="Left Deltoid">Left Deltoid</option>
+                                    <option value="Nasal Spray">Nasal Spray</option>
+                                    <option value="Other">Other</option>
+                                </optgroup>
                             </select>
                         </div>
                         <div id="custom-site-group" class="hidden animate-fade-in">
@@ -187,15 +203,23 @@
                             <input type="datetime-local" id="timestamp" required class="input-field" style="color-scheme: dark;">
                         </div>
                         <button type="submit" id="submit-btn" class="btn-primary w-full py-4 rounded-2xl font-bold text-lg shadow-lg shadow-indigo-500/20 mt-2">Log Injection</button>
+                        <p id="response-message" class="text-center text-sm font-medium hidden mt-2"></p>
                     </form>
                 </section>
             </div>
 
             <!-- HISTORY TAB -->
             <div id="view-history" class="hidden space-y-4 animate-slide-up">
-                <div class="flex justify-between items-end px-2">
-                    <h2 class="text-xl font-bold text-white">History</h2>
-                    <span class="text-xs text-indigo-400 bg-indigo-500/10 px-2 py-1 rounded-lg">Last 50</span>
+                <div class="flex flex-col gap-4">
+                    <div class="flex justify-between items-end px-2">
+                        <h2 class="text-xl font-bold text-white">History</h2>
+                        <span class="text-xs text-indigo-400 bg-indigo-500/10 px-2 py-1 rounded-lg">Last 50</span>
+                    </div>
+                    <!-- Search Input -->
+                    <div class="input-group">
+                        <svg class="input-icon w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                        <input type="text" id="history-search" placeholder="Filter (Peptide, Site...)" class="input-field pl-10 bg-slate-800/50 border-slate-700/50 focus:bg-slate-800">
+                    </div>
                 </div>
                 <div id="history-list" class="space-y-3 pb-20">
                     <div class="p-8 text-center text-slate-500">Loading...</div>
@@ -242,19 +266,18 @@
     <div id="site-modal" class="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-4 animate-fade-in">
         <div class="bg-slate-800 w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl border-t border-slate-700 max-h-[80vh] flex flex-col">
             <div class="flex justify-between items-center mb-4"><h3 class="text-xl font-bold">Select Site</h3><button onclick="closeModal()" class="p-2 bg-slate-700 rounded-full text-slate-300 hover:text-white">&times;</button></div>
-            
-            <!-- NOTES INPUT FOR QUICK LOG -->
             <div class="mb-4 relative">
                 <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                 <input type="text" id="modal-note" placeholder="Add optional note..." class="w-full bg-slate-900 border border-slate-700 rounded-xl py-3 px-4 pl-10 text-white focus:border-indigo-500 outline-none">
             </div>
-
             <div id="modal-sites-list" class="grid grid-cols-2 gap-3 overflow-y-auto pb-4"></div>
         </div>
     </div>
 
     <script>
         let APP_URL = localStorage.getItem('pep_log_url');
+        // Global history array to support filtering
+        let globalHistory = [];
         
         const els = {
             setup: document.getElementById('setup-screen'), app: document.getElementById('app-container'),
@@ -262,7 +285,9 @@
             pendingBadge: document.getElementById('pending-badge'), pendingCount: document.getElementById('pending-count'),
             tabs: { log: document.getElementById('tab-log'), history: document.getElementById('tab-history'), calculator: document.getElementById('tab-calculator'), config: document.getElementById('tab-config') },
             views: { log: document.getElementById('view-log'), history: document.getElementById('view-history'), calculator: document.getElementById('view-calculator'), config: document.getElementById('view-config') },
-            quickContainer: document.getElementById('quick-log-buttons'), historyList: document.getElementById('history-list'), streakContainer: document.getElementById('streak-container'),
+            quickContainer: document.getElementById('quick-log-buttons'),
+            historyList: document.getElementById('history-list'), historySearch: document.getElementById('history-search'),
+            streakContainer: document.getElementById('streak-container'),
             modal: document.getElementById('site-modal'), modalList: document.getElementById('modal-sites-list'), modalNote: document.getElementById('modal-note'),
             logForm: document.getElementById('log-form'), configForm: document.getElementById('config-form'),
             pep: document.getElementById('peptide-name'), custPep: document.getElementById('custom-peptide'), custPepGrp: document.getElementById('custom-peptide-group'),
@@ -285,57 +310,42 @@
         function updateNetworkUI() {
             const q = getQueue();
             const isOnline = navigator.onLine;
-            
             if (!isOnline) {
                 els.statusDot.className = "w-2 h-2 rounded-full bg-amber-500";
-                els.statusLabel.innerText = "Offline";
-                els.statusLabel.className = "text-amber-500 font-bold";
+                els.statusLabel.innerText = "Offline"; els.statusLabel.className = "text-amber-500 font-bold";
             } else {
                 if (q.length > 0) {
                     els.statusDot.className = "w-2 h-2 rounded-full bg-blue-500 animate-pulse";
-                    els.statusLabel.innerText = "Syncing...";
-                    els.statusLabel.className = "text-blue-400 font-bold";
-                    syncQueue(); // Trigger sync
+                    els.statusLabel.innerText = "Syncing..."; els.statusLabel.className = "text-blue-400 font-bold";
+                    syncQueue();
                 } else {
                     els.statusDot.className = "w-2 h-2 rounded-full bg-green-500";
-                    els.statusLabel.innerText = "Ready";
-                    els.statusLabel.className = "text-slate-400";
+                    els.statusLabel.innerText = "Ready"; els.statusLabel.className = "text-slate-400";
                 }
             }
-
-            if (q.length > 0) {
-                els.pendingBadge.classList.remove('hidden');
-                els.pendingCount.innerText = q.length;
-            } else {
-                els.pendingBadge.classList.add('hidden');
-            }
+            if (q.length > 0) { els.pendingBadge.classList.remove('hidden'); els.pendingCount.innerText = q.length; } 
+            else { els.pendingBadge.classList.add('hidden'); }
         }
 
         async function syncQueue() {
             if (!navigator.onLine) return;
             const q = getQueue();
             if (q.length === 0) return;
-
-            // Process queue
             const newQueue = [];
             for (const item of q) {
                 try {
                     const res = await fetch(APP_URL, { method: 'POST', body: JSON.stringify(item) });
                     const json = await res.json();
-                    if (!json.success) newQueue.push(item); // Keep if API error
-                } catch (e) {
-                    newQueue.push(item); // Keep if Network error
-                }
+                    if (!json.success) newQueue.push(item);
+                } catch (e) { newQueue.push(item); }
             }
-            
             localStorage.setItem('pep_log_queue', JSON.stringify(newQueue));
             updateNetworkUI();
-            if (newQueue.length === 0) loadHistory(); // Refresh UI
+            if (newQueue.length === 0) loadHistory();
         }
 
         window.addEventListener('online', updateNetworkUI);
         window.addEventListener('offline', updateNetworkUI);
-        // ----------------------------
 
         function init() {
             const params = new URLSearchParams(window.location.search);
@@ -356,6 +366,9 @@
             document.getElementById('timestamp').value = new Date(new Date() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0,16);
             els.logForm.addEventListener('submit', handleManualLog);
             els.configForm.addEventListener('submit', handleConfigSave);
+            // Search listener
+            els.historySearch.addEventListener('input', filterHistory);
+
             Object.values(els.calc).forEach(el => { if(el.tagName === 'INPUT' || el.tagName === 'SELECT') el.addEventListener('input', runCalc); });
             els.modalList.innerHTML = '';
             [...sites, ...extraSites].forEach(s => {
@@ -377,22 +390,10 @@
             if(view === 'history') loadHistory();
         }
 
-        // --- API (MODIFIED FOR OFFLINE) ---
         async function api(data) {
-            // If Offline, Queue Immediately
-            if (!navigator.onLine) {
-                addToQueue(data);
-                return { success: true, offline: true };
-            }
-
-            try {
-                const res = await fetch(APP_URL, { method: 'POST', body: JSON.stringify(data) });
-                return await res.json();
-            } catch(e) {
-                // If Fetch Fails (Network Error), Queue it
-                addToQueue(data);
-                return { success: true, offline: true };
-            }
+            if (!navigator.onLine) { addToQueue(data); return { success: true, offline: true }; }
+            try { const res = await fetch(APP_URL, { method: 'POST', body: JSON.stringify(data) }); return await res.json(); } 
+            catch(e) { addToQueue(data); return { success: true, offline: true }; }
         }
 
         function getCycleProgress(startDateStr, totalWeeks) {
@@ -426,25 +427,52 @@
             if (!navigator.onLine) { els.historyList.innerHTML = '<div class="text-center text-slate-500 py-4">Offline mode. Cannot load history.</div>'; return; }
             els.historyList.innerHTML = '<div class="text-center p-4 animate-pulse text-slate-500">Loading...</div>';
             const res = await fetch(`${APP_URL}?action=getHistory`).then(r=>r.json()).catch(e=>({}));
-            els.historyList.innerHTML = '';
+            
             if(res.success && res.history) {
-                renderStreak(res.history);
-                calculateSuggestion(res.history);
-                res.history.forEach(h => {
-                    let dateStr = h.date, timeStr = "";
-                    const dateObj = new Date(h.date);
-                    if (!isNaN(dateObj.getTime())) {
-                        dateStr = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-                        timeStr = dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-                    } 
-                    
-                    const noteHtml = h.notes ? `<div class="mt-2 text-xs text-indigo-300 italic flex items-center gap-1"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> ${h.notes}</div>` : '';
-                    const card = document.createElement('div');
-                    card.className = "bg-slate-800/50 p-4 rounded-2xl border border-slate-700/50 flex justify-between items-start";
-                    card.innerHTML = `<div><div class="font-bold text-white flex items-center gap-2">${h.peptide} <span class="text-xs bg-indigo-500/10 text-indigo-400 px-2 py-0.5 rounded font-mono border border-indigo-500/20">${h.dosage}</span></div><div class="text-xs text-slate-400 mt-1 flex items-center gap-1"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>${h.site}</div>${noteHtml}</div><div class="flex flex-col items-end gap-2"><div class="text-right text-xs text-slate-500 font-mono bg-slate-900/50 px-2 py-1 rounded border border-slate-800"><div class="text-slate-400">${dateStr}</div><div class="text-indigo-400 font-bold">${timeStr}</div></div><button class="text-slate-600 hover:text-red-400 transition p-1" onclick="deleteEntry('${h.row}')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></button></div>`;
-                    els.historyList.appendChild(card);
-                });
-            } else { els.historyList.innerHTML = '<div class="text-center text-slate-500">No logs found.</div>'; }
+                globalHistory = res.history; // Store data globally
+                renderStreak(globalHistory);
+                calculateSuggestion(globalHistory);
+                renderHistoryList(globalHistory); // Render all
+            } else {
+                els.historyList.innerHTML = '<div class="text-center text-slate-500">No logs found.</div>';
+                globalHistory = [];
+            }
+        }
+        
+        // --- FILTERING LOGIC ---
+        function filterHistory() {
+            const term = els.historySearch.value.toLowerCase();
+            const filtered = globalHistory.filter(h => 
+                (h.peptide && h.peptide.toLowerCase().includes(term)) || 
+                (h.site && h.site.toLowerCase().includes(term)) ||
+                (h.notes && h.notes.toLowerCase().includes(term)) ||
+                (h.date && h.date.toLowerCase().includes(term))
+            );
+            renderHistoryList(filtered);
+        }
+
+        function renderHistoryList(list) {
+            els.historyList.innerHTML = '';
+            if (list.length === 0) {
+                els.historyList.innerHTML = '<div class="text-center text-slate-500 py-4">No matching logs.</div>';
+                return;
+            }
+            
+            list.forEach(h => {
+                let dateStr = h.date, timeStr = "";
+                const dateObj = new Date(h.date);
+                if (!isNaN(dateObj.getTime())) {
+                    dateStr = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+                    timeStr = dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+                } 
+                
+                const noteHtml = h.notes ? `<div class="mt-2 text-xs text-indigo-300 italic flex items-center gap-1"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> ${h.notes}</div>` : '';
+                
+                const card = document.createElement('div');
+                card.className = "bg-slate-800/50 p-4 rounded-2xl border border-slate-700/50 flex justify-between items-start animate-fade-in";
+                card.innerHTML = `<div><div class="font-bold text-white flex items-center gap-2">${h.peptide} <span class="text-xs bg-indigo-500/10 text-indigo-400 px-2 py-0.5 rounded font-mono border border-indigo-500/20">${h.dosage}</span></div><div class="text-xs text-slate-400 mt-1 flex items-center gap-1"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>${h.site}</div>${noteHtml}</div><div class="flex flex-col items-end gap-2"><div class="text-right text-xs text-slate-500 font-mono bg-slate-900/50 px-2 py-1 rounded border border-slate-800"><div class="text-slate-400">${dateStr}</div><div class="text-indigo-400 font-bold">${timeStr}</div></div><button class="text-slate-600 hover:text-red-400 transition p-1" onclick="deleteEntry('${h.row}')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></button></div>`;
+                els.historyList.appendChild(card);
+            });
         }
 
         function calculateSuggestion(history) {
