@@ -13,6 +13,8 @@
         .btn-primary:hover { background-color: #4f46e5; }
         .btn-quick-log { background-color: #4b5563; color: #e5e7eb; font-weight: 600; padding: 0.75rem 1rem; border-radius: 0.5rem; transition: background-color 0.2s, transform 0.1s; }
         .btn-quick-log:hover { background-color: #374151; transform: translateY(-1px); }
+        .btn-site-select { background-color: #374151; border: 1px solid #4b5563; color: #e5e7eb; font-weight: 500; padding: 0.75rem; border-radius: 0.5rem; transition: all 0.2s; text-align: left; }
+        .btn-site-select:hover { background-color: #4b5563; border-color: #6366f1; }
         .input-field { background-color: #4b5563; color: #f3f4f6; border: 1px solid #6b7280; border-radius: 0.5rem; padding: 0.75rem; transition: border-color 0.2s; }
         .input-field:focus { border-color: #6366f1; outline: none; box-shadow: 0 0 0 1px #6366f1; }
         .input-field option { background-color: #374151; color: #f3f4f6; }
@@ -21,6 +23,12 @@
         .tab-btn:not(.active):hover { background-color: #4b5563; }
         .unit-select { border-left: none; border-top-left-radius: 0; border-bottom-left-radius: 0; padding: 0.75rem 0.5rem; width: 5rem; text-align: center; }
         .input-with-unit { border-right: none; border-top-right-radius: 0; border-bottom-right-radius: 0; }
+        
+        /* History Item Style */
+        .history-item { border-left: 4px solid #6366f1; background-color: #374151; padding: 1rem; border-radius: 0.5rem; margin-bottom: 0.75rem; }
+        
+        /* Modal Styles */
+        #site-modal { backdrop-filter: blur(4px); }
     </style>
 </head>
 <body class="p-4 md:p-8 min-h-screen">
@@ -28,14 +36,15 @@
     <div class="max-w-xl mx-auto">
         <header class="text-center mb-6">
             <h1 class="text-4xl font-extrabold text-gray-100 mb-2">Peptide Log Book</h1>
-            <p class="text-gray-400">Simplified logging and dosage tools for Google Sheets.</p>
+            <p class="text-gray-400">Simplified logging and dosage tools.</p>
         </header>
 
         <!-- Tab Navigation -->
         <div class="flex border-b border-gray-600 mb-6 overflow-x-auto">
-            <button id="tab-log" class="tab-btn active text-gray-100 whitespace-nowrap" data-tab="log">Log Injection</button>
-            <button id="tab-calculator" class="tab-btn text-gray-400 whitespace-nowrap" data-tab="calculator">Calculator</button>
-            <button id="tab-config" class="tab-btn text-gray-400 whitespace-nowrap" data-tab="config">Configuration</button>
+            <button id="tab-log" class="tab-btn active text-gray-100 whitespace-nowrap" data-tab="log">Log</button>
+            <button id="tab-history" class="tab-btn text-gray-400 whitespace-nowrap" data-tab="history">History</button>
+            <button id="tab-calculator" class="tab-btn text-gray-400 whitespace-nowrap" data-tab="calculator">Calc</button>
+            <button id="tab-config" class="tab-btn text-gray-400 whitespace-nowrap" data-tab="config">Config</button>
         </div>
 
         <!-- Status -->
@@ -53,7 +62,7 @@
                     <div id="quick-log-buttons" class="grid grid-cols-2 md:grid-cols-3 gap-3">
                         <p class="text-gray-500 col-span-full text-center py-4">Loading presets...</p>
                     </div>
-                    <p class="text-sm text-gray-500 mt-4 text-center">Configure these in the "Configuration" tab.</p>
+                    <p class="text-sm text-gray-500 mt-4 text-center">Logs at current time. Select site after clicking.</p>
                 </section>
                 
                 <section class="mb-10 card p-6 md:p-8">
@@ -91,14 +100,28 @@
                             <label class="block text-sm font-medium text-gray-300 mb-1">Injection Site</label>
                             <select id="injection-site" required class="input-field w-full">
                                 <option value="" disabled selected>Select site</option>
-                                <option value="Left Abdomen">Left Abdomen</option>
-                                <option value="Right Abdomen">Right Abdomen</option>
-                                <option value="Left Thigh">Left Thigh</option>
-                                <option value="Right Thigh">Right Thigh</option>
-                                <option value="Left Deltoid">Left Deltoid</option>
-                                <option value="Right Deltoid">Right Deltoid</option>
-                                <option value="Nasal Spray">Nasal Spray</option>
-                                <option value="Other">Other (Specify below)</option>
+                                <optgroup label="Abdomen">
+                                    <option value="Abdomen Droit (Haut)">Abdomen Droit (Haut)</option>
+                                    <option value="Abdomen Droit (Bas)">Abdomen Droit (Bas)</option>
+                                    <option value="Abdomen Gauche (Haut)">Abdomen Gauche (Haut)</option>
+                                    <option value="Abdomen Gauche (Bas)">Abdomen Gauche (Bas)</option>
+                                </optgroup>
+                                <optgroup label="Flancs">
+                                    <option value="Flanc Droit">Flanc Droit</option>
+                                    <option value="Flanc Gauche">Flanc Gauche</option>
+                                </optgroup>
+                                <optgroup label="Cuisses">
+                                    <option value="Cuisse Droite">Cuisse Droite</option>
+                                    <option value="Cuisse Gauche">Cuisse Gauche</option>
+                                </optgroup>
+                                <optgroup label="Bras">
+                                    <option value="Deltoïde Droit">Deltoïde Droit</option>
+                                    <option value="Deltoïde Gauche">Deltoïde Gauche</option>
+                                </optgroup>
+                                <optgroup label="Autres">
+                                    <option value="Nasal Spray">Nasal Spray</option>
+                                    <option value="Other">Other</option>
+                                </optgroup>
                             </select>
                         </div>
                         <div id="custom-site-group" class="hidden">
@@ -118,8 +141,21 @@
                     </form>
                 </section>
             </div>
+
+            <!-- 2. HISTORY (NEW TAB) -->
+            <div id="content-history" class="tab-pane hidden">
+                <section class="mb-10 card p-6 md:p-8">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-semibold text-gray-100">Recent Logs</h2>
+                        <button id="refresh-history" class="text-sm bg-gray-600 hover:bg-gray-500 px-3 py-1 rounded">Refresh</button>
+                    </div>
+                    <div id="history-list" class="space-y-3">
+                        <p class="text-gray-500 text-center">Loading history...</p>
+                    </div>
+                </section>
+            </div>
             
-            <!-- 2. Calculator -->
+            <!-- 3. Calculator -->
             <div id="content-calculator" class="tab-pane hidden">
                 <section class="mb-10 card p-6 md:p-8">
                     <h2 class="text-2xl font-semibold mb-6 text-gray-100">Dosage Calculator (IU)</h2>
@@ -145,15 +181,15 @@
                 </section>
             </div>
 
-            <!-- 3. Config -->
+            <!-- 4. Config -->
             <div id="content-config" class="tab-pane hidden">
                 <section class="mb-10 card p-6 md:p-8">
                     <h2 class="text-2xl font-semibold mb-6 text-gray-100">Quick Log Configuration</h2>
+                    <p class="text-gray-400 mb-4">Create a button for a specific peptide and dose. The injection site will be asked each time you log.</p>
                     <form id="config-form" class="grid grid-cols-1 gap-4 mt-4">
                         <div><label class="block text-sm font-medium text-gray-300 mb-1">Button Label</label><input type="text" id="config-label" placeholder="e.g. GHK-Cu Daily" class="input-field w-full"></div>
                         <div><label class="block text-sm font-medium text-gray-300 mb-1">Peptide Name</label><input type="text" id="config-peptide" placeholder="e.g. GHK-Cu" class="input-field w-full"></div>
                         <div><label class="block text-sm font-medium text-gray-300 mb-1">Dosage</label><div class="flex"><input type="number" id="config-value" class="input-field w-full input-with-unit"><select id="config-unit" class="input-field unit-select"><option value="mcg">mcg</option><option value="mg">mg</option><option value="IU">IU</option></select></div></div>
-                        <div><label class="block text-sm font-medium text-gray-300 mb-1">Default Site</label><input type="text" id="config-site" class="input-field w-full"></div>
                         <div class="mt-4">
                             <button type="submit" id="config-submit-btn" class="btn-primary text-white font-bold py-3 px-6 w-full rounded-xl"><span id="config-btn-text">Save New Preset</span></button>
                             <p id="config-message" class="text-sm mt-2 hidden text-center"></p>
@@ -164,20 +200,40 @@
         </div>
     </div>
 
+    <!-- SITE SELECTION MODAL -->
+    <div id="site-modal" class="fixed inset-0 bg-gray-900 bg-opacity-90 hidden flex items-center justify-center z-50 p-4">
+        <div class="card w-full max-w-lg max-h-[90vh] flex flex-col">
+            <div class="p-4 border-b border-gray-600 flex justify-between items-center">
+                <h3 class="text-xl font-bold text-white">Select Injection Site</h3>
+                <button id="close-modal" class="text-gray-400 hover:text-white text-2xl">&times;</button>
+            </div>
+            <div class="p-4 overflow-y-auto grid grid-cols-1 gap-2" id="modal-sites-list"></div>
+        </div>
+    </div>
+
     <script>
         // --- ⚠️ PASTE YOUR GOOGLE APPS SCRIPT URL HERE ⚠️ ---
         const SHEETS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwjH-bUThD7WtuU2SAoqmmJev_hRKDxC3Qm6wfUJaIb1zU9lGcecBuJju_u8jClWZS7/exec";
         // ----------------------------------------------------
         
         const els = {
-            tabs: { log: document.getElementById('tab-log'), calc: document.getElementById('tab-calculator'), conf: document.getElementById('tab-config') },
-            panes: { log: document.getElementById('content-log'), calc: document.getElementById('content-calculator'), conf: document.getElementById('content-config') },
+            tabs: { log: document.getElementById('tab-log'), hist: document.getElementById('tab-history'), calc: document.getElementById('tab-calculator'), conf: document.getElementById('tab-config') },
+            panes: { log: document.getElementById('content-log'), hist: document.getElementById('content-history'), calc: document.getElementById('content-calculator'), conf: document.getElementById('content-config') },
             log: { form: document.getElementById('log-form'), status: document.getElementById('log-status'), msg: document.getElementById('response-message'), btn: document.getElementById('submit-btn'), btnTxt: document.getElementById('btn-text') },
             inputs: { pep: document.getElementById('peptide-name'), custPep: document.getElementById('custom-peptide'), custPepGrp: document.getElementById('custom-peptide-group'), site: document.getElementById('injection-site'), custSite: document.getElementById('custom-site'), custSiteGrp: document.getElementById('custom-site-group'), doseVal: document.getElementById('dosage-value'), doseUnit: document.getElementById('dosage-unit'), time: document.getElementById('timestamp') },
             quick: { container: document.getElementById('quick-log-buttons') },
+            hist: { list: document.getElementById('history-list'), refresh: document.getElementById('refresh-history') },
             conf: { form: document.getElementById('config-form'), btn: document.getElementById('config-submit-btn'), btnTxt: document.getElementById('config-btn-text'), msg: document.getElementById('config-message') },
-            calc: { m: document.getElementById('vial-mass-input'), mu: document.getElementById('vial-mass-unit'), v: document.getElementById('dilution-volume-input'), vu: document.getElementById('dilution-volume-unit'), d: document.getElementById('target-dose-input'), du: document.getElementById('target-dose-unit'), res: document.getElementById('calculator-result'), mic: document.getElementById('calculator-microliters') }
+            calc: { m: document.getElementById('vial-mass-input'), mu: document.getElementById('vial-mass-unit'), v: document.getElementById('dilution-volume-input'), vu: document.getElementById('dilution-volume-unit'), d: document.getElementById('target-dose-input'), du: document.getElementById('target-dose-unit'), res: document.getElementById('calculator-result'), mic: document.getElementById('calculator-microliters') },
+            modal: { el: document.getElementById('site-modal'), list: document.getElementById('modal-sites-list'), close: document.getElementById('close-modal') }
         };
+
+        const injectionSites = [
+            "Abdomen Droit (Haut)", "Abdomen Droit (Bas)", "Abdomen Gauche (Haut)", "Abdomen Gauche (Bas)",
+            "Flanc Droit", "Flanc Gauche", "Cuisse Droite", "Cuisse Gauche",
+            "Deltoïde Droit", "Deltoïde Gauche", "Nasal Spray", "Other"
+        ];
+        let pendingQuickLog = null;
 
         els.inputs.time.value = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16);
 
@@ -187,8 +243,9 @@
             els.tabs[t].classList.add('active', 'text-gray-100');
             els.tabs[t].classList.remove('text-gray-400');
             els.panes[t].classList.remove('hidden');
+            if(t === 'history') loadHistory();
         }
-        ['log', 'calc', 'conf'].forEach(t => els.tabs[t].addEventListener('click', () => switchTab(t)));
+        ['log', 'hist', 'calc', 'conf'].forEach(t => els.tabs[t].addEventListener('click', () => switchTab(t)));
 
         els.inputs.pep.addEventListener('change', () => {
             const isOther = els.inputs.pep.value === 'Other';
@@ -201,80 +258,95 @@
             els.inputs.custSite.required = isOther;
         });
 
-        // --- CORRECTION CORS: Send as text/plain (Simple Request) ---
+        injectionSites.forEach(site => {
+            const btn = document.createElement('button');
+            btn.className = 'btn-site-select'; btn.textContent = site; btn.onclick = () => confirmQuickLog(site);
+            els.modal.list.appendChild(btn);
+        });
+        els.modal.close.onclick = () => els.modal.el.classList.add('hidden');
+
+        // --- DATA HANDLING ---
+        // Send Data (POST)
         async function sendData(data) {
-            // We DO NOT set Content-Type: application/json to avoid preflight
-            return fetch(SHEETS_WEB_APP_URL, {
-                method: 'POST',
-                body: JSON.stringify(data)
-            }).then(res => res.json());
+            return fetch(SHEETS_WEB_APP_URL, { method: 'POST', body: JSON.stringify(data) }).then(res => res.json());
+        }
+        // Get Data (GET) for History or Config
+        async function getData(action) {
+            // Append action to URL for GET request
+            return fetch(`${SHEETS_WEB_APP_URL}?action=${action}`).then(res => res.json());
         }
 
+        // --- LOAD PRESETS ---
         async function loadConfig() {
             try {
-                // Apps Script `doGet` handles simple GET requests fine usually
-                const res = await fetch(SHEETS_WEB_APP_URL);
-                const data = await res.json();
+                const data = await getData('getConfig'); // default GET logic in script handles config if no param, but cleaner to be explicit if we could. 
+                // Actually, current script default GET is config. 
                 if (data.success && data.presets && data.presets.length) {
                     els.quick.container.innerHTML = '';
                     data.presets.forEach(p => {
                         const b = document.createElement('button');
-                        b.className = 'btn-quick-log truncate w-full';
-                        b.textContent = p.label;
-                        b.onclick = () => quickLog(p);
+                        b.className = 'btn-quick-log truncate w-full'; b.textContent = p.label; b.onclick = () => openSiteModal(p);
                         els.quick.container.appendChild(b);
                     });
-                    els.log.status.textContent = 'Ready.';
-                    els.log.status.className = 'text-green-400';
+                    els.log.status.textContent = 'Ready.'; els.log.status.className = 'text-green-400';
                 } else {
-                    els.quick.container.innerHTML = '<p class="text-gray-500 col-span-full text-center py-4">No presets. Add one in Config tab.</p>';
-                    els.log.status.textContent = 'Ready (No presets).';
+                    els.quick.container.innerHTML = '<p class="text-gray-500 col-span-full text-center py-4">No presets. Add in Config tab.</p>';
+                    els.log.status.textContent = 'Ready.';
                 }
             } catch (e) {
-                console.error(e);
-                els.quick.container.innerHTML = '<p class="text-red-400 col-span-full text-center py-4">Failed to load presets (CORS/Network).</p>';
+                els.quick.container.innerHTML = '<p class="text-red-400 col-span-full text-center py-4">Connection Error.</p>';
             }
         }
 
-        async function quickLog(p) {
+        // --- LOAD HISTORY ---
+        async function loadHistory() {
+            els.hist.list.innerHTML = '<p class="text-gray-500 text-center">Loading history...</p>';
+            try {
+                const data = await getData('getHistory');
+                els.hist.list.innerHTML = '';
+                if (data.success && data.history && data.history.length) {
+                    data.history.forEach(h => {
+                        const item = document.createElement('div');
+                        item.className = 'history-item';
+                        item.innerHTML = `<div class="flex justify-between font-bold text-white"><span>${h.peptide}</span><span>${h.dosage}</span></div>
+                                          <div class="flex justify-between text-sm text-gray-400 mt-1"><span>${h.site}</span><span>${h.date}</span></div>`;
+                        els.hist.list.appendChild(item);
+                    });
+                } else {
+                    els.hist.list.innerHTML = '<p class="text-gray-500 text-center">No logs found.</p>';
+                }
+            } catch (e) {
+                els.hist.list.innerHTML = '<p class="text-red-400 text-center">Failed to load history.</p>';
+            }
+        }
+        els.hist.refresh.addEventListener('click', loadHistory);
+
+        // --- LOGIC ---
+        function openSiteModal(preset) { pendingQuickLog = preset; els.modal.el.classList.remove('hidden'); }
+        
+        async function confirmQuickLog(site) {
+            els.modal.el.classList.add('hidden');
+            if (!pendingQuickLog) return;
             const ts = new Date(new Date() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16);
-            await submit({ action: 'logInjection', peptide: p.peptide, dosage: `${p.value} ${p.unit}`, site: p.site, timestamp: ts });
-            els.inputs.time.value = ts;
+            await submit({ action: 'logInjection', peptide: pendingQuickLog.peptide, dosage: `${pendingQuickLog.value} ${pendingQuickLog.unit}`, site: site, timestamp: ts });
+            els.inputs.time.value = ts; pendingQuickLog = null;
         }
 
         els.log.form.addEventListener('submit', async (e) => {
             e.preventDefault();
             const p = els.inputs.pep.value === 'Other' ? els.inputs.custPep.value : els.inputs.pep.value;
             const s = els.inputs.site.value === 'Other' ? els.inputs.custSite.value : els.inputs.site.value;
-            await submit({ 
-                action: 'logInjection', 
-                peptide: p, 
-                dosage: `${els.inputs.doseVal.value} ${els.inputs.doseUnit.value}`, 
-                site: s, 
-                timestamp: els.inputs.time.value 
-            });
+            await submit({ action: 'logInjection', peptide: p, dosage: `${els.inputs.doseVal.value} ${els.inputs.doseUnit.value}`, site: s, timestamp: els.inputs.time.value });
         });
 
         els.conf.form.addEventListener('submit', async (e) => {
             e.preventDefault();
             els.conf.btn.textContent = 'Saving...'; els.conf.btn.disabled = true;
             try {
-                const res = await sendData({
-                    action: 'saveConfig',
-                    label: document.getElementById('config-label').value,
-                    peptide: document.getElementById('config-peptide').value,
-                    value: document.getElementById('config-value').value,
-                    unit: document.getElementById('config-unit').value,
-                    site: document.getElementById('config-site').value
-                });
-                if (res.success) {
-                    els.conf.msg.textContent = 'Saved!'; els.conf.msg.className = 'text-green-400 block text-center mt-2';
-                    loadConfig();
-                    document.getElementById('config-label').value = '';
-                } else throw new Error(res.error);
-            } catch (err) {
-                els.conf.msg.textContent = 'Error: ' + err.message; els.conf.msg.className = 'text-red-400 block text-center mt-2';
-            }
+                const res = await sendData({ action: 'saveConfig', label: document.getElementById('config-label').value, peptide: document.getElementById('config-peptide').value, value: document.getElementById('config-value').value, unit: document.getElementById('config-unit').value, site: "Ask" });
+                if (res.success) { els.conf.msg.textContent = 'Saved!'; els.conf.msg.className = 'text-green-400 block text-center mt-2'; loadConfig(); document.getElementById('config-label').value = ''; } 
+                else throw new Error(res.error);
+            } catch (err) { els.conf.msg.textContent = 'Error'; els.conf.msg.className = 'text-red-400 block text-center mt-2'; }
             els.conf.btn.textContent = 'Save New Preset'; els.conf.btn.disabled = false;
         });
 
@@ -282,26 +354,21 @@
             els.log.btn.textContent = 'Saving...'; els.log.btn.disabled = true; els.log.msg.classList.add('hidden');
             try {
                 const res = await sendData(data);
-                if (res.success) {
-                    els.log.msg.textContent = 'Log Saved!'; els.log.msg.className = 'text-green-400 block text-center mt-2';
-                } else throw new Error(res.error);
-            } catch (err) {
-                els.log.msg.textContent = 'Error: ' + err.message; els.log.msg.className = 'text-red-400 block text-center mt-2';
-            }
+                if (res.success) { els.log.msg.textContent = 'Log Saved!'; els.log.msg.className = 'text-green-400 block text-center mt-2'; } 
+                else throw new Error(res.error);
+            } catch (err) { els.log.msg.textContent = 'Error'; els.log.msg.className = 'text-red-400 block text-center mt-2'; }
             els.log.btn.textContent = 'Log Injection'; els.log.btn.disabled = false;
         }
 
-        // Calculator logic
         function calc() {
             try {
                 const vm = parseFloat(els.calc.m.value), dv = parseFloat(els.calc.v.value), td = parseFloat(els.calc.d.value);
                 if (!vm || !dv || !td) return;
                 const m_ug = els.calc.mu.value === 'mg' ? vm * 1000 : vm;
-                const v_ul = els.calc.vu.value === 'ml' ? dv * 1000 : dv * 1000; // both ml and cc are same
+                const v_ul = els.calc.vu.value === 'ml' ? dv * 1000 : dv * 1000; 
                 const d_ug = els.calc.du.value === 'mg' ? td * 1000 : td;
                 const vol = (d_ug / (m_ug / v_ul));
-                els.calc.res.textContent = (vol / 10).toFixed(1) + ' IU';
-                els.calc.mic.textContent = '(' + vol.toFixed(1) + ' µL)';
+                els.calc.res.textContent = (vol / 10).toFixed(1) + ' IU'; els.calc.mic.textContent = '(' + vol.toFixed(1) + ' µL)';
             } catch (e) {}
         }
         Object.values(els.calc).forEach(i => i.addEventListener && i.addEventListener('input', calc));
