@@ -20,7 +20,7 @@
                 extend: {
                     fontFamily: { sans: ['Outfit', 'sans-serif'] },
                     colors: { background: '#0f172a', surface: '#1e293b', primary: '#6366f1' },
-                    animation: { 'fade-in': 'fadeIn 0.3s ease-out', 'slide-up': 'slideUp 0.4s ease-out' },
+                    animation: { 'fade-in': 'fadeIn 0.3s ease-out', 'slide-up': 'slideUp 0.4s ease-out', 'pulse-slow': 'pulse 3s infinite' },
                     keyframes: { fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } }, slideUp: { '0%': { transform: 'translateY(20px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } } }
                 }
             }
@@ -312,14 +312,28 @@
                         <span id="calculator-result">0</span> <span class="text-2xl text-slate-500 mb-2">IU</span>
                     </div>
                     
-                    <div class="mt-4 w-full pt-4 border-t border-slate-700 flex justify-between text-xs text-slate-400">
-                        <div class="text-center">
-                            <div class="text-white font-bold" id="calc-concentration">0</div>
-                            <div>mcg/mL</div>
+                    <div class="mt-4 w-full pt-4 border-t border-slate-700 space-y-3">
+                         <!-- Concentration Panel (New) -->
+                        <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-700 text-sm">
+                            <p class="text-xs text-slate-400 mb-1">Total Reconstitution Concentration</p>
+                            <div id="calc-conc-panel" class="font-bold text-white flex justify-between items-center">
+                                <span id="calc-concentration" class="text-xl">--</span> mcg/mL
+                                <div id="calc-alert" class="hidden text-red-400 bg-red-900/30 px-2 py-0.5 rounded-full text-xs font-bold border border-red-500/50">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline mr-1"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                                    High Conc.
+                                </div>
+                            </div>
                         </div>
-                        <div class="text-center">
-                            <div class="text-white font-bold" id="calculator-microliters">0</div>
-                            <div>µL Volume</div>
+
+                        <div class="flex justify-between text-xs text-slate-400">
+                            <div class="text-center w-1/2">
+                                <div class="text-white font-bold" id="calc-mcg-unit">0</div>
+                                <div>mcg per Unit (IU)</div>
+                            </div>
+                            <div class="text-center w-1/2">
+                                <div class="text-white font-bold" id="calculator-microliters">0</div>
+                                <div>µL Volume</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -374,10 +388,7 @@
     <!-- MODAL FOR SITE SELECTION -->
     <div id="site-modal" class="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-4 animate-fade-in">
         <div class="bg-slate-800 w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl border-t border-slate-700 max-h-[80vh] flex flex-col">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold">Select Site</h3>
-                <button onclick="closeModal()" class="p-2 bg-slate-700 rounded-full text-slate-300 hover:text-white">&times;</button>
-            </div>
+            <div class="flex justify-between items-center mb-4"><h3 class="text-xl font-bold">Select Site</h3><button onclick="closeModal()" class="p-2 bg-slate-700 rounded-full text-slate-300 hover:text-white">&times;</button></div>
             <div class="mb-4 relative"><svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg><input type="text" id="modal-note" placeholder="Add optional note..." class="w-full bg-slate-900 border border-slate-700 rounded-xl py-3 px-4 pl-10 text-white focus:border-indigo-500 outline-none"></div>
             <div id="modal-sites-list" class="grid grid-cols-2 gap-3 overflow-y-auto pb-4"></div>
         </div>
@@ -396,7 +407,7 @@
             logForm: document.getElementById('log-form'), configForm: document.getElementById('config-form'),
             pep: document.getElementById('peptide-name'), custPep: document.getElementById('custom-peptide'), custPepGrp: document.getElementById('custom-peptide-group'),
             site: document.getElementById('injection-site'), custSite: document.getElementById('custom-site'), custSiteGrp: document.getElementById('custom-site-group'), manualNote: document.getElementById('manual-notes'),
-            calc: { m: document.getElementById('vial-mass-input'), mu: document.getElementById('vial-mass-unit'), v: document.getElementById('dilution-volume-input'), vu: document.getElementById('dilution-volume-unit'), d: document.getElementById('target-dose-input'), du: document.getElementById('target-dose-unit'), res: document.getElementById('calculator-result'), mic: document.getElementById('calculator-microliters'), conc: document.getElementById('calc-concentration'), syringeMarks: document.getElementById('syringe-marks'), visualLiquid: document.getElementById('visual-liquid'), visualPlunger: document.getElementById('visual-plunger') },
+            calc: { m: document.getElementById('vial-mass-input'), mu: document.getElementById('vial-mass-unit'), v: document.getElementById('dilution-volume-input'), vu: document.getElementById('dilution-volume-unit'), d: document.getElementById('target-dose-input'), du: document.getElementById('target-dose-unit'), res: document.getElementById('calculator-result'), mic: document.getElementById('calculator-microliters'), conc: document.getElementById('calc-concentration'), mcgPerUnit: document.getElementById('calc-mcg-unit'), syringeMarks: document.getElementById('syringe-marks'), visualLiquid: document.getElementById('visual-liquid'), visualPlunger: document.getElementById('visual-plunger'), alert: document.getElementById('calc-alert') },
             suggestionBox: document.getElementById('suggestion-box'), suggestionText: document.getElementById('suggestion-text'),
             cycleToggle: document.getElementById('cycle-toggle'), cycleOptions: document.getElementById('cycle-options'), cycleStart: document.getElementById('config-cycle-start'), cycleWeeks: document.getElementById('config-cycle-weeks')
         };
@@ -562,9 +573,7 @@
         }
 
         function initSyringe() {
-             // Populate syringe ticks for visual effect
              els.calc.syringeMarks.innerHTML = '';
-             // 10 Major ticks for 100 units
              for(let i=0; i<=10; i++) {
                  const mark = document.createElement('div');
                  mark.className = 'mark major';
@@ -572,7 +581,6 @@
                  mark.innerHTML = `<span class="mark-label">${i*10}</span>`;
                  els.calc.syringeMarks.appendChild(mark);
              }
-             // Minor ticks
              for(let i=0; i<50; i++) {
                  if(i % 5 !== 0) {
                     const mark = document.createElement('div');
@@ -586,30 +594,44 @@
 
         function runCalc() {
             const vm = parseFloat(els.calc.m.value), dv = parseFloat(els.calc.v.value), td = parseFloat(els.calc.d.value);
-            if(!vm || !dv || !td) { 
-                els.calc.res.innerText = "0"; 
-                els.calc.mic.innerText = "0"; 
-                els.calc.conc.innerText = "--"; 
-                // Reset visual
-                els.calc.visualLiquid.style.height = '0%';
-                els.calc.visualPlunger.style.bottom = '0%';
+            // Reset state
+            els.calc.alert.classList.add('hidden');
+            
+            if(!vm || !dv || !td || vm <= 0 || dv <= 0 || td <= 0) { 
+                els.calc.res.innerText = "0"; els.calc.mic.innerText = "0"; els.calc.conc.innerText = "--"; els.calc.mcgPerUnit.innerText = "0";
+                els.calc.visualLiquid.style.height = '0%'; els.calc.visualPlunger.style.bottom = '0%';
                 return; 
             }
             
-            const m_ug = els.calc.mu.value === 'mg' ? vm * 1000 : vm;
-            const conc_mcg_ml = m_ug / dv;
-            const mcgPerUnit = conc_mcg_ml * 0.01;
+            // 1. Concentration per mL (mcg/mL)
+            const m_mcg = els.calc.mu.value === 'mg' ? vm * 1000 : vm;
+            const dv_ml = els.calc.vu.value === 'ml' ? dv : dv;
+            const conc_mcg_ml = m_mcg / dv_ml;
+
+            // 2. Alert (Threshold: 5000 mcg/mL)
+            if (conc_mcg_ml > 5000) {
+                els.calc.alert.classList.remove('hidden');
+            }
+            
+            // 3. Concentration per Unit (IU)
+            const mcgPerUnit = conc_mcg_ml * 0.01; // 1 IU = 0.01 mL
+            
+            // 4. Units needed for Target Dose
             const target_mcg = els.calc.du.value === 'mg' ? td * 1000 : td;
             const unitsNeeded = target_mcg / mcgPerUnit;
+            
+            // 5. Microliters
             const vol_ul = (unitsNeeded * 0.01) * 1000;
 
-            els.calc.res.innerText = `${unitsNeeded.toFixed(1)}`;
-            els.calc.mic.innerText = `${vol_ul.toFixed(1)}`;
-            els.calc.conc.innerText = mcgPerUnit.toFixed(1);
+            // --- DISPLAY RESULTS ---
             
+            // Affiche le nombre exact (plus de décimales)
+            els.calc.res.innerText = `${unitsNeeded.toFixed(2)}`; 
+            els.calc.mic.innerText = `${vol_ul.toFixed(1)}`;
+            els.calc.conc.innerText = conc_mcg_ml.toFixed(0); // Conc. Totale
+            els.calc.mcgPerUnit.innerText = mcgPerUnit.toFixed(1); // Conc. par IU
+
             // Update Visuals
-            // Standard U100 syringe has 100 units max. 
-            // We cap visual at 100 but show real number text.
             let visualPercent = unitsNeeded;
             if(visualPercent > 100) visualPercent = 100;
             if(visualPercent < 0) visualPercent = 0;
