@@ -73,22 +73,17 @@
             right: 0;
             width: 100%;
             height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            /* Padding now needs to reflect plunger height and top/bottom edge space */
             padding: 10px 0; 
             pointer-events: none;
             z-index: 10;
         }
         .mark {
-            /* Position relative to parent element inside syringe-marks */
             position: absolute;
             left: 0;
-            width: 50%; /* Minor ticks half width */
+            width: 50%;
             height: 1px;
             border-top: 1px solid rgba(255,255,255,0.3);
-            transform: translateY(-0.5px); /* Center line vertically */
+            transform: translateY(-0.5px); 
         }
         .mark.major {
             width: 100%;
@@ -96,7 +91,7 @@
         }
         .mark-label {
             position: absolute;
-            right: 45px; /* Position label outside the syringe body */
+            right: 45px; 
             top: -6px;
             font-size: 10px;
             color: #94a3b8;
@@ -492,28 +487,34 @@
         }
 
         // --- CYCLE LOGIC ---
-        function getCycleState(p) {
+        function getCycleState(p, dateToCheck) {
             if (!p.cycleStart || !p.cycleWeeks || !p.cycleON || !p.cycleOFF) return { state: 'N/A', display: '' };
             const start = new Date(p.cycleStart);
-            const today = new Date();
-            const diffDays = Math.floor((today - start) / (1000 * 60 * 60 * 24));
+            const checkDate = dateToCheck ? new Date(dateToCheck) : new Date();
+            
+            // Normalize dates to midnight to ensure accurate day comparison
+            const startDay = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+            const checkDay = new Date(checkDate.getFullYear(), checkDate.getMonth(), checkDate.getDate());
+
+            const diffTime = checkDay.getTime() - startDay.getTime();
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
             
             if (diffDays < 0) return { state: 'STARTING', display: 'Starts Soon' };
 
             const totalCycleDays = (parseInt(p.cycleON) + parseInt(p.cycleOFF));
-            const dayInCycle = diffDays % totalCycleDays;
-            
-            const daysIntoProtocol = Math.floor(diffDays / 7) * 7 + (today.getDay() === start.getDay() ? 0 : (today.getDay() - start.getDay() + 7) % 7);
+            const totalWeeks = parseInt(p.cycleWeeks);
             const currentWeek = Math.floor(diffDays / 7) + 1;
 
-            if (currentWeek > parseInt(p.cycleWeeks)) {
-                return { state: 'OFF_CYCLE', display: 'Cycle Finished' };
+            if (currentWeek > totalWeeks) {
+                return { state: 'OFF_CYCLE', display: 'Cycle Ended' };
             }
 
-            if (dayInCycle < parseInt(p.cycleON)) {
-                return { state: 'ON', display: `Day ${dayInCycle + 1} of ${p.cycleON} ON` };
+            const dayInCyclePattern = diffDays % totalCycleDays;
+            
+            if (dayInCyclePattern < parseInt(p.cycleON)) {
+                return { state: 'ON', display: `Day ${dayInCyclePattern + 1} of ${p.cycleON} ON` };
             } else {
-                return { state: 'OFF', display: `Day ${dayInCycle - p.cycleON + 1} of ${p.cycleOFF} OFF` };
+                return { state: 'OFF', display: `Day ${dayInCyclePattern - p.cycleON + 1} of ${p.cycleOFF} OFF` };
             }
         }
         
@@ -578,11 +579,30 @@
             els.historyList.innerHTML = '';
             if (list.length === 0) { els.historyList.innerHTML = '<div class="text-center text-slate-500 py-4">No matching logs.</div>'; return; }
             list.forEach(h => {
-                let dateStr = h.date, timeStr = ""; const dateObj = new Date(h.date);
-                if (!isNaN(dateObj.getTime())) { dateStr = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }); timeStr = dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }); } 
+                let dateStr = h.date, timeStr = "", cycleTag = '';
+                const dateObj = new Date(h.date);
+                
+                if (!isNaN(dateObj.getTime())) { 
+                    dateStr = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }); 
+                    timeStr = dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }); 
+                    
+                    // --- NEW: Check if this logged peptide was on an OFF day ---
+                    // This is complex as we don't know which preset it was, so we check *all* presets
+                    const relevantPresets = JSON.parse(localStorage.getItem('pep_presets') || '[]').filter(p => p.peptide === h.peptide && p.cycleStart);
+                    
+                    if (relevantPresets.length > 0) {
+                        const cycleCheck = getCycleState(relevantPresets[0], dateObj); // Check against the first matching preset
+                        
+                        if (cycleCheck.state === 'OFF' || cycleCheck.state === 'OFF_CYCLE') {
+                            cycleTag = `<span class="text-[10px] uppercase bg-red-900/30 text-red-400 px-1.5 py-0.5 rounded-full ml-2">${cycleCheck.state} DAY LOG</span>`;
+                        }
+                    }
+                    // --- END NEW CHECK ---
+                } 
+
                 const noteHtml = h.notes ? `<div class="mt-2 text-xs text-indigo-300 italic flex items-center gap-1"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> ${h.notes}</div>` : '';
                 const card = document.createElement('div'); card.className = "bg-slate-800/50 p-4 rounded-2xl border border-slate-700/50 flex justify-between items-start animate-fade-in";
-                card.innerHTML = `<div><div class="font-bold text-white flex items-center gap-2">${h.peptide} <span class="text-xs bg-indigo-500/10 text-indigo-400 px-2 py-0.5 rounded font-mono border border-indigo-500/20">${h.dosage}</span></div><div class="text-xs text-slate-400 mt-1 flex items-center gap-1"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>${h.site}</div>${noteHtml}</div><div class="flex flex-col items-end gap-2"><div class="text-right text-xs text-slate-500 font-mono bg-slate-900/50 px-2 py-1 rounded border border-slate-800"><div class="text-slate-400">${dateStr}</div><div class="text-indigo-400 font-bold">${timeStr}</div></div><button class="text-slate-600 hover:text-red-400 transition p-1" onclick="deleteEntry('${h.row}')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></button></div>`;
+                card.innerHTML = `<div><div class="font-bold text-white flex items-center gap-2">${h.peptide} ${cycleTag}<span class="text-xs bg-indigo-500/10 text-indigo-400 px-2 py-0.5 rounded font-mono border border-indigo-500/20">${h.dosage}</span></div><div class="text-xs text-slate-400 mt-1 flex items-center gap-1"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>${h.site}</div>${noteHtml}</div><div class="flex flex-col items-end gap-2"><div class="text-right text-xs text-slate-500 font-mono bg-slate-900/50 px-2 py-1 rounded border border-slate-800"><div class="text-slate-400">${dateStr}</div><div class="text-indigo-400 font-bold">${timeStr}</div></div><button class="text-slate-600 hover:text-red-400 transition p-1" onclick="deleteEntry('${h.row}')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></button></div>`;
                 els.historyList.appendChild(card);
             });
         }
@@ -607,6 +627,19 @@
             const pName = els.pep.value === 'Other' ? document.getElementById('custom-peptide').value : els.pep.value;
             const sName = els.site.value === 'Other' ? document.getElementById('custom-site').value : els.site.value;
             const dose = `${document.getElementById('dosage-value').value} ${document.getElementById('dosage-unit').value}`;
+            
+            // --- NEW CHECK: PREVENT LOGGING ON OFF DAY ---
+            const presets = JSON.parse(localStorage.getItem('pep_presets') || '[]').filter(p => p.peptide === pName && p.cycleStart);
+            if (presets.length > 0) {
+                 const cycleCheck = getCycleState(presets[0], document.getElementById('timestamp').value);
+                 if (cycleCheck.state === 'OFF' || cycleCheck.state === 'OFF_CYCLE') {
+                     alert(`Protocol Warning: ${pName} is currently on an ${cycleCheck.state} cycle day. Log prevented.`);
+                     btn.innerHTML = originalText; btn.disabled = false;
+                     return;
+                 }
+            }
+            // --- END NEW CHECK ---
+
             const data = { action: 'logInjection', peptide: pName, dosage: dose, site: sName, timestamp: document.getElementById('timestamp').value, notes: els.manualNote.value };
             const res = await api(data);
             btn.innerHTML = originalText; btn.disabled = false;
@@ -616,6 +649,16 @@
         async function finalizeQuickLog(site) {
             els.modal.classList.add('hidden');
             if(!pendingPreset) return;
+            
+            // --- NEW CHECK: PREVENT LOGGING ON OFF DAY FOR QUICK LOG ---
+            const cycleCheck = getCycleState(pendingPreset);
+            if (cycleCheck.state === 'OFF' || cycleCheck.state === 'OFF_CYCLE') {
+                 alert(`Protocol Warning: ${pendingPreset.peptide} is currently on an ${cycleCheck.state} cycle day. Log prevented.`);
+                 pendingPreset = null;
+                 return;
+            }
+            // --- END NEW CHECK ---
+
             const ts = new Date(new Date() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0,16);
             const data = { action: 'logInjection', peptide: pendingPreset.peptide, dosage: `${pendingPreset.value} ${pendingPreset.unit}`, site: site, timestamp: ts, notes: els.modalNote.value };
             const res = await api(data);
