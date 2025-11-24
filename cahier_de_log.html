@@ -76,23 +76,27 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            padding: 10px 0;
+            /* Padding now needs to reflect plunger height and top/bottom edge space */
+            padding: 10px 0; 
             pointer-events: none;
             z-index: 10;
         }
         .mark {
-            border-top: 1px solid rgba(255,255,255,0.3);
-            width: 100%;
+            /* Position relative to parent element inside syringe-marks */
+            position: absolute;
+            left: 0;
+            width: 50%; /* Minor ticks half width */
             height: 1px;
-            position: relative;
+            border-top: 1px solid rgba(255,255,255,0.3);
+            transform: translateY(-0.5px); /* Center line vertically */
         }
         .mark.major {
-            border-top: 1px solid rgba(255,255,255,0.8);
             width: 100%;
+            border-top: 1px solid rgba(255,255,255,0.8);
         }
         .mark-label {
             position: absolute;
-            right: 45px; /* Label on left */
+            right: 45px; /* Position label outside the syringe body */
             top: -6px;
             font-size: 10px;
             color: #94a3b8;
@@ -103,14 +107,14 @@
             bottom: 0;
             left: 0;
             width: 100%;
-            background: linear-gradient(to top, #ef4444, #f87171); /* Red liquid like peptide calculators */
+            background: linear-gradient(to top, #ef4444, #f87171); 
             transition: height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
             opacity: 0.8;
             z-index: 1;
         }
         .plunger {
             position: absolute;
-            bottom: 0; /* Moves with liquid */
+            bottom: 0; 
             left: 0;
             width: 100%;
             height: 10px;
@@ -574,15 +578,18 @@
 
         function initSyringe() {
              els.calc.syringeMarks.innerHTML = '';
+             // 10 Major ticks (10, 20, 30... 100)
              for(let i=0; i<=10; i++) {
                  const mark = document.createElement('div');
                  mark.className = 'mark major';
+                 // Position from bottom: 0% to 100%
                  mark.style.bottom = `${i * 10}%`;
                  mark.innerHTML = `<span class="mark-label">${i*10}</span>`;
                  els.calc.syringeMarks.appendChild(mark);
              }
+             // 50 Minor ticks (Every 2%) - excludes major ticks at i*10
              for(let i=0; i<50; i++) {
-                 if(i % 5 !== 0) {
+                 if(i % 5 !== 0) { // Exclure les multiples de 5 (qui sont les marques 10, 20, etc.)
                     const mark = document.createElement('div');
                     mark.className = 'mark';
                     mark.style.bottom = `${i * 2}%`;
@@ -631,7 +638,7 @@
             els.calc.conc.innerText = conc_mcg_ml.toFixed(0); // Conc. Totale
             els.calc.mcgPerUnit.innerText = mcgPerUnit.toFixed(1); // Conc. par IU
 
-            // Update Visuals
+            // Update Visuals (Cap at 100%)
             let visualPercent = unitsNeeded;
             if(visualPercent > 100) visualPercent = 100;
             if(visualPercent < 0) visualPercent = 0;
