@@ -380,6 +380,16 @@
                             <p class="text-xs text-indigo-400 font-bold uppercase tracking-wide">Cycle Settings</p>
                             <div><label class="text-xs text-slate-400">Start Date</label><div class="input-group"><svg class="input-icon w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg><input type="date" id="config-cycle-start" class="input-field" style="color-scheme: dark;"></div></div>
                             <div><label class="text-xs text-slate-400">Duration (Weeks)</label><div class="input-group"><svg class="input-icon w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg><input type="number" id="config-cycle-weeks" placeholder="8" class="input-field"></div></div>
+                            <div class="flex gap-2">
+                                <div class="w-1/2">
+                                    <label class="text-xs text-slate-400">ON Days</label>
+                                    <input type="number" id="config-cycle-on" placeholder="5" class="input-field pl-4">
+                                </div>
+                                <div class="w-1/2">
+                                    <label class="text-xs text-slate-400">OFF Days</label>
+                                    <input type="number" id="config-cycle-off" placeholder="2" class="input-field pl-4">
+                                </div>
+                            </div>
                         </div>
                         <button type="submit" id="config-submit-btn" class="btn-primary w-full py-3 rounded-xl font-bold">Save Preset</button>
                     </form>
@@ -413,7 +423,7 @@
             site: document.getElementById('injection-site'), custSite: document.getElementById('custom-site'), custSiteGrp: document.getElementById('custom-site-group'), manualNote: document.getElementById('manual-notes'),
             calc: { m: document.getElementById('vial-mass-input'), mu: document.getElementById('vial-mass-unit'), v: document.getElementById('dilution-volume-input'), vu: document.getElementById('dilution-volume-unit'), d: document.getElementById('target-dose-input'), du: document.getElementById('target-dose-unit'), res: document.getElementById('calculator-result'), mic: document.getElementById('calculator-microliters'), conc: document.getElementById('calc-concentration'), mcgPerUnit: document.getElementById('calc-mcg-unit'), syringeMarks: document.getElementById('syringe-marks'), visualLiquid: document.getElementById('visual-liquid'), visualPlunger: document.getElementById('visual-plunger'), alert: document.getElementById('calc-alert') },
             suggestionBox: document.getElementById('suggestion-box'), suggestionText: document.getElementById('suggestion-text'),
-            cycleToggle: document.getElementById('cycle-toggle'), cycleOptions: document.getElementById('cycle-options'), cycleStart: document.getElementById('config-cycle-start'), cycleWeeks: document.getElementById('config-cycle-weeks')
+            cycleToggle: document.getElementById('cycle-toggle'), cycleOptions: document.getElementById('cycle-options'), cycleStart: document.getElementById('config-cycle-start'), cycleWeeks: document.getElementById('config-cycle-weeks'), cycleOn: document.getElementById('config-cycle-on'), cycleOff: document.getElementById('config-cycle-off')
         };
 
         const sites = [ {name: "Right Abdomen (Upper)", icon: "R"}, {name: "Right Abdomen (Lower)", icon: "R"}, {name: "Left Abdomen (Upper)", icon: "L"}, {name: "Left Abdomen (Lower)", icon: "L"}, {name: "Right Flank", icon: "R"}, {name: "Left Flank", icon: "L"}, {name: "Right Thigh", icon: "R"}, {name: "Left Thigh", icon: "L"}, {name: "Right Deltoid", icon: "R"}, {name: "Left Deltoid", icon: "L"} ];
@@ -481,7 +491,38 @@
             try { const res = await fetch(APP_URL, { method: 'POST', body: JSON.stringify(data) }); return await res.json(); } catch(e) { addToQueue(data); return { success: true, offline: true }; }
         }
 
-        function getCycleProgress(startStr, weeks) { if (!startStr || !weeks) return null; const start = new Date(startStr), now = new Date(), diff = Math.ceil(Math.abs(now - start)/(1000*60*60*24)); return { current: Math.ceil(diff/7), total: weeks, percent: Math.min(100, (Math.ceil(diff/7)/weeks)*100) }; }
+        // --- CYCLE LOGIC ---
+        function getCycleState(p) {
+            if (!p.cycleStart || !p.cycleWeeks || !p.cycleON || !p.cycleOFF) return { state: 'N/A', display: '' };
+            const start = new Date(p.cycleStart);
+            const today = new Date();
+            const diffDays = Math.floor((today - start) / (1000 * 60 * 60 * 24));
+            
+            if (diffDays < 0) return { state: 'STARTING', display: 'Starts Soon' };
+
+            const totalCycleDays = (parseInt(p.cycleON) + parseInt(p.cycleOFF));
+            const dayInCycle = diffDays % totalCycleDays;
+            
+            const daysIntoProtocol = Math.floor(diffDays / 7) * 7 + (today.getDay() === start.getDay() ? 0 : (today.getDay() - start.getDay() + 7) % 7);
+            const currentWeek = Math.floor(diffDays / 7) + 1;
+
+            if (currentWeek > parseInt(p.cycleWeeks)) {
+                return { state: 'OFF_CYCLE', display: 'Cycle Finished' };
+            }
+
+            if (dayInCycle < parseInt(p.cycleON)) {
+                return { state: 'ON', display: `Day ${dayInCycle + 1} of ${p.cycleON} ON` };
+            } else {
+                return { state: 'OFF', display: `Day ${dayInCycle - p.cycleON + 1} of ${p.cycleOFF} OFF` };
+            }
+        }
+        
+        function getCycleProgress(p) {
+            if (!p.cycleStart || !p.cycleWeeks) return null; 
+            const start = new Date(p.cycleStart), now = new Date();
+            const diff = Math.ceil(Math.abs(now - start)/(1000*60*60*24));
+            return { current: Math.ceil(diff/7), total: p.cycleWeeks, percent: Math.min(100, (Math.ceil(diff/7)/p.cycleWeeks)*100) }; 
+        }
 
         async function loadConfig() {
             if (!navigator.onLine) { els.quickContainer.innerHTML = `<div class="col-span-2 text-center p-4 border border-dashed border-slate-700/50 rounded-xl text-slate-500 text-sm">Offline mode.</div>`; return; }
@@ -489,15 +530,31 @@
             if(res.success && res.presets) {
                 els.quickContainer.innerHTML = '';
                 res.presets.forEach(p => {
+                    const cycleState = getCycleState(p);
                     let cycleHtml = '';
-                    if(p.cycleStart && p.cycleWeeks) {
-                        const c = getCycleProgress(p.cycleStart, p.cycleWeeks);
-                        cycleHtml = `<div class="w-full bg-slate-700 rounded-full h-1.5 mt-3 mb-1"><div class="bg-indigo-400 h-1.5 rounded-full" style="width: ${c.percent}%"></div></div><div class="text-[10px] text-indigo-300 font-bold text-right">Week ${c.current} / ${c.total}</div>`;
+                    let btnClass = "btn-quick bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 hover:border-indigo-500/50 transition text-left group relative overflow-hidden";
+                    
+                    if(cycleState.state !== 'N/A') {
+                        const progress = getCycleProgress(p);
+                        if(cycleState.state === 'OFF' || cycleState.state === 'OFF_CYCLE') {
+                            btnClass = "bg-red-900/40 border-red-700/50 p-4 rounded-xl text-left transition group relative overflow-hidden hover:border-red-500/50";
+                            cycleHtml = `<div class="w-full bg-slate-700 rounded-full h-1.5 mt-3 mb-1"><div class="bg-red-500 h-1.5 rounded-full" style="width: ${progress.percent}%"></div></div><div class="text-[10px] text-red-300 font-bold text-right">${cycleState.display}</div>`;
+                        } else if (cycleState.state === 'ON') {
+                            cycleHtml = `<div class="w-full bg-slate-700 rounded-full h-1.5 mt-3 mb-1"><div class="bg-green-500 h-1.5 rounded-full" style="width: ${progress.percent}%"></div></div><div class="text-[10px] text-green-300 font-bold text-right">Week ${progress.current} / ${progress.total}</div>`;
+                        }
                     }
+
                     const btn = document.createElement('button');
-                    btn.className = "btn-quick bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 hover:border-indigo-500/50 transition text-left group relative overflow-hidden";
+                    btn.className = btnClass;
+                    
                     btn.innerHTML = `<div class="font-bold text-white group-hover:text-indigo-400 mb-1">${p.label}</div><div class="text-xs text-slate-500">${p.value}${p.unit}</div>${cycleHtml}`;
-                    btn.onclick = () => { pendingPreset = p; openSiteModal(); };
+                    
+                    if (cycleState.state === 'OFF' || cycleState.state === 'OFF_CYCLE') {
+                        btn.onclick = () => alert(`Cannot log: This is currently an ${cycleState.state === 'OFF' ? 'OFF day' : 'OFF-Cycle period'}.`);
+                    } else {
+                        btn.onclick = () => { pendingPreset = p; openSiteModal(); };
+                    }
+                    
                     els.quickContainer.appendChild(btn);
                 });
             } else { els.quickContainer.innerHTML = `<div class="col-span-2 text-center p-4 border border-dashed border-slate-700/50 rounded-xl text-slate-500 text-sm">No presets found.</div>`; }
@@ -570,7 +627,30 @@
             e.preventDefault();
             const btn = document.getElementById('config-submit-btn'); btn.textContent = "Saving..."; btn.disabled = true;
             const isCycle = els.cycleToggle.checked;
-            const data = { action: 'saveConfig', label: document.getElementById('config-label').value, peptide: document.getElementById('config-peptide').value, value: document.getElementById('config-value').value, unit: document.getElementById('config-unit').value, site: 'Ask', cycleStart: isCycle ? els.cycleStart.value : null, cycleWeeks: isCycle ? els.cycleWeeks.value : null };
+            
+            let cycleOn = null, cycleOff = null;
+            if (isCycle) {
+                cycleOn = els.cycleOn.value;
+                cycleOff = els.cycleOff.value;
+                if (!cycleOn || !cycleOff || parseInt(cycleOn) <= 0 || parseInt(cycleOff) < 0) {
+                     alert("Cycle ON/OFF days must be valid numbers.");
+                     btn.textContent = "Save Preset"; btn.disabled = false;
+                     return;
+                }
+            }
+            
+            const data = { 
+                action: 'saveConfig', 
+                label: document.getElementById('config-label').value, 
+                peptide: document.getElementById('config-peptide').value, 
+                value: document.getElementById('config-value').value, 
+                unit: document.getElementById('config-unit').value, 
+                site: 'Ask', 
+                cycleStart: isCycle ? els.cycleStart.value : null, 
+                cycleWeeks: isCycle ? els.cycleWeeks.value : null,
+                cycleON: cycleOn,
+                cycleOFF: cycleOff
+            };
             const res = await api(data);
             btn.textContent = "Save Preset"; btn.disabled = false;
             if(res.success) { alert("Preset Saved"); els.configForm.reset(); els.cycleToggle.checked = false; els.cycleOptions.classList.add('hidden'); loadConfig(); switchView('log'); } else alert("Error");
@@ -578,18 +658,15 @@
 
         function initSyringe() {
              els.calc.syringeMarks.innerHTML = '';
-             // 10 Major ticks (10, 20, 30... 100)
              for(let i=0; i<=10; i++) {
                  const mark = document.createElement('div');
                  mark.className = 'mark major';
-                 // Position from bottom: 0% to 100%
                  mark.style.bottom = `${i * 10}%`;
                  mark.innerHTML = `<span class="mark-label">${i*10}</span>`;
                  els.calc.syringeMarks.appendChild(mark);
              }
-             // 50 Minor ticks (Every 2%) - excludes major ticks at i*10
              for(let i=0; i<50; i++) {
-                 if(i % 5 !== 0) { // Exclure les multiples de 5 (qui sont les marques 10, 20, etc.)
+                 if(i % 5 !== 0) {
                     const mark = document.createElement('div');
                     mark.className = 'mark';
                     mark.style.bottom = `${i * 2}%`;
@@ -601,7 +678,6 @@
 
         function runCalc() {
             const vm = parseFloat(els.calc.m.value), dv = parseFloat(els.calc.v.value), td = parseFloat(els.calc.d.value);
-            // Reset state
             els.calc.alert.classList.add('hidden');
             
             if(!vm || !dv || !td || vm <= 0 || dv <= 0 || td <= 0) { 
@@ -610,35 +686,22 @@
                 return; 
             }
             
-            // 1. Concentration per mL (mcg/mL)
             const m_mcg = els.calc.mu.value === 'mg' ? vm * 1000 : vm;
             const dv_ml = els.calc.vu.value === 'ml' ? dv : dv;
             const conc_mcg_ml = m_mcg / dv_ml;
 
-            // 2. Alert (Threshold: 5000 mcg/mL)
-            if (conc_mcg_ml > 5000) {
-                els.calc.alert.classList.remove('hidden');
-            }
+            if (conc_mcg_ml > 5000) { els.calc.alert.classList.remove('hidden'); }
             
-            // 3. Concentration per Unit (IU)
-            const mcgPerUnit = conc_mcg_ml * 0.01; // 1 IU = 0.01 mL
-            
-            // 4. Units needed for Target Dose
+            const mcgPerUnit = conc_mcg_ml * 0.01;
             const target_mcg = els.calc.du.value === 'mg' ? td * 1000 : td;
             const unitsNeeded = target_mcg / mcgPerUnit;
-            
-            // 5. Microliters
             const vol_ul = (unitsNeeded * 0.01) * 1000;
 
-            // --- DISPLAY RESULTS ---
-            
-            // Affiche le nombre exact (plus de décimales)
             els.calc.res.innerText = `${unitsNeeded.toFixed(2)}`; 
             els.calc.mic.innerText = `${vol_ul.toFixed(1)}`;
-            els.calc.conc.innerText = conc_mcg_ml.toFixed(0); // Conc. Totale
-            els.calc.mcgPerUnit.innerText = mcgPerUnit.toFixed(1); // Conc. par IU
+            els.calc.conc.innerText = conc_mcg_ml.toFixed(0);
+            els.calc.mcgPerUnit.innerText = mcgPerUnit.toFixed(1);
 
-            // Update Visuals (Cap at 100%)
             let visualPercent = unitsNeeded;
             if(visualPercent > 100) visualPercent = 100;
             if(visualPercent < 0) visualPercent = 0;
