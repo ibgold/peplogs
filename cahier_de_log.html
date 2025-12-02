@@ -11,12 +11,12 @@
     <meta name="apple-mobile-web-app-title" content="Peptide Log">
     <meta name="theme-color" content="#0f172a">
     
-    <!-- Icons (User defined logo.jpg) -->
-    <link rel="icon" href="logo.jpg">
-    <link rel="apple-touch-icon" href="logo.jpg">
+    <!-- Icons (User defined logo.png) -->
+    <link rel="icon" href="logo.png">
+    <link rel="apple-touch-icon" href="logo.png">
 
     <!-- Manifest for Android PWA (Inline) -->
-    <link rel="manifest" href='data:application/manifest+json,{"name":"Peptide Log Book","short_name":"Peptide Log","start_url":".","display":"standalone","background_color":"#0f172a","theme_color":"#0f172a","icons":[{"src":"logo.jpg","sizes":"192x192","type":"image/jpeg"},{"src":"logo.jpg","sizes":"512x512","type":"image/jpeg"}]}'>
+    <link rel="manifest" href='data:application/manifest+json,{"name":"Peptide Log Book","short_name":"Peptide Log","start_url":".","display":"standalone","background_color":"#0f172a","theme_color":"#0f172a","icons":[{"src":"logo.png","sizes":"192x192","type":"image/png"},{"src":"logo.png","sizes":"512x512","type":"image/png"}]}'>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -50,13 +50,11 @@
         select.input-field option { background-color: #1e293b; color: #f8fafc; padding: 10px; }
         select.input-field optgroup { background-color: #0f172a; color: #94a3b8; font-weight: bold; }
 
-        /* Buttons */
         .btn-primary { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3); transition: transform 0.2s, box-shadow 0.2s; }
         .btn-primary:active { transform: scale(0.98); }
         .btn-quick { background: rgba(51, 65, 85, 0.5); border: 1px solid rgba(255,255,255,0.05); transition: all 0.2s; position: relative; overflow: hidden; }
         .btn-quick:active { background: rgba(99, 102, 241, 0.2); border-color: #6366f1; }
 
-        /* Tabs */
         .nav-pill { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .nav-pill.active { background: #6366f1; color: white; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25); }
         
