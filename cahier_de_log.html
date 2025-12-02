@@ -30,9 +30,11 @@
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Outfit', sans-serif; background-color: #0f172a; background-image: radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%); color: #f8fafc; -webkit-tap-highlight-color: transparent; padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
         
+        /* Glassmorphism Cards */
         .glass-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); }
         .suggestion-glass { background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(30, 41, 59, 0.7) 100%); border: 1px solid rgba(99, 102, 241, 0.3); box-shadow: 0 0 20px rgba(99, 102, 241, 0.1); }
         
+        /* Inputs */
         .input-group { position: relative; transition: all 0.3s ease; }
         .input-field { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(148, 163, 184, 0.2); color: white; border-radius: 1rem; padding: 0.75rem 1rem 0.75rem 2.5rem; width: 100%; font-size: 16px; transition: all 0.2s; }
         .input-field:focus { border-color: #6366f1; box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2); outline: none; background: rgba(15, 23, 42, 0.9); }
@@ -42,88 +44,38 @@
         select.input-field option { background-color: #1e293b; color: #f8fafc; padding: 10px; }
         select.input-field optgroup { background-color: #0f172a; color: #94a3b8; font-weight: bold; }
 
+        /* Buttons */
         .btn-primary { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3); transition: transform 0.2s, box-shadow 0.2s; }
         .btn-primary:active { transform: scale(0.98); }
         .btn-quick { background: rgba(51, 65, 85, 0.5); border: 1px solid rgba(255,255,255,0.05); transition: all 0.2s; position: relative; overflow: hidden; }
         .btn-quick:active { background: rgba(99, 102, 241, 0.2); border-color: #6366f1; }
 
+        /* Tabs */
         .nav-pill { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .nav-pill.active { background: #6366f1; color: white; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25); }
         
+        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+        
+        /* Toggle Switch */
         .toggle-checkbox:checked { right: 0; border-color: #68D391; }
         .toggle-checkbox:checked + .toggle-label { background-color: #68D391; }
 
-        /* Syringe Visual Styles */
+        /* Visual Syringe */
         .syringe-container {
-            position: relative;
-            width: 60px;
-            height: 300px;
-            margin: 0 auto;
-            background: rgba(255,255,255,0.05);
-            border-radius: 8px;
-            border: 2px solid #475569;
-            overflow: hidden;
+            position: relative; width: 60px; height: 280px; margin: 0 auto;
+            background: rgba(255,255,255,0.05); border-radius: 8px; border: 2px solid #475569; overflow: hidden;
         }
-        .syringe-marks {
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 100%;
-            height: 100%;
-            padding: 10px 0; 
-            pointer-events: none;
-            z-index: 10;
-        }
-        .mark {
-            position: absolute;
-            left: 0;
-            width: 50%;
-            height: 1px;
-            border-top: 1px solid rgba(255,255,255,0.3);
-            transform: translateY(-0.5px); 
-        }
-        .mark.major {
-            width: 100%;
-            border-top: 1px solid rgba(255,255,255,0.8);
-        }
-        .mark-label {
-            position: absolute;
-            right: 45px; 
-            top: -6px;
-            font-size: 10px;
-            color: #94a3b8;
-            font-family: monospace;
-        }
-        .liquid {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background: linear-gradient(to top, #ef4444, #f87171); 
-            transition: height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            opacity: 0.8;
-            z-index: 1;
-        }
-        .plunger {
-            position: absolute;
-            bottom: 0; 
-            left: 0;
-            width: 100%;
-            height: 10px;
-            background: #334155;
-            z-index: 2;
-            transition: bottom 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            border-top: 2px solid #cbd5e1;
-        }
-        .needle {
-            width: 2px;
-            height: 20px;
-            background: #cbd5e1;
-            margin: 0 auto 2px auto;
-        }
+        .syringe-marks { position: absolute; top: 0; right: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none; }
+        .mark { position: absolute; left: 0; width: 40%; height: 1px; background: rgba(255,255,255,0.3); }
+        .mark.major { width: 100%; background: rgba(255,255,255,0.6); }
+        .mark-label { position: absolute; right: 5px; top: -6px; font-size: 9px; color: #94a3b8; font-family: monospace; }
+        
+        .liquid { position: absolute; bottom: 0; left: 0; width: 100%; background: linear-gradient(to top, #ef4444, #f87171); transition: height 0.5s cubic-bezier(0.4, 0, 0.2, 1); opacity: 0.8; z-index: 1; }
+        .plunger { position: absolute; bottom: 0; left: 0; width: 100%; height: 8px; background: #334155; z-index: 2; transition: bottom 0.5s cubic-bezier(0.4, 0, 0.2, 1); border-top: 2px solid #cbd5e1; }
+        .needle { width: 2px; height: 20px; background: #cbd5e1; margin: 0 auto 2px auto; }
     </style>
 </head>
 <body class="flex flex-col items-center min-h-screen pb-6">
@@ -299,9 +251,7 @@
                 <div class="glass-card rounded-3xl p-6 text-center flex flex-col items-center">
                     <div class="needle"></div>
                     <div class="syringe-container mb-4">
-                         <div class="syringe-marks" id="syringe-marks">
-                             <!-- Generated by JS -->
-                         </div>
+                         <div class="syringe-marks" id="syringe-marks"></div>
                          <div class="liquid" id="visual-liquid" style="height: 0%;"></div>
                          <div class="plunger" id="visual-plunger" style="bottom: 0%;"></div>
                     </div>
@@ -312,53 +262,24 @@
                     </div>
                     
                     <div class="mt-4 w-full pt-4 border-t border-slate-700 space-y-3">
-                         <!-- Concentration Panel (New) -->
                         <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-700 text-sm">
                             <p class="text-xs text-slate-400 mb-1">Total Reconstitution Concentration</p>
                             <div id="calc-conc-panel" class="font-bold text-white flex justify-between items-center">
                                 <span id="calc-concentration" class="text-xl">--</span> mcg/mL
-                                <div id="calc-alert" class="hidden text-red-400 bg-red-900/30 px-2 py-0.5 rounded-full text-xs font-bold border border-red-500/50">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline mr-1"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                                    High Conc.
-                                </div>
+                                <div id="calc-alert" class="hidden text-red-400 bg-red-900/30 px-2 py-0.5 rounded-full text-xs font-bold border border-red-500/50">High Conc.</div>
                             </div>
                         </div>
-
                         <div class="flex justify-between text-xs text-slate-400">
-                            <div class="text-center w-1/2">
-                                <div class="text-white font-bold" id="calc-mcg-unit">0</div>
-                                <div>mcg per Unit (IU)</div>
-                            </div>
-                            <div class="text-center w-1/2">
-                                <div class="text-white font-bold" id="calculator-microliters">0</div>
-                                <div>µL Volume</div>
-                            </div>
+                            <div class="text-center w-1/2"><div class="text-white font-bold" id="calc-mcg-unit">0</div><div>mcg per Unit (IU)</div></div>
+                            <div class="text-center w-1/2"><div class="text-white font-bold" id="calculator-microliters">0</div><div>µL Volume</div></div>
                         </div>
                     </div>
                 </div>
 
                 <form id="calculator-form" class="space-y-4">
-                    <div>
-                        <label class="text-sm text-slate-400 ml-1">Vial Mass</label>
-                        <div class="flex gap-2">
-                            <input type="number" id="vial-mass-input" placeholder="5" class="input-field flex-1">
-                            <select id="vial-mass-unit" class="bg-slate-700 text-white rounded-xl px-3 font-bold w-20"><option value="mg">mg</option><option value="mcg">mcg</option></select>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="text-sm text-slate-400 ml-1">Bac Water (Reconstitution)</label>
-                        <div class="flex gap-2">
-                            <input type="number" id="dilution-volume-input" placeholder="2" class="input-field flex-1">
-                            <select id="dilution-volume-unit" class="bg-slate-700 text-white rounded-xl px-3 font-bold w-20"><option value="ml">mL</option></select>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="text-sm text-slate-400 ml-1">Target Dose</label>
-                        <div class="flex gap-2">
-                            <input type="number" id="target-dose-input" placeholder="250" class="input-field flex-1">
-                            <select id="target-dose-unit" class="bg-slate-700 text-white rounded-xl px-3 font-bold w-20"><option value="mcg">mcg</option><option value="mg">mg</option></select>
-                        </div>
-                    </div>
+                    <div><label class="text-sm text-slate-400 ml-1">Vial Mass</label><div class="flex gap-2"><input type="number" id="vial-mass-input" placeholder="5" class="input-field flex-1"><select id="vial-mass-unit" class="bg-slate-700 text-white rounded-xl px-3 font-bold w-20"><option value="mg">mg</option><option value="mcg">mcg</option></select></div></div>
+                    <div><label class="text-sm text-slate-400 ml-1">Bac Water</label><div class="flex gap-2"><input type="number" id="dilution-volume-input" placeholder="2" class="input-field flex-1"><select id="dilution-volume-unit" class="bg-slate-700 text-white rounded-xl px-3 font-bold w-20"><option value="ml">mL</option></select></div></div>
+                    <div><label class="text-sm text-slate-400 ml-1">Target Dose</label><div class="flex gap-2"><input type="number" id="target-dose-input" placeholder="250" class="input-field flex-1"><select id="target-dose-unit" class="bg-slate-700 text-white rounded-xl px-3 font-bold w-20"><option value="mcg">mcg</option><option value="mg">mg</option></select></div></div>
                 </form>
             </div>
 
@@ -375,16 +296,7 @@
                             <p class="text-xs text-indigo-400 font-bold uppercase tracking-wide">Cycle Settings</p>
                             <div><label class="text-xs text-slate-400">Start Date</label><div class="input-group"><svg class="input-icon w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg><input type="date" id="config-cycle-start" class="input-field" style="color-scheme: dark;"></div></div>
                             <div><label class="text-xs text-slate-400">Duration (Weeks)</label><div class="input-group"><svg class="input-icon w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg><input type="number" id="config-cycle-weeks" placeholder="8" class="input-field"></div></div>
-                            <div class="flex gap-2">
-                                <div class="w-1/2">
-                                    <label class="text-xs text-slate-400">ON Days</label>
-                                    <input type="number" id="config-cycle-on" placeholder="5" class="input-field pl-4">
-                                </div>
-                                <div class="w-1/2">
-                                    <label class="text-xs text-slate-400">OFF Days</label>
-                                    <input type="number" id="config-cycle-off" placeholder="2" class="input-field pl-4">
-                                </div>
-                            </div>
+                            <div class="flex gap-2"><div class="w-1/2"><label class="text-xs text-slate-400">ON Days</label><input type="number" id="config-cycle-on" placeholder="5" class="input-field pl-4"></div><div class="w-1/2"><label class="text-xs text-slate-400">OFF Days</label><input type="number" id="config-cycle-off" placeholder="2" class="input-field pl-4"></div></div>
                         </div>
                         <button type="submit" id="config-submit-btn" class="btn-primary w-full py-3 rounded-xl font-bold">Save Preset</button>
                     </form>
@@ -486,36 +398,16 @@
             try { const res = await fetch(APP_URL, { method: 'POST', body: JSON.stringify(data) }); return await res.json(); } catch(e) { addToQueue(data); return { success: true, offline: true }; }
         }
 
-        // --- CYCLE LOGIC ---
         function getCycleState(p, dateToCheck) {
             if (!p.cycleStart || !p.cycleWeeks || !p.cycleON || !p.cycleOFF) return { state: 'N/A', display: '' };
-            const start = new Date(p.cycleStart);
-            const checkDate = dateToCheck ? new Date(dateToCheck) : new Date();
-            
-            // Normalize dates to midnight to ensure accurate day comparison
-            const startDay = new Date(start.getFullYear(), start.getMonth(), start.getDate());
-            const checkDay = new Date(checkDate.getFullYear(), checkDate.getMonth(), checkDate.getDate());
-
-            const diffTime = checkDay.getTime() - startDay.getTime();
-            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-            
-            if (diffDays < 0) return { state: 'STARTING', display: 'Starts Soon' };
-
-            const totalCycleDays = (parseInt(p.cycleON) + parseInt(p.cycleOFF));
-            const totalWeeks = parseInt(p.cycleWeeks);
-            const currentWeek = Math.floor(diffDays / 7) + 1;
-
-            if (currentWeek > totalWeeks) {
-                return { state: 'OFF_CYCLE', display: 'Cycle Ended' };
-            }
-
-            const dayInCyclePattern = diffDays % totalCycleDays;
-            
-            if (dayInCyclePattern < parseInt(p.cycleON)) {
-                return { state: 'ON', display: `Day ${dayInCyclePattern + 1} of ${p.cycleON} ON` };
-            } else {
-                return { state: 'OFF', display: `Day ${dayInCyclePattern - p.cycleON + 1} of ${p.cycleOFF} OFF` };
-            }
+            const start = new Date(p.cycleStart), check = dateToCheck ? new Date(dateToCheck) : new Date();
+            const diff = Math.floor((check - start) / (1000*60*60*24));
+            if (diff < 0) return { state: 'STARTING', display: 'Soon' };
+            const cycleLen = parseInt(p.cycleON) + parseInt(p.cycleOFF);
+            const week = Math.floor(diff / 7) + 1;
+            if (week > parseInt(p.cycleWeeks)) return { state: 'OFF_CYCLE', display: 'Ended' };
+            const day = diff % cycleLen;
+            return (day < parseInt(p.cycleON)) ? { state: 'ON', display: `Day ${day+1}/${p.cycleON} ON` } : { state: 'OFF', display: `Day ${day-p.cycleON+1}/${p.cycleOFF} OFF` };
         }
         
         function getCycleProgress(p) {
@@ -531,31 +423,21 @@
             if(res.success && res.presets) {
                 els.quickContainer.innerHTML = '';
                 res.presets.forEach(p => {
-                    const cycleState = getCycleState(p);
-                    let cycleHtml = '';
-                    let btnClass = "btn-quick bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 hover:border-indigo-500/50 transition text-left group relative overflow-hidden";
-                    
-                    if(cycleState.state !== 'N/A') {
-                        const progress = getCycleProgress(p);
-                        if(cycleState.state === 'OFF' || cycleState.state === 'OFF_CYCLE') {
-                            btnClass = "bg-red-900/40 border-red-700/50 p-4 rounded-xl text-left transition group relative overflow-hidden hover:border-red-500/50";
-                            cycleHtml = `<div class="w-full bg-slate-700 rounded-full h-1.5 mt-3 mb-1"><div class="bg-red-500 h-1.5 rounded-full" style="width: ${progress.percent}%"></div></div><div class="text-[10px] text-red-300 font-bold text-right">${cycleState.display}</div>`;
-                        } else if (cycleState.state === 'ON') {
-                            cycleHtml = `<div class="w-full bg-slate-700 rounded-full h-1.5 mt-3 mb-1"><div class="bg-green-500 h-1.5 rounded-full" style="width: ${progress.percent}%"></div></div><div class="text-[10px] text-green-300 font-bold text-right">Week ${progress.current} / ${progress.total}</div>`;
+                    const cs = getCycleState(p);
+                    let cycleHtml = '', btnClass = "btn-quick bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 hover:border-indigo-500/50 transition text-left group relative overflow-hidden";
+                    if(cs.state !== 'N/A') {
+                        const cp = getCycleProgress(p);
+                        if(cs.state === 'OFF' || cs.state === 'OFF_CYCLE') {
+                            btnClass = "bg-red-900/30 border-red-800/50 p-4 rounded-xl text-left transition group relative overflow-hidden border";
+                            cycleHtml = `<div class="w-full bg-slate-800 rounded-full h-1.5 mt-3 mb-1"><div class="bg-red-500 h-1.5 rounded-full" style="width: ${cp.percent}%"></div></div><div class="text-[10px] text-red-300 font-bold text-right">${cs.display}</div>`;
+                        } else if (cs.state === 'ON') {
+                            cycleHtml = `<div class="w-full bg-slate-700 rounded-full h-1.5 mt-3 mb-1"><div class="bg-green-500 h-1.5 rounded-full" style="width: ${cp.percent}%"></div></div><div class="text-[10px] text-green-300 font-bold text-right">${cs.display} (W${cp.current})</div>`;
                         }
                     }
-
-                    const btn = document.createElement('button');
-                    btn.className = btnClass;
-                    
+                    const btn = document.createElement('button'); btn.className = btnClass;
                     btn.innerHTML = `<div class="font-bold text-white group-hover:text-indigo-400 mb-1">${p.label}</div><div class="text-xs text-slate-500">${p.value}${p.unit}</div>${cycleHtml}`;
-                    
-                    if (cycleState.state === 'OFF' || cycleState.state === 'OFF_CYCLE') {
-                        btn.onclick = () => alert(`Cannot log: This is currently an ${cycleState.state === 'OFF' ? 'OFF day' : 'OFF-Cycle period'}.`);
-                    } else {
-                        btn.onclick = () => { pendingPreset = p; openSiteModal(); };
-                    }
-                    
+                    if (cs.state === 'OFF' || cs.state === 'OFF_CYCLE') btn.onclick = () => alert(`Cannot log: Currently ${cs.state === 'OFF' ? 'OFF Day' : 'Cycle Ended'}.`);
+                    else btn.onclick = () => { pendingPreset = p; openSiteModal(); };
                     els.quickContainer.appendChild(btn);
                 });
             } else { els.quickContainer.innerHTML = `<div class="col-span-2 text-center p-4 border border-dashed border-slate-700/50 rounded-xl text-slate-500 text-sm">No presets found.</div>`; }
@@ -579,30 +461,11 @@
             els.historyList.innerHTML = '';
             if (list.length === 0) { els.historyList.innerHTML = '<div class="text-center text-slate-500 py-4">No matching logs.</div>'; return; }
             list.forEach(h => {
-                let dateStr = h.date, timeStr = "", cycleTag = '';
-                const dateObj = new Date(h.date);
-                
-                if (!isNaN(dateObj.getTime())) { 
-                    dateStr = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }); 
-                    timeStr = dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }); 
-                    
-                    // --- NEW: Check if this logged peptide was on an OFF day ---
-                    // This is complex as we don't know which preset it was, so we check *all* presets
-                    const relevantPresets = JSON.parse(localStorage.getItem('pep_presets') || '[]').filter(p => p.peptide === h.peptide && p.cycleStart);
-                    
-                    if (relevantPresets.length > 0) {
-                        const cycleCheck = getCycleState(relevantPresets[0], dateObj); // Check against the first matching preset
-                        
-                        if (cycleCheck.state === 'OFF' || cycleCheck.state === 'OFF_CYCLE') {
-                            cycleTag = `<span class="text-[10px] uppercase bg-red-900/30 text-red-400 px-1.5 py-0.5 rounded-full ml-2">${cycleCheck.state} DAY LOG</span>`;
-                        }
-                    }
-                    // --- END NEW CHECK ---
-                } 
-
+                let dateStr = h.date, timeStr = ""; const dateObj = new Date(h.date);
+                if (!isNaN(dateObj.getTime())) { dateStr = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }); timeStr = dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }); } 
                 const noteHtml = h.notes ? `<div class="mt-2 text-xs text-indigo-300 italic flex items-center gap-1"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> ${h.notes}</div>` : '';
                 const card = document.createElement('div'); card.className = "bg-slate-800/50 p-4 rounded-2xl border border-slate-700/50 flex justify-between items-start animate-fade-in";
-                card.innerHTML = `<div><div class="font-bold text-white flex items-center gap-2">${h.peptide} ${cycleTag}<span class="text-xs bg-indigo-500/10 text-indigo-400 px-2 py-0.5 rounded font-mono border border-indigo-500/20">${h.dosage}</span></div><div class="text-xs text-slate-400 mt-1 flex items-center gap-1"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>${h.site}</div>${noteHtml}</div><div class="flex flex-col items-end gap-2"><div class="text-right text-xs text-slate-500 font-mono bg-slate-900/50 px-2 py-1 rounded border border-slate-800"><div class="text-slate-400">${dateStr}</div><div class="text-indigo-400 font-bold">${timeStr}</div></div><button class="text-slate-600 hover:text-red-400 transition p-1" onclick="deleteEntry('${h.row}')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></button></div>`;
+                card.innerHTML = `<div><div class="font-bold text-white flex items-center gap-2">${h.peptide} <span class="text-xs bg-indigo-500/10 text-indigo-400 px-2 py-0.5 rounded font-mono border border-indigo-500/20">${h.dosage}</span></div><div class="text-xs text-slate-400 mt-1 flex items-center gap-1"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>${h.site}</div>${noteHtml}</div><div class="flex flex-col items-end gap-2"><div class="text-right text-xs text-slate-500 font-mono bg-slate-900/50 px-2 py-1 rounded border border-slate-800"><div class="text-slate-400">${dateStr}</div><div class="text-indigo-400 font-bold">${timeStr}</div></div><button class="text-slate-600 hover:text-red-400 transition p-1" onclick="deleteEntry('${h.row}')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></button></div>`;
                 els.historyList.appendChild(card);
             });
         }
@@ -627,19 +490,8 @@
             const pName = els.pep.value === 'Other' ? document.getElementById('custom-peptide').value : els.pep.value;
             const sName = els.site.value === 'Other' ? document.getElementById('custom-site').value : els.site.value;
             const dose = `${document.getElementById('dosage-value').value} ${document.getElementById('dosage-unit').value}`;
-            
-            // --- NEW CHECK: PREVENT LOGGING ON OFF DAY ---
             const presets = JSON.parse(localStorage.getItem('pep_presets') || '[]').filter(p => p.peptide === pName && p.cycleStart);
-            if (presets.length > 0) {
-                 const cycleCheck = getCycleState(presets[0], document.getElementById('timestamp').value);
-                 if (cycleCheck.state === 'OFF' || cycleCheck.state === 'OFF_CYCLE') {
-                     alert(`Protocol Warning: ${pName} is currently on an ${cycleCheck.state} cycle day. Log prevented.`);
-                     btn.innerHTML = originalText; btn.disabled = false;
-                     return;
-                 }
-            }
-            // --- END NEW CHECK ---
-
+            if (presets.length > 0) { const cs = getCycleState(presets[0], document.getElementById('timestamp').value); if (cs.state === 'OFF' || cs.state === 'OFF_CYCLE') { alert(`Protocol Warning: ${pName} is on ${cs.state} cycle.`); btn.innerHTML = originalText; btn.disabled = false; return; } }
             const data = { action: 'logInjection', peptide: pName, dosage: dose, site: sName, timestamp: document.getElementById('timestamp').value, notes: els.manualNote.value };
             const res = await api(data);
             btn.innerHTML = originalText; btn.disabled = false;
@@ -649,16 +501,8 @@
         async function finalizeQuickLog(site) {
             els.modal.classList.add('hidden');
             if(!pendingPreset) return;
-            
-            // --- NEW CHECK: PREVENT LOGGING ON OFF DAY FOR QUICK LOG ---
-            const cycleCheck = getCycleState(pendingPreset);
-            if (cycleCheck.state === 'OFF' || cycleCheck.state === 'OFF_CYCLE') {
-                 alert(`Protocol Warning: ${pendingPreset.peptide} is currently on an ${cycleCheck.state} cycle day. Log prevented.`);
-                 pendingPreset = null;
-                 return;
-            }
-            // --- END NEW CHECK ---
-
+            const cs = getCycleState(pendingPreset);
+            if (cs.state === 'OFF' || cs.state === 'OFF_CYCLE') { alert(`Protocol Warning: ${pendingPreset.peptide} is on ${cs.state} cycle.`); pendingPreset = null; return; }
             const ts = new Date(new Date() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0,16);
             const data = { action: 'logInjection', peptide: pendingPreset.peptide, dosage: `${pendingPreset.value} ${pendingPreset.unit}`, site: site, timestamp: ts, notes: els.modalNote.value };
             const res = await api(data);
@@ -670,87 +514,26 @@
             e.preventDefault();
             const btn = document.getElementById('config-submit-btn'); btn.textContent = "Saving..."; btn.disabled = true;
             const isCycle = els.cycleToggle.checked;
-            
-            let cycleOn = null, cycleOff = null;
-            if (isCycle) {
-                cycleOn = els.cycleOn.value;
-                cycleOff = els.cycleOff.value;
-                if (!cycleOn || !cycleOff || parseInt(cycleOn) <= 0 || parseInt(cycleOff) < 0) {
-                     alert("Cycle ON/OFF days must be valid numbers.");
-                     btn.textContent = "Save Preset"; btn.disabled = false;
-                     return;
-                }
-            }
-            
-            const data = { 
-                action: 'saveConfig', 
-                label: document.getElementById('config-label').value, 
-                peptide: document.getElementById('config-peptide').value, 
-                value: document.getElementById('config-value').value, 
-                unit: document.getElementById('config-unit').value, 
-                site: 'Ask', 
-                cycleStart: isCycle ? els.cycleStart.value : null, 
-                cycleWeeks: isCycle ? els.cycleWeeks.value : null,
-                cycleON: cycleOn,
-                cycleOFF: cycleOff
-            };
+            let cOn = null, cOff = null;
+            if (isCycle) { cOn = els.cycleOn.value; cOff = els.cycleOff.value; if (!cOn || !cOff) { alert("Enter ON/OFF days."); btn.textContent = "Save Preset"; btn.disabled = false; return; } }
+            const data = { action: 'saveConfig', label: document.getElementById('config-label').value, peptide: document.getElementById('config-peptide').value, value: document.getElementById('config-value').value, unit: document.getElementById('config-unit').value, site: 'Ask', cycleStart: isCycle ? els.cycleStart.value : null, cycleWeeks: isCycle ? els.cycleWeeks.value : null, cycleON: cOn, cycleOFF: cOff };
             const res = await api(data);
             btn.textContent = "Save Preset"; btn.disabled = false;
             if(res.success) { alert("Preset Saved"); els.configForm.reset(); els.cycleToggle.checked = false; els.cycleOptions.classList.add('hidden'); loadConfig(); switchView('log'); } else alert("Error");
         }
 
-        function initSyringe() {
-             els.calc.syringeMarks.innerHTML = '';
-             for(let i=0; i<=10; i++) {
-                 const mark = document.createElement('div');
-                 mark.className = 'mark major';
-                 mark.style.bottom = `${i * 10}%`;
-                 mark.innerHTML = `<span class="mark-label">${i*10}</span>`;
-                 els.calc.syringeMarks.appendChild(mark);
-             }
-             for(let i=0; i<50; i++) {
-                 if(i % 5 !== 0) {
-                    const mark = document.createElement('div');
-                    mark.className = 'mark';
-                    mark.style.bottom = `${i * 2}%`;
-                    mark.style.width = '50%';
-                    els.calc.syringeMarks.appendChild(mark);
-                 }
-             }
-        }
+        function initSyringe() { els.calc.syringeMarks.innerHTML = ''; for(let i=0; i<=10; i++) { const m = document.createElement('div'); m.className = 'mark major'; m.style.bottom = `${i*10}%`; m.innerHTML = `<span class="mark-label">${i*10}</span>`; els.calc.syringeMarks.appendChild(m); } for(let i=0; i<50; i++) { if(i%5!==0) { const m = document.createElement('div'); m.className = 'mark'; m.style.bottom = `${i*2}%`; m.style.width = '50%'; els.calc.syringeMarks.appendChild(m); } } }
 
         function runCalc() {
             const vm = parseFloat(els.calc.m.value), dv = parseFloat(els.calc.v.value), td = parseFloat(els.calc.d.value);
             els.calc.alert.classList.add('hidden');
-            
-            if(!vm || !dv || !td || vm <= 0 || dv <= 0 || td <= 0) { 
-                els.calc.res.innerText = "0"; els.calc.mic.innerText = "0"; els.calc.conc.innerText = "--"; els.calc.mcgPerUnit.innerText = "0";
-                els.calc.visualLiquid.style.height = '0%'; els.calc.visualPlunger.style.bottom = '0%';
-                return; 
-            }
-            
-            const m_mcg = els.calc.mu.value === 'mg' ? vm * 1000 : vm;
-            const dv_ml = els.calc.vu.value === 'ml' ? dv : dv;
-            const conc_mcg_ml = m_mcg / dv_ml;
-
-            if (conc_mcg_ml > 5000) { els.calc.alert.classList.remove('hidden'); }
-            
-            const mcgPerUnit = conc_mcg_ml * 0.01;
-            const target_mcg = els.calc.du.value === 'mg' ? td * 1000 : td;
-            const unitsNeeded = target_mcg / mcgPerUnit;
-            const vol_ul = (unitsNeeded * 0.01) * 1000;
-
-            els.calc.res.innerText = `${unitsNeeded.toFixed(2)}`; 
-            els.calc.mic.innerText = `${vol_ul.toFixed(1)}`;
-            els.calc.conc.innerText = conc_mcg_ml.toFixed(0);
-            els.calc.mcgPerUnit.innerText = mcgPerUnit.toFixed(1);
-
-            let visualPercent = unitsNeeded;
-            if(visualPercent > 100) visualPercent = 100;
-            if(visualPercent < 0) visualPercent = 0;
-            
-            els.calc.visualLiquid.style.height = `${visualPercent}%`;
-            els.calc.visualPlunger.style.bottom = `${visualPercent}%`;
+            if(!vm || !dv || !td) { els.calc.res.innerText = "0"; els.calc.mic.innerText = "0"; els.calc.conc.innerText = "--"; els.calc.mcgPerUnit.innerText = "0"; els.calc.visualLiquid.style.height = '0%'; els.calc.visualPlunger.style.bottom = '0%'; return; }
+            const m_mcg = els.calc.mu.value === 'mg' ? vm * 1000 : vm; const dv_ml = els.calc.vu.value === 'ml' ? dv : dv; const conc = m_mcg / dv_ml;
+            if (conc > 5000) els.calc.alert.classList.remove('hidden');
+            const mcgPerUnit = conc * 0.01; const target = els.calc.du.value === 'mg' ? td * 1000 : td; const units = target / mcgPerUnit; const vol = (units * 0.01) * 1000;
+            els.calc.res.innerText = `${units.toFixed(2)}`; els.calc.mic.innerText = `${vol.toFixed(1)}`; els.calc.conc.innerText = conc.toFixed(0); els.calc.mcgPerUnit.innerText = mcgPerUnit.toFixed(1);
+            let vis = units; if(vis > 100) vis = 100; if(vis < 0) vis = 0;
+            els.calc.visualLiquid.style.height = `${vis}%`; els.calc.visualPlunger.style.bottom = `${vis}%`;
         }
 
         function closeModal() { els.modal.classList.add('hidden'); }
