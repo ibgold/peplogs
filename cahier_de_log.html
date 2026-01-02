@@ -37,7 +37,7 @@
         .nav-pill { color: #94a3b8; transition: all 0.3s; }
         .nav-pill.active { background: #6366f1; color: white; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25); }
         
-        /* Seringue */
+        /* Style Seringue */
         .syringe-container { position: relative; width: 60px; height: 250px; margin: 0 auto; background: rgba(255,255,255,0.05); border-radius: 8px; border: 2px solid #475569; overflow: hidden; }
         .syringe-marks { position: absolute; top: 0; right: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none; }
         .mark { position: absolute; left: 0; width: 40%; height: 1px; background: rgba(255,255,255,0.3); }
@@ -52,9 +52,9 @@
     <div id="setup-screen" class="fixed inset-0 z-50 bg-slate-900 flex items-center justify-center p-6 hidden">
         <div class="glass-card w-full max-w-md p-8 rounded-3xl text-center space-y-6">
             <h2 class="text-2xl font-bold">Configuration Base</h2>
-            <p class="text-slate-400">Collez votre URL Google Apps Script</p>
+            <p class="text-slate-400">Collez votre URL Google Apps Script pour commencer</p>
             <input type="url" id="setup-url" placeholder="https://script.google.com/..." class="input-field pl-4 text-center">
-            <button onclick="saveUrl()" class="btn-primary w-full py-4 rounded-2xl font-bold">Démarrer</button>
+            <button onclick="saveUrl()" class="btn-primary w-full py-4 rounded-2xl font-bold">Se connecter</button>
         </div>
     </div>
 
@@ -70,27 +70,27 @@
         <nav class="px-4 mb-4">
             <div class="flex bg-slate-800/50 p-1 rounded-2xl border border-slate-700/50 backdrop-blur-md">
                 <button onclick="switchView('log')" id="tab-log" class="nav-pill active flex-1 py-2.5 rounded-xl text-sm font-medium">Log</button>
-                <button onclick="switchView('history')" id="tab-history" class="nav-pill flex-1 py-2.5 rounded-xl text-sm font-medium">History</button>
-                <button onclick="switchView('calculator')" id="tab-calculator" class="nav-pill flex-1 py-2.5 rounded-xl text-sm font-medium">Visual Calc</button>
+                <button onclick="switchView('history')" id="tab-history" class="nav-pill flex-1 py-2.5 rounded-xl text-sm font-medium">Historique</button>
+                <button onclick="switchView('calculator')" id="tab-calculator" class="nav-pill flex-1 py-2.5 rounded-xl text-sm font-medium">Calculateur</button>
                 <button onclick="switchView('config')" id="tab-config" class="nav-pill flex-1 py-2.5 rounded-xl text-sm font-medium">Config</button>
             </div>
         </nav>
 
         <main class="px-4 space-y-6">
             
-            <!-- TAB: LOG -->
+            <!-- ONGLET: LOG -->
             <div id="view-log" class="space-y-6 animate-slide-up">
-                <!-- Suggestion -->
+                <!-- Boîte de suggestion -->
                 <div id="suggestion-box" class="glass-card p-4 rounded-2xl border-l-4 border-l-indigo-500 flex justify-between items-center hidden relative overflow-hidden">
                     <div>
-                        <p class="text-[10px] text-indigo-400 font-bold uppercase tracking-wider">Rotation Recommandée</p>
+                        <p class="text-[10px] text-indigo-400 font-bold uppercase tracking-wider">Rotation recommandée</p>
                         <p id="suggestion-text" class="text-lg font-bold">Chargement...</p>
                     </div>
                     <button onclick="useSuggestion()" class="btn-primary px-4 py-2 rounded-lg text-xs font-bold">Utiliser</button>
                 </div>
 
                 <section>
-                    <h2 class="text-xs font-bold text-indigo-300 uppercase tracking-wider mb-3 ml-1">Quick Logs</h2>
+                    <h2 class="text-xs font-bold text-indigo-300 uppercase tracking-wider mb-3 ml-1">Logs Rapides</h2>
                     <div id="quick-log-container" class="grid grid-cols-2 gap-3"></div>
                 </section>
 
@@ -98,7 +98,7 @@
                     <h2 class="text-xs font-bold text-indigo-300 uppercase tracking-wider mb-2">Entrée Manuelle</h2>
                     <div class="input-group">
                         <svg class="input-icon w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
-                        <select id="log-peptide" class="input-field" required><option value="">Peptide</option></select>
+                        <select id="log-peptide" class="input-field" required><option value="">Choisir un Peptide</option></select>
                     </div>
                     <div class="flex gap-2">
                         <div class="input-group flex-1">
@@ -115,17 +115,17 @@
                     </div>
                     <div class="input-group">
                         <svg class="input-icon w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                        <input type="text" id="log-notes" placeholder="Notes..." class="input-field">
+                        <input type="text" id="log-notes" placeholder="Notes (facultatif)..." class="input-field">
                     </div>
                     <div class="input-group">
                         <svg class="input-icon w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                         <input type="datetime-local" id="log-time" class="input-field" style="color-scheme: dark;">
                     </div>
-                    <button type="submit" class="btn-primary w-full py-4 rounded-2xl font-bold text-lg mt-2">Log Injection</button>
+                    <button type="submit" class="btn-primary w-full py-4 rounded-2xl font-bold text-lg mt-2">Enregistrer l'injection</button>
                 </form>
             </div>
 
-            <!-- TAB: HISTORY -->
+            <!-- ONGLET: HISTORIQUE -->
             <div id="view-history" class="hidden space-y-4 animate-slide-up">
                 <div class="input-group">
                     <svg class="input-icon w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
@@ -134,7 +134,7 @@
                 <div id="history-list" class="space-y-3 pb-20"></div>
             </div>
 
-            <!-- TAB: CALCULATOR -->
+            <!-- ONGLET: CALCULATEUR -->
             <div id="view-calculator" class="hidden animate-slide-up">
                 <div class="glass-card p-6 rounded-3xl flex flex-col items-center">
                     <div class="syringe-container mb-6">
@@ -165,20 +165,20 @@
                 </div>
             </div>
 
-            <!-- TAB: CONFIG -->
+            <!-- ONGLET: CONFIG -->
             <div id="view-config" class="hidden space-y-6 animate-slide-up">
-                <!-- Zone Préférées -->
+                <!-- Zones favorites -->
                 <section class="glass-card p-6 rounded-3xl">
-                    <h2 class="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-4">Mes Zones Favorites</h2>
+                    <h2 class="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-4">Mes zones favorites</h2>
                     <p class="text-[10px] text-slate-400 mb-4 italic">Activez les zones que vous utilisez pour la rotation automatique.</p>
                     <div id="preferred-sites-grid" class="grid grid-cols-2 gap-2"></div>
                 </section>
 
                 <!-- Ajouter QuickLog -->
                 <section class="glass-card p-6 rounded-3xl">
-                    <h2 class="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-4">Ajouter un Quick Log</h2>
+                    <h2 class="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-4">Ajouter un Log Rapide</h2>
                     <form id="config-form" class="space-y-4">
-                        <input type="text" id="conf-label" placeholder="Étiquette (ex: Matin GHK)" class="input-field pl-4" required>
+                        <input type="text" id="conf-label" placeholder="Étiquette (ex: BPC Matin)" class="input-field pl-4" required>
                         <input type="text" id="conf-peptide" placeholder="Nom du Peptide" class="input-field pl-4" required>
                         <div class="flex gap-2">
                             <input type="number" id="conf-val" placeholder="Dose" class="input-field pl-4 flex-1" required>
@@ -186,12 +186,12 @@
                                 <option>mcg</option><option>mg</option><option>IU</option>
                             </select>
                         </div>
-                        <button type="submit" class="btn-primary w-full py-3 rounded-xl font-bold">Enregistrer le Preset</button>
+                        <button type="submit" class="btn-primary w-full py-3 rounded-xl font-bold">Enregistrer le raccourci</button>
                     </form>
                 </section>
 
                 <section>
-                    <h2 class="text-xs font-bold text-indigo-300 uppercase tracking-wider mb-3 ml-1">Gérer les Presets</h2>
+                    <h2 class="text-xs font-bold text-indigo-300 uppercase tracking-wider mb-3 ml-1">Gérer mes raccourcis</h2>
                     <div id="presets-list" class="space-y-2"></div>
                 </section>
 
@@ -200,10 +200,10 @@
         </main>
     </div>
 
-    <!-- MODAL SITE SELECTION -->
+    <!-- MODAL SELECTION SITE -->
     <div id="site-modal" class="fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-sm hidden flex items-center justify-center p-6 animate-fade-in">
         <div class="glass-card w-full max-w-sm p-6 rounded-3xl space-y-4">
-            <h3 class="font-bold text-center text-lg">Choisir le site</h3>
+            <h3 class="font-bold text-center text-lg">Où injectez-vous ?</h3>
             <div id="modal-sites" class="grid grid-cols-2 gap-2 max-h-96 overflow-y-auto pr-1"></div>
             <button onclick="closeModal()" class="w-full py-3 text-slate-500 font-bold">Annuler</button>
         </div>
@@ -213,12 +213,13 @@
         let APP_URL = localStorage.getItem('pep_url');
         let history = [];
         let presets = [];
-        let preferredSites = JSON.parse(localStorage.getItem('pref_sites')) || ["Right Abdomen (Lower)", "Left Abdomen (Lower)", "Right Flank", "Left Flank"];
+        // Liste des sites préférés par défaut (en français)
+        let preferredSites = JSON.parse(localStorage.getItem('pref_sites')) || ["Abdomen Droit (Bas)", "Abdomen Gauche (Bas)", "Flanc Droit", "Flanc Gauche"];
 
         const ALL_SITES = [
-            "Right Abdomen (Upper)", "Right Abdomen (Lower)", "Left Abdomen (Upper)", "Left Abdomen (Lower)",
-            "Right Flank", "Left Flank", "Right Thigh", "Left Thigh", "Right Deltoid", "Left Deltoid",
-            "Right Buttock", "Left Buttock", "Nasal Spray", "Other"
+            "Abdomen Droit (Haut)", "Abdomen Droit (Bas)", "Abdomen Gauche (Haut)", "Abdomen Gauche (Bas)",
+            "Flanc Droit", "Flanc Gauche", "Cuisse Droite", "Cuisse Gauche", "Deltoïde Droit", "Deltoïde Gauche",
+            "Fesse Droite", "Fesse Gauche", "Spray Nasal", "Autre"
         ];
 
         function saveUrl() {
@@ -226,7 +227,7 @@
             if(url) { localStorage.setItem('pep_url', url); location.reload(); }
         }
 
-        function resetApp() { if(confirm("Supprimer les données locales et déconnecter ?")) { localStorage.clear(); location.reload(); } }
+        function resetApp() { if(confirm("Réinitialiser l'application ? Toutes les données locales seront supprimées.")) { localStorage.clear(); location.reload(); } }
 
         async function api(data) {
             try {
@@ -272,7 +273,7 @@
                 const container = document.getElementById('quick-log-container');
                 container.innerHTML = '';
                 const select = document.getElementById('log-peptide');
-                select.innerHTML = '<option value="">Peptide</option>';
+                select.innerHTML = '<option value="">Choisir un Peptide</option>';
                 
                 res.presets.forEach(p => {
                     const btn = document.createElement('button');
@@ -330,7 +331,7 @@
                 timestamp: new Date().toISOString()
             };
             const res = await api(data);
-            if(res.success) { alert("Log enregistré !"); loadHistory(); }
+            if(res.success) { alert("Injection enregistrée !"); loadHistory(); }
             pendingQuickLog = null;
         }
 
@@ -363,7 +364,7 @@
         }
 
         async function deleteLog(row) {
-            if(!confirm("Supprimer ce log ?")) return;
+            if(!confirm("Supprimer cet enregistrement ?")) return;
             const res = await api({action:'deleteLog', row:row});
             if(res.success) loadHistory();
         }
@@ -373,15 +374,18 @@
                 document.getElementById('suggestion-box').classList.add('hidden');
                 return;
             }
+            // Algorithme du repos maximal : on cherche le site favori utilisé il y a le plus longtemps
             let bestSite = preferredSites[0];
             const siteUsage = {};
             preferredSites.forEach(s => siteUsage[s] = new Date(0));
+            
             history.forEach(h => {
                 if (siteUsage.hasOwnProperty(h.site)) {
                     const d = new Date(h.date);
                     if (d > siteUsage[h.site]) siteUsage[h.site] = d;
                 }
             });
+            
             let minDate = new Date();
             for (const [site, lastUsed] of Object.entries(siteUsage)) {
                 if (lastUsed < minDate) {
@@ -419,6 +423,7 @@
             }
         }
 
+        // Initialisation
         if(!APP_URL) {
             document.getElementById('setup-screen').classList.remove('hidden');
         } else {
@@ -441,7 +446,7 @@
                     notes: document.getElementById('log-notes').value
                 };
                 const res = await api(data);
-                if(res.success) { alert("Log enregistré !"); loadHistory(); e.target.reset(); }
+                if(res.success) { alert("Enregistré !"); loadHistory(); e.target.reset(); }
             };
 
             document.getElementById('config-form').onsubmit = async (e) => {
