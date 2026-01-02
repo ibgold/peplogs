@@ -75,6 +75,7 @@
 
         <main class="px-4 space-y-6">
             
+            <!-- TAB: LOG -->
             <div id="view-log" class="space-y-6 animate-slide-up">
                 <div id="suggestion-box" class="glass-card p-4 rounded-2xl border-l-4 border-l-indigo-500 flex justify-between items-center hidden relative overflow-hidden">
                     <div>
@@ -180,7 +181,10 @@
                     <h2 class="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-4">Add Quick Log</h2>
                     <form id="config-form" class="space-y-4">
                         <input type="text" id="conf-label" placeholder="Label (e.g. BPC Morning)" class="input-field pl-4" required>
-                        <input type="text" id="conf-peptide" placeholder="Peptide Name" class="input-field pl-4" required>
+                        <div class="input-group">
+                            <svg class="input-icon w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
+                            <select id="conf-peptide-select" class="input-field" required><option value="">Select Peptide</option></select>
+                        </div>
                         <div class="flex gap-2">
                             <input type="number" id="conf-val" placeholder="Dose" step="any" class="input-field pl-4 flex-1" required>
                             <select id="conf-unit" class="bg-slate-700 text-white rounded-xl px-3 font-bold">
@@ -248,7 +252,7 @@
 
         async function loadAllData() {
             await Promise.all([loadPresets(), loadPeptideLibrary(), loadHistory()]);
-            populatePeptideSelect();
+            populatePeptideSelects();
         }
 
         function renderPrefSites() {
@@ -276,7 +280,7 @@
             if(res.success) {
                 peptideLibrary = res.peptides;
                 renderPeptideList();
-                populatePeptideSelect();
+                populatePeptideSelects();
             }
         }
 
@@ -315,26 +319,47 @@
             }
         }
 
-        function populatePeptideSelect() {
-            const select = document.getElementById('log-peptide');
-            if(!select) return;
-            const currentValue = select.value;
-            select.innerHTML = '<option value="">Select Peptide</option>';
+        function populatePeptideSelects() {
+            const manualSelect = document.getElementById('log-peptide');
+            const configSelect = document.getElementById('conf-peptide-select');
             
-            // Create a unique set of names from both presets and library
-            const names = new Set();
-            presets.forEach(p => names.add(p.peptide));
-            peptideLibrary.forEach(p => names.add(p.name));
+            // Logic anti-doublon améliorée : on normalise avant d'ajouter au Set
+            const namesMap = new Map(); // Permet de garder la casse originale de la première occurence
             
-            // Add custom "Other" option back too
-            names.add("Other");
+            const addName = (name) => {
+                if(!name) return;
+                const normalized = name.trim().toLowerCase();
+                if(!namesMap.has(normalized)) {
+                    namesMap.set(normalized, name.trim());
+                }
+            };
 
-            Array.from(names).sort().forEach(name => {
-                const opt = document.createElement('option');
-                opt.value = name; opt.textContent = name;
-                select.appendChild(opt);
-            });
-            select.value = currentValue;
+            presets.forEach(p => addName(p.peptide));
+            peptideLibrary.forEach(p => addName(p.name));
+            
+            const sortedNames = Array.from(namesMap.values()).sort((a, b) => a.localeCompare(b));
+
+            const generateOptions = () => {
+                let html = '<option value="">Select Peptide</option>';
+                sortedNames.forEach(n => {
+                    if(n.toLowerCase() !== "other") {
+                        html += `<option value="${n}">${n}</option>`;
+                    }
+                });
+                html += '<option value="Other">Other (Custom)</option>';
+                return html;
+            };
+
+            if(manualSelect) {
+                const prev = manualSelect.value;
+                manualSelect.innerHTML = generateOptions();
+                manualSelect.value = prev;
+            }
+            if(configSelect) {
+                const prev = configSelect.value;
+                configSelect.innerHTML = generateOptions();
+                configSelect.value = prev;
+            }
         }
 
         function renderPresetsList() {
@@ -425,14 +450,12 @@
             let bestSite = preferredSites[0];
             const siteUsage = {};
             preferredSites.forEach(s => siteUsage[s] = new Date(0));
-            
             history.forEach(h => {
                 if (siteUsage.hasOwnProperty(h.site)) {
                     const d = new Date(h.date);
                     if (d > siteUsage[h.site]) siteUsage[h.site] = d;
                 }
             });
-            
             let minDate = new Date();
             for (const [site, lastUsed] of Object.entries(siteUsage)) {
                 if (lastUsed < minDate) {
@@ -450,6 +473,7 @@
 
         function initSyringe() {
             const container = document.getElementById('syringe-marks');
+            if(!container) return;
             container.innerHTML = '';
             for(let i=0; i<=10; i++) {
                 const m = document.createElement('div');
@@ -500,7 +524,7 @@
                 const data = {
                     action: 'saveConfig',
                     label: document.getElementById('conf-label').value,
-                    peptide: document.getElementById('conf-peptide').value,
+                    peptide: document.getElementById('conf-peptide-select').value,
                     value: document.getElementById('conf-val').value,
                     unit: document.getElementById('conf-unit').value
                 };
