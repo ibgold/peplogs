@@ -206,7 +206,7 @@
     </div>
 
     <div id="site-modal" class="fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-sm hidden flex items-center justify-center p-6 animate-fade-in">
-        <div class="glass-card w-full max-w-sm p-6 rounded-3xl space-y-4">
+        <div class="glass-card w-full max-sm p-6 rounded-3xl space-y-4">
             <h3 class="font-bold text-center text-lg text-white">Select Site</h3>
             <div id="modal-sites" class="grid grid-cols-2 gap-2 max-h-96 overflow-y-auto pr-1"></div>
             <button onclick="closeModal()" class="w-full py-3 text-slate-500 font-bold">Cancel</button>
@@ -323,8 +323,8 @@
             const manualSelect = document.getElementById('log-peptide');
             const configSelect = document.getElementById('conf-peptide-select');
             
-            // Logic anti-doublon améliorée : on normalise avant d'ajouter au Set
-            const namesMap = new Map(); // Permet de garder la casse originale de la première occurence
+            // Collect unique names and normalize them
+            const namesMap = new Map();
             
             const addName = (name) => {
                 if(!name) return;
@@ -342,11 +342,11 @@
             const generateOptions = () => {
                 let html = '<option value="">Select Peptide</option>';
                 sortedNames.forEach(n => {
+                    // Filter out any hardcoded "other" entries to rely solely on management
                     if(n.toLowerCase() !== "other") {
                         html += `<option value="${n}">${n}</option>`;
                     }
                 });
-                html += '<option value="Other">Other (Custom)</option>';
                 return html;
             };
 
