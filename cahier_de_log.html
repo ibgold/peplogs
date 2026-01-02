@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr" class="dark">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -37,7 +37,7 @@
         .nav-pill { color: #94a3b8; transition: all 0.3s; }
         .nav-pill.active { background: #6366f1; color: white; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25); }
         
-        /* Style Seringue */
+        /* Syringe Visuals */
         .syringe-container { position: relative; width: 60px; height: 250px; margin: 0 auto; background: rgba(255,255,255,0.05); border-radius: 8px; border: 2px solid #475569; overflow: hidden; }
         .syringe-marks { position: absolute; top: 0; right: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none; }
         .mark { position: absolute; left: 0; width: 40%; height: 1px; background: rgba(255,255,255,0.3); }
@@ -51,10 +51,10 @@
     <!-- SETUP OVERLAY -->
     <div id="setup-screen" class="fixed inset-0 z-50 bg-slate-900 flex items-center justify-center p-6 hidden">
         <div class="glass-card w-full max-w-md p-8 rounded-3xl text-center space-y-6">
-            <h2 class="text-2xl font-bold">Configuration Base</h2>
-            <p class="text-slate-400">Collez votre URL Google Apps Script pour commencer</p>
+            <h2 class="text-2xl font-bold">Connect Database</h2>
+            <p class="text-slate-400">Paste your Google Apps Script URL to start</p>
             <input type="url" id="setup-url" placeholder="https://script.google.com/..." class="input-field pl-4 text-center">
-            <button onclick="saveUrl()" class="btn-primary w-full py-4 rounded-2xl font-bold">Se connecter</button>
+            <button onclick="saveUrl()" class="btn-primary w-full py-4 rounded-2xl font-bold">Connect</button>
         </div>
     </div>
 
@@ -63,42 +63,42 @@
         <header class="p-6 flex justify-between items-center">
             <h1 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-white">Peptide Log</h1>
             <div id="status-label" class="text-xs text-slate-500 flex items-center gap-2">
-                <span class="w-2 h-2 rounded-full bg-green-500"></span> Connecté
+                <span class="w-2 h-2 rounded-full bg-green-500"></span> Connected
             </div>
         </header>
 
         <nav class="px-4 mb-4">
             <div class="flex bg-slate-800/50 p-1 rounded-2xl border border-slate-700/50 backdrop-blur-md">
                 <button onclick="switchView('log')" id="tab-log" class="nav-pill active flex-1 py-2.5 rounded-xl text-sm font-medium">Log</button>
-                <button onclick="switchView('history')" id="tab-history" class="nav-pill flex-1 py-2.5 rounded-xl text-sm font-medium">Historique</button>
-                <button onclick="switchView('calculator')" id="tab-calculator" class="nav-pill flex-1 py-2.5 rounded-xl text-sm font-medium">Calculateur</button>
+                <button onclick="switchView('history')" id="tab-history" class="nav-pill flex-1 py-2.5 rounded-xl text-sm font-medium">History</button>
+                <button onclick="switchView('calculator')" id="tab-calculator" class="nav-pill flex-1 py-2.5 rounded-xl text-sm font-medium">Visual Calc</button>
                 <button onclick="switchView('config')" id="tab-config" class="nav-pill flex-1 py-2.5 rounded-xl text-sm font-medium">Config</button>
             </div>
         </nav>
 
         <main class="px-4 space-y-6">
             
-            <!-- ONGLET: LOG -->
+            <!-- TAB: LOG -->
             <div id="view-log" class="space-y-6 animate-slide-up">
-                <!-- Boîte de suggestion -->
+                <!-- Suggestion Box -->
                 <div id="suggestion-box" class="glass-card p-4 rounded-2xl border-l-4 border-l-indigo-500 flex justify-between items-center hidden relative overflow-hidden">
                     <div>
-                        <p class="text-[10px] text-indigo-400 font-bold uppercase tracking-wider">Rotation recommandée</p>
-                        <p id="suggestion-text" class="text-lg font-bold">Chargement...</p>
+                        <p class="text-[10px] text-indigo-400 font-bold uppercase tracking-wider">Suggested Rotation</p>
+                        <p id="suggestion-text" class="text-lg font-bold">Loading...</p>
                     </div>
-                    <button onclick="useSuggestion()" class="btn-primary px-4 py-2 rounded-lg text-xs font-bold">Utiliser</button>
+                    <button onclick="useSuggestion()" class="btn-primary px-4 py-2 rounded-lg text-xs font-bold">Use</button>
                 </div>
 
                 <section>
-                    <h2 class="text-xs font-bold text-indigo-300 uppercase tracking-wider mb-3 ml-1">Logs Rapides</h2>
+                    <h2 class="text-xs font-bold text-indigo-300 uppercase tracking-wider mb-3 ml-1">Quick Logs</h2>
                     <div id="quick-log-container" class="grid grid-cols-2 gap-3"></div>
                 </section>
 
                 <form id="log-form" class="glass-card p-6 rounded-3xl space-y-4">
-                    <h2 class="text-xs font-bold text-indigo-300 uppercase tracking-wider mb-2">Entrée Manuelle</h2>
+                    <h2 class="text-xs font-bold text-indigo-300 uppercase tracking-wider mb-2">Manual Entry</h2>
                     <div class="input-group">
                         <svg class="input-icon w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
-                        <select id="log-peptide" class="input-field" required><option value="">Choisir un Peptide</option></select>
+                        <select id="log-peptide" class="input-field" required><option value="">Select Peptide</option></select>
                     </div>
                     <div class="flex gap-2">
                         <div class="input-group flex-1">
@@ -115,26 +115,26 @@
                     </div>
                     <div class="input-group">
                         <svg class="input-icon w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                        <input type="text" id="log-notes" placeholder="Notes (facultatif)..." class="input-field">
+                        <input type="text" id="log-notes" placeholder="Notes (optional)..." class="input-field">
                     </div>
                     <div class="input-group">
                         <svg class="input-icon w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                         <input type="datetime-local" id="log-time" class="input-field" style="color-scheme: dark;">
                     </div>
-                    <button type="submit" class="btn-primary w-full py-4 rounded-2xl font-bold text-lg mt-2">Enregistrer l'injection</button>
+                    <button type="submit" class="btn-primary w-full py-4 rounded-2xl font-bold text-lg mt-2">Log Injection</button>
                 </form>
             </div>
 
-            <!-- ONGLET: HISTORIQUE -->
+            <!-- TAB: HISTORY -->
             <div id="view-history" class="hidden space-y-4 animate-slide-up">
                 <div class="input-group">
                     <svg class="input-icon w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-                    <input type="text" id="history-filter" placeholder="Filtrer l'historique..." class="input-field" oninput="renderHistory()">
+                    <input type="text" id="history-filter" placeholder="Filter history..." class="input-field" oninput="renderHistory()">
                 </div>
                 <div id="history-list" class="space-y-3 pb-20"></div>
             </div>
 
-            <!-- ONGLET: CALCULATEUR -->
+            <!-- TAB: CALCULATOR -->
             <div id="view-calculator" class="hidden animate-slide-up">
                 <div class="glass-card p-6 rounded-3xl flex flex-col items-center">
                     <div class="syringe-container mb-6">
@@ -143,69 +143,69 @@
                         <div id="visual-plunger" class="plunger"></div>
                     </div>
                     <div class="text-center">
-                        <p class="text-indigo-300 text-xs font-bold uppercase tracking-widest mb-1">Tirer jusqu'au trait</p>
+                        <p class="text-indigo-300 text-xs font-bold uppercase tracking-widest mb-1">Draw to tick mark</p>
                         <div class="text-6xl font-black text-white flex items-end justify-center gap-2">
                             <span id="calc-result">0</span> <span class="text-2xl text-slate-500 mb-2">IU</span>
                         </div>
                     </div>
                     <div class="w-full space-y-4 mt-8">
                         <div>
-                            <label class="text-[10px] text-slate-500 uppercase ml-2">Masse du flacon (mg)</label>
+                            <label class="text-[10px] text-slate-500 uppercase ml-2">Vial Mass (mg)</label>
                             <input type="number" id="calc-vial" placeholder="Ex: 5" class="input-field pl-4" oninput="runCalc()">
                         </div>
                         <div>
-                            <label class="text-[10px] text-slate-500 uppercase ml-2">Eau Bac. (mL)</label>
+                            <label class="text-[10px] text-slate-500 uppercase ml-2">Bac Water (mL)</label>
                             <input type="number" id="calc-water" placeholder="Ex: 2" class="input-field pl-4" oninput="runCalc()">
                         </div>
                         <div>
-                            <label class="text-[10px] text-slate-500 uppercase ml-2">Dose visée (mcg)</label>
+                            <label class="text-[10px] text-slate-500 uppercase ml-2">Target Dose (mcg)</label>
                             <input type="number" id="calc-dose" placeholder="Ex: 250" class="input-field pl-4" oninput="runCalc()">
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- ONGLET: CONFIG -->
+            <!-- TAB: CONFIG -->
             <div id="view-config" class="hidden space-y-6 animate-slide-up">
-                <!-- Zones favorites -->
+                <!-- Preferred Sites -->
                 <section class="glass-card p-6 rounded-3xl">
-                    <h2 class="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-4">Mes zones favorites</h2>
-                    <p class="text-[10px] text-slate-400 mb-4 italic">Activez les zones que vous utilisez pour la rotation automatique.</p>
+                    <h2 class="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-4">Preferred Sites</h2>
+                    <p class="text-[10px] text-slate-400 mb-4 italic">Select the zones you want to include in the automatic rotation.</p>
                     <div id="preferred-sites-grid" class="grid grid-cols-2 gap-2"></div>
                 </section>
 
-                <!-- Ajouter QuickLog -->
+                <!-- Add QuickLog -->
                 <section class="glass-card p-6 rounded-3xl">
-                    <h2 class="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-4">Ajouter un Log Rapide</h2>
+                    <h2 class="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-4">Add Quick Log</h2>
                     <form id="config-form" class="space-y-4">
-                        <input type="text" id="conf-label" placeholder="Étiquette (ex: BPC Matin)" class="input-field pl-4" required>
-                        <input type="text" id="conf-peptide" placeholder="Nom du Peptide" class="input-field pl-4" required>
+                        <input type="text" id="conf-label" placeholder="Label (e.g. BPC Morning)" class="input-field pl-4" required>
+                        <input type="text" id="conf-peptide" placeholder="Peptide Name" class="input-field pl-4" required>
                         <div class="flex gap-2">
                             <input type="number" id="conf-val" placeholder="Dose" class="input-field pl-4 flex-1" required>
                             <select id="conf-unit" class="bg-slate-700 text-white rounded-xl px-3 font-bold">
                                 <option>mcg</option><option>mg</option><option>IU</option>
                             </select>
                         </div>
-                        <button type="submit" class="btn-primary w-full py-3 rounded-xl font-bold">Enregistrer le raccourci</button>
+                        <button type="submit" class="btn-primary w-full py-3 rounded-xl font-bold">Save Preset</button>
                     </form>
                 </section>
 
                 <section>
-                    <h2 class="text-xs font-bold text-indigo-300 uppercase tracking-wider mb-3 ml-1">Gérer mes raccourcis</h2>
+                    <h2 class="text-xs font-bold text-indigo-300 uppercase tracking-wider mb-3 ml-1">Manage Presets</h2>
                     <div id="presets-list" class="space-y-2"></div>
                 </section>
 
-                <button onclick="resetApp()" class="w-full py-4 text-red-400 text-xs font-bold border border-red-900/30 rounded-2xl hover:bg-red-900/10 transition">Déconnecter / Réinitialiser l'App</button>
+                <button onclick="resetApp()" class="w-full py-4 text-red-400 text-xs font-bold border border-red-900/30 rounded-2xl hover:bg-red-900/10 transition">Disconnect / Reset App</button>
             </div>
         </main>
     </div>
 
-    <!-- MODAL SELECTION SITE -->
+    <!-- MODAL SITE SELECTION -->
     <div id="site-modal" class="fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-sm hidden flex items-center justify-center p-6 animate-fade-in">
         <div class="glass-card w-full max-w-sm p-6 rounded-3xl space-y-4">
-            <h3 class="font-bold text-center text-lg">Où injectez-vous ?</h3>
+            <h3 class="font-bold text-center text-lg text-white">Select Site</h3>
             <div id="modal-sites" class="grid grid-cols-2 gap-2 max-h-96 overflow-y-auto pr-1"></div>
-            <button onclick="closeModal()" class="w-full py-3 text-slate-500 font-bold">Annuler</button>
+            <button onclick="closeModal()" class="w-full py-3 text-slate-500 font-bold">Cancel</button>
         </div>
     </div>
 
@@ -213,13 +213,12 @@
         let APP_URL = localStorage.getItem('pep_url');
         let history = [];
         let presets = [];
-        // Liste des sites préférés par défaut (en français)
-        let preferredSites = JSON.parse(localStorage.getItem('pref_sites')) || ["Abdomen Droit (Bas)", "Abdomen Gauche (Bas)", "Flanc Droit", "Flanc Gauche"];
+        let preferredSites = JSON.parse(localStorage.getItem('pref_sites')) || ["Right Abdomen (Lower)", "Left Abdomen (Lower)", "Right Flank", "Left Flank"];
 
         const ALL_SITES = [
-            "Abdomen Droit (Haut)", "Abdomen Droit (Bas)", "Abdomen Gauche (Haut)", "Abdomen Gauche (Bas)",
-            "Flanc Droit", "Flanc Gauche", "Cuisse Droite", "Cuisse Gauche", "Deltoïde Droit", "Deltoïde Gauche",
-            "Fesse Droite", "Fesse Gauche", "Spray Nasal", "Autre"
+            "Right Abdomen (Upper)", "Right Abdomen (Lower)", "Left Abdomen (Upper)", "Left Abdomen (Lower)",
+            "Right Flank", "Left Flank", "Right Thigh", "Left Thigh", "Right Deltoid", "Left Deltoid",
+            "Right Buttock", "Left Buttock", "Nasal Spray", "Other"
         ];
 
         function saveUrl() {
@@ -227,7 +226,7 @@
             if(url) { localStorage.setItem('pep_url', url); location.reload(); }
         }
 
-        function resetApp() { if(confirm("Réinitialiser l'application ? Toutes les données locales seront supprimées.")) { localStorage.clear(); location.reload(); } }
+        function resetApp() { if(confirm("Reset app? All local data will be cleared.")) { localStorage.clear(); location.reload(); } }
 
         async function api(data) {
             try {
@@ -273,7 +272,7 @@
                 const container = document.getElementById('quick-log-container');
                 container.innerHTML = '';
                 const select = document.getElementById('log-peptide');
-                select.innerHTML = '<option value="">Choisir un Peptide</option>';
+                select.innerHTML = '<option value="">Select Peptide</option>';
                 
                 res.presets.forEach(p => {
                     const btn = document.createElement('button');
@@ -302,7 +301,7 @@
         }
 
         async function deletePreset(row) {
-            if(!confirm("Supprimer ce raccourci ?")) return;
+            if(!confirm("Delete this preset?")) return;
             const res = await api({ action: 'deleteConfig', row: row });
             if(res.success) loadPresets().then(renderPresetsList);
         }
@@ -331,7 +330,7 @@
                 timestamp: new Date().toISOString()
             };
             const res = await api(data);
-            if(res.success) { alert("Injection enregistrée !"); loadHistory(); }
+            if(res.success) { alert("Log saved!"); loadHistory(); }
             pendingQuickLog = null;
         }
 
@@ -351,7 +350,7 @@
             container.innerHTML = '';
             history.filter(h => h.peptide.toLowerCase().includes(filter) || h.site.toLowerCase().includes(filter))
             .forEach(h => {
-                const date = new Date(h.date).toLocaleDateString('fr-FR', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'});
+                const date = new Date(h.date).toLocaleDateString('en-US', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'});
                 const card = document.createElement('div');
                 card.className = "glass-card p-4 rounded-2xl flex justify-between items-center animate-fade-in";
                 card.innerHTML = `<div>
@@ -364,7 +363,7 @@
         }
 
         async function deleteLog(row) {
-            if(!confirm("Supprimer cet enregistrement ?")) return;
+            if(!confirm("Delete this log?")) return;
             const res = await api({action:'deleteLog', row:row});
             if(res.success) loadHistory();
         }
@@ -374,7 +373,7 @@
                 document.getElementById('suggestion-box').classList.add('hidden');
                 return;
             }
-            // Algorithme du repos maximal : on cherche le site favori utilisé il y a le plus longtemps
+            // Logic: Pick the preferred site that hasn't been used for the longest time
             let bestSite = preferredSites[0];
             const siteUsage = {};
             preferredSites.forEach(s => siteUsage[s] = new Date(0));
@@ -423,7 +422,7 @@
             }
         }
 
-        // Initialisation
+        // Initialization
         if(!APP_URL) {
             document.getElementById('setup-screen').classList.remove('hidden');
         } else {
@@ -446,7 +445,7 @@
                     notes: document.getElementById('log-notes').value
                 };
                 const res = await api(data);
-                if(res.success) { alert("Enregistré !"); loadHistory(); e.target.reset(); }
+                if(res.success) { alert("Log saved!"); loadHistory(); e.target.reset(); }
             };
 
             document.getElementById('config-form').onsubmit = async (e) => {
@@ -459,7 +458,7 @@
                     unit: document.getElementById('conf-unit').value
                 };
                 const res = await api(data);
-                if(res.success) { alert("Raccourci enregistré !"); loadPresets(); e.target.reset(); }
+                if(res.success) { alert("Preset saved!"); loadPresets(); e.target.reset(); }
             };
 
             switchView('log');
