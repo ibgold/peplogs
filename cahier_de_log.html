@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="fr" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Peptide Log Pro</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -11,140 +12,200 @@
             theme: {
                 extend: {
                     fontFamily: { sans: ['Outfit', 'sans-serif'] },
-                    colors: { background: '#0f172a', surface: '#1e293b', primary: '#6366f1' }
+                    colors: { background: '#0f172a', surface: '#1e293b', primary: '#6366f1' },
+                    animation: { 'fade-in': 'fadeIn 0.3s ease-out', 'slide-up': 'slideUp 0.4s ease-out' },
+                    keyframes: { fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } }, slideUp: { '0%': { transform: 'translateY(10px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } } }
                 }
             }
         }
     </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Outfit', sans-serif; background-color: #0f172a; background-image: radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%); color: #f8fafc; -webkit-tap-highlight-color: transparent; }
-        .glass-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
-        .input-field { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(148, 163, 184, 0.2); color: white; border-radius: 1rem; padding: 0.75rem 1rem; width: 100%; font-size: 16px; }
-        .btn-primary { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); transition: all 0.2s; }
-        .btn-primary:active { transform: scale(0.95); }
-        .nav-pill.active { background: #6366f1; color: white; }
-        /* Seringue style */
-        .syringe-container { position: relative; width: 50px; height: 200px; border: 2px solid #475569; border-radius: 0 0 10px 10px; overflow: hidden; background: rgba(255,255,255,0.05); }
-        .liquid { position: absolute; bottom: 0; width: 100%; background: linear-gradient(to top, #ef4444, #f87171); transition: height 0.5s; }
+        body { 
+            font-family: 'Outfit', sans-serif; 
+            background-color: #0f172a; 
+            background-image: radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%); 
+            color: #f8fafc; 
+            min-height: 100vh;
+        }
+        .glass-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); }
+        .input-group { position: relative; }
+        .input-field { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(148, 163, 184, 0.2); color: white; border-radius: 1rem; padding: 0.75rem 1rem 0.75rem 2.5rem; width: 100%; font-size: 16px; transition: all 0.2s; }
+        .input-field:focus { border-color: #6366f1; outline: none; background: rgba(15, 23, 42, 0.9); }
+        .input-icon { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: #94a3b8; pointer-events: none; }
+        .btn-primary { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3); }
+        .nav-pill { color: #94a3b8; transition: all 0.3s; }
+        .nav-pill.active { background: #6366f1; color: white; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25); }
+        
+        /* Seringue */
+        .syringe-container { position: relative; width: 60px; height: 250px; margin: 0 auto; background: rgba(255,255,255,0.05); border-radius: 8px; border: 2px solid #475569; overflow: hidden; }
+        .syringe-marks { position: absolute; top: 0; right: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none; }
+        .mark { position: absolute; left: 0; width: 40%; height: 1px; background: rgba(255,255,255,0.3); }
+        .mark.major { width: 100%; background: rgba(255,255,255,0.6); }
+        .liquid { position: absolute; bottom: 0; left: 0; width: 100%; background: linear-gradient(to top, #ef4444, #f87171); transition: height 0.5s; opacity: 0.8; }
+        .plunger { position: absolute; bottom: 0; left: 0; width: 100%; height: 8px; background: #334155; z-index: 2; transition: bottom 0.5s; border-top: 2px solid #cbd5e1; }
     </style>
 </head>
-<body class="flex flex-col items-center min-h-screen pb-10">
+<body class="flex flex-col items-center pb-10">
 
+    <!-- SETUP OVERLAY -->
     <div id="setup-screen" class="fixed inset-0 z-50 bg-slate-900 flex items-center justify-center p-6 hidden">
         <div class="glass-card w-full max-w-md p-8 rounded-3xl text-center space-y-6">
-            <h2 class="text-2xl font-bold">Connect Spreadsheet</h2>
-            <input type="url" id="setup-url" placeholder="https://script.google.com/..." class="input-field">
-            <button onclick="saveUrl()" class="btn-primary w-full py-4 rounded-2xl font-bold">Connect App</button>
+            <h2 class="text-2xl font-bold">Configuration Base</h2>
+            <p class="text-slate-400">Collez votre URL Google Apps Script</p>
+            <input type="url" id="setup-url" placeholder="https://script.google.com/..." class="input-field pl-4 text-center">
+            <button onclick="saveUrl()" class="btn-primary w-full py-4 rounded-2xl font-bold">Démarrer</button>
         </div>
     </div>
 
-    <div id="app-container" class="w-full max-w-lg hidden">
+    <!-- APP CONTAINER -->
+    <div id="app-container" class="w-full max-w-lg hidden animate-fade-in">
         <header class="p-6 flex justify-between items-center">
-            <h1 class="text-2xl font-bold text-indigo-300">Peptide Log</h1>
-            <div id="status-label" class="text-xs text-slate-500">Ready</div>
+            <h1 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-white">Peptide Log</h1>
+            <div id="status-label" class="text-xs text-slate-500 flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-green-500"></span> Connecté
+            </div>
         </header>
 
         <nav class="px-4 mb-4">
-            <div class="flex bg-slate-800/50 p-1 rounded-2xl border border-slate-700/50">
-                <button onclick="switchView('log')" id="tab-log" class="nav-pill active flex-1 py-2 rounded-xl text-sm font-medium transition">Log</button>
-                <button onclick="switchView('history')" id="tab-history" class="nav-pill flex-1 py-2 rounded-xl text-sm font-medium transition">History</button>
-                <button onclick="switchView('calculator')" id="tab-calculator" class="nav-pill flex-1 py-2 rounded-xl text-sm font-medium transition">Calc</button>
-                <button onclick="switchView('config')" id="tab-config" class="nav-pill flex-1 py-2 rounded-xl text-sm font-medium transition">Config</button>
+            <div class="flex bg-slate-800/50 p-1 rounded-2xl border border-slate-700/50 backdrop-blur-md">
+                <button onclick="switchView('log')" id="tab-log" class="nav-pill active flex-1 py-2.5 rounded-xl text-sm font-medium">Log</button>
+                <button onclick="switchView('history')" id="tab-history" class="nav-pill flex-1 py-2.5 rounded-xl text-sm font-medium">History</button>
+                <button onclick="switchView('calculator')" id="tab-calculator" class="nav-pill flex-1 py-2.5 rounded-xl text-sm font-medium">Visual Calc</button>
+                <button onclick="switchView('config')" id="tab-config" class="nav-pill flex-1 py-2.5 rounded-xl text-sm font-medium">Config</button>
             </div>
         </nav>
 
         <main class="px-4 space-y-6">
             
-            <div id="view-log" class="space-y-6">
-                <div id="suggestion-box" class="glass-card p-4 rounded-2xl border-l-4 border-l-indigo-500 flex justify-between items-center hidden">
+            <!-- TAB: LOG -->
+            <div id="view-log" class="space-y-6 animate-slide-up">
+                <!-- Suggestion -->
+                <div id="suggestion-box" class="glass-card p-4 rounded-2xl border-l-4 border-l-indigo-500 flex justify-between items-center hidden relative overflow-hidden">
                     <div>
-                        <p class="text-[10px] text-indigo-400 font-bold uppercase">Next recommended site</p>
-                        <p id="suggestion-text" class="text-lg font-bold">--</p>
+                        <p class="text-[10px] text-indigo-400 font-bold uppercase tracking-wider">Rotation Recommandée</p>
+                        <p id="suggestion-text" class="text-lg font-bold">Chargement...</p>
                     </div>
-                    <button onclick="useSuggestion()" class="bg-indigo-600 px-4 py-2 rounded-lg text-xs font-bold">Use</button>
+                    <button onclick="useSuggestion()" class="btn-primary px-4 py-2 rounded-lg text-xs font-bold">Utiliser</button>
                 </div>
 
                 <section>
-                    <h2 class="text-xs font-bold text-slate-500 uppercase mb-3 ml-1">Quick Actions</h2>
+                    <h2 class="text-xs font-bold text-indigo-300 uppercase tracking-wider mb-3 ml-1">Quick Logs</h2>
                     <div id="quick-log-container" class="grid grid-cols-2 gap-3"></div>
                 </section>
 
                 <form id="log-form" class="glass-card p-6 rounded-3xl space-y-4">
-                    <select id="log-peptide" class="input-field"><option value="">Select Peptide</option></select>
+                    <h2 class="text-xs font-bold text-indigo-300 uppercase tracking-wider mb-2">Entrée Manuelle</h2>
+                    <div class="input-group">
+                        <svg class="input-icon w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
+                        <select id="log-peptide" class="input-field" required><option value="">Peptide</option></select>
+                    </div>
                     <div class="flex gap-2">
-                        <input type="number" id="log-dosage" placeholder="Dose" class="input-field flex-1">
-                        <select id="log-unit" class="bg-slate-800 border border-slate-700 rounded-xl px-2 text-sm">
+                        <div class="input-group flex-1">
+                            <svg class="input-icon w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4"/></svg>
+                            <input type="number" id="log-dosage" placeholder="Dose" class="input-field">
+                        </div>
+                        <select id="log-unit" class="bg-slate-700 text-white rounded-xl px-3 font-bold">
                             <option>mcg</option><option>mg</option><option>IU</option>
                         </select>
                     </div>
-                    <select id="log-site" class="input-field"></select>
-                    <input type="text" id="log-notes" placeholder="Notes (optional)" class="input-field">
-                    <input type="datetime-local" id="log-time" class="input-field" style="color-scheme: dark;">
-                    <button type="submit" class="btn-primary w-full py-4 rounded-2xl font-bold">Log Injection</button>
+                    <div class="input-group">
+                        <svg class="input-icon w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                        <select id="log-site" class="input-field" required></select>
+                    </div>
+                    <div class="input-group">
+                        <svg class="input-icon w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                        <input type="text" id="log-notes" placeholder="Notes..." class="input-field">
+                    </div>
+                    <div class="input-group">
+                        <svg class="input-icon w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <input type="datetime-local" id="log-time" class="input-field" style="color-scheme: dark;">
+                    </div>
+                    <button type="submit" class="btn-primary w-full py-4 rounded-2xl font-bold text-lg mt-2">Log Injection</button>
                 </form>
             </div>
 
-            <div id="view-history" class="hidden space-y-4">
-                <input type="text" id="history-filter" placeholder="Filter history..." class="input-field" oninput="renderHistory()">
-                <div id="history-list" class="space-y-3 pb-10"></div>
+            <!-- TAB: HISTORY -->
+            <div id="view-history" class="hidden space-y-4 animate-slide-up">
+                <div class="input-group">
+                    <svg class="input-icon w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                    <input type="text" id="history-filter" placeholder="Filtrer l'historique..." class="input-field" oninput="renderHistory()">
+                </div>
+                <div id="history-list" class="space-y-3 pb-20"></div>
             </div>
 
-            <div id="view-calculator" class="hidden">
+            <!-- TAB: CALCULATOR -->
+            <div id="view-calculator" class="hidden animate-slide-up">
                 <div class="glass-card p-6 rounded-3xl flex flex-col items-center">
-                    <div class="syringe-container mb-4">
-                        <div id="visual-liquid" class="liquid" style="height: 0%"></div>
+                    <div class="syringe-container mb-6">
+                        <div class="syringe-marks" id="syringe-marks"></div>
+                        <div id="visual-liquid" class="liquid"></div>
+                        <div id="visual-plunger" class="plunger"></div>
                     </div>
                     <div class="text-center">
-                        <p class="text-slate-400 text-sm">Draw to mark</p>
-                        <p id="calc-result" class="text-5xl font-black">0</p>
-                        <p class="text-slate-500 text-xs mt-1">Units (IU)</p>
+                        <p class="text-indigo-300 text-xs font-bold uppercase tracking-widest mb-1">Tirer jusqu'au trait</p>
+                        <div class="text-6xl font-black text-white flex items-end justify-center gap-2">
+                            <span id="calc-result">0</span> <span class="text-2xl text-slate-500 mb-2">IU</span>
+                        </div>
                     </div>
-                    <div class="w-full grid grid-cols-2 gap-4 mt-6">
-                        <input type="number" id="calc-vial" placeholder="Vial mg" class="input-field" oninput="runCalc()">
-                        <input type="number" id="calc-water" placeholder="Water mL" class="input-field" oninput="runCalc()">
-                        <input type="number" id="calc-dose" placeholder="Target mcg" class="input-field col-span-2" oninput="runCalc()">
+                    <div class="w-full space-y-4 mt-8">
+                        <div>
+                            <label class="text-[10px] text-slate-500 uppercase ml-2">Masse du flacon (mg)</label>
+                            <input type="number" id="calc-vial" placeholder="Ex: 5" class="input-field pl-4" oninput="runCalc()">
+                        </div>
+                        <div>
+                            <label class="text-[10px] text-slate-500 uppercase ml-2">Eau Bac. (mL)</label>
+                            <input type="number" id="calc-water" placeholder="Ex: 2" class="input-field pl-4" oninput="runCalc()">
+                        </div>
+                        <div>
+                            <label class="text-[10px] text-slate-500 uppercase ml-2">Dose visée (mcg)</label>
+                            <input type="number" id="calc-dose" placeholder="Ex: 250" class="input-field pl-4" oninput="runCalc()">
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div id="view-config" class="hidden space-y-6">
+            <!-- TAB: CONFIG -->
+            <div id="view-config" class="hidden space-y-6 animate-slide-up">
+                <!-- Zone Préférées -->
                 <section class="glass-card p-6 rounded-3xl">
-                    <h2 class="font-bold mb-4">My Preferred Sites</h2>
+                    <h2 class="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-4">Mes Zones Favorites</h2>
+                    <p class="text-[10px] text-slate-400 mb-4 italic">Activez les zones que vous utilisez pour la rotation automatique.</p>
                     <div id="preferred-sites-grid" class="grid grid-cols-2 gap-2"></div>
-                    <p class="text-[10px] text-slate-500 mt-4 italic">* Suggestions will only cycle through these sites.</p>
                 </section>
 
+                <!-- Ajouter QuickLog -->
                 <section class="glass-card p-6 rounded-3xl">
-                    <h2 class="font-bold mb-4">Add New Quick Log</h2>
-                    <form id="config-form" class="space-y-3">
-                        <input type="text" id="conf-label" placeholder="Label (ex: Daily BPC)" class="input-field" required>
-                        <input type="text" id="conf-peptide" placeholder="Peptide Name" class="input-field" required>
+                    <h2 class="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-4">Ajouter un Quick Log</h2>
+                    <form id="config-form" class="space-y-4">
+                        <input type="text" id="conf-label" placeholder="Étiquette (ex: Matin GHK)" class="input-field pl-4" required>
+                        <input type="text" id="conf-peptide" placeholder="Nom du Peptide" class="input-field pl-4" required>
                         <div class="flex gap-2">
-                            <input type="number" id="conf-val" placeholder="Value" class="input-field flex-1" required>
-                            <select id="conf-unit" class="bg-slate-800 border border-slate-700 rounded-xl px-2">
+                            <input type="number" id="conf-val" placeholder="Dose" class="input-field pl-4 flex-1" required>
+                            <select id="conf-unit" class="bg-slate-700 text-white rounded-xl px-3 font-bold">
                                 <option>mcg</option><option>mg</option><option>IU</option>
                             </select>
                         </div>
-                        <button type="submit" class="btn-primary w-full py-3 rounded-2xl font-bold">Save Preset</button>
+                        <button type="submit" class="btn-primary w-full py-3 rounded-xl font-bold">Enregistrer le Preset</button>
                     </form>
                 </section>
 
                 <section>
-                    <h2 class="text-xs font-bold text-slate-500 uppercase mb-3 ml-1">Existing Presets</h2>
+                    <h2 class="text-xs font-bold text-indigo-300 uppercase tracking-wider mb-3 ml-1">Gérer les Presets</h2>
                     <div id="presets-list" class="space-y-2"></div>
                 </section>
 
-                <button onclick="resetApp()" class="w-full py-4 text-red-500 text-sm font-bold border border-red-900/30 rounded-2xl">Reset App / URL</button>
+                <button onclick="resetApp()" class="w-full py-4 text-red-400 text-xs font-bold border border-red-900/30 rounded-2xl hover:bg-red-900/10 transition">Déconnecter / Réinitialiser l'App</button>
             </div>
         </main>
     </div>
 
-    <div id="site-modal" class="fixed inset-0 z-50 bg-slate-900/90 hidden flex items-center justify-center p-6">
+    <!-- MODAL SITE SELECTION -->
+    <div id="site-modal" class="fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-sm hidden flex items-center justify-center p-6 animate-fade-in">
         <div class="glass-card w-full max-w-sm p-6 rounded-3xl space-y-4">
-            <h3 class="font-bold text-center">Select Injection Site</h3>
-            <div id="modal-sites" class="grid grid-cols-2 gap-2 max-h-96 overflow-y-auto"></div>
-            <button onclick="closeModal()" class="w-full py-3 text-slate-400">Cancel</button>
+            <h3 class="font-bold text-center text-lg">Choisir le site</h3>
+            <div id="modal-sites" class="grid grid-cols-2 gap-2 max-h-96 overflow-y-auto pr-1"></div>
+            <button onclick="closeModal()" class="w-full py-3 text-slate-500 font-bold">Annuler</button>
         </div>
     </div>
 
@@ -152,9 +213,7 @@
         let APP_URL = localStorage.getItem('pep_url');
         let history = [];
         let presets = [];
-        let preferredSites = JSON.parse(localStorage.getItem('pref_sites')) || [
-            "Right Abdomen (Lower)", "Left Abdomen (Lower)", "Right Flank", "Left Flank"
-        ];
+        let preferredSites = JSON.parse(localStorage.getItem('pref_sites')) || ["Right Abdomen (Lower)", "Left Abdomen (Lower)", "Right Flank", "Left Flank"];
 
         const ALL_SITES = [
             "Right Abdomen (Upper)", "Right Abdomen (Lower)", "Left Abdomen (Upper)", "Left Abdomen (Lower)",
@@ -163,17 +222,17 @@
         ];
 
         function saveUrl() {
-            const url = document.getElementById('setup-url').value;
+            const url = document.getElementById('setup-url').value.trim();
             if(url) { localStorage.setItem('pep_url', url); location.reload(); }
         }
 
-        function resetApp() { if(confirm("Disconnect?")) { localStorage.removeItem('pep_url'); location.reload(); } }
+        function resetApp() { if(confirm("Supprimer les données locales et déconnecter ?")) { localStorage.clear(); location.reload(); } }
 
         async function api(data) {
             try {
                 const res = await fetch(APP_URL, { method: 'POST', body: JSON.stringify(data) });
                 return await res.json();
-            } catch(e) { alert("Network error"); return {success:false}; }
+            } catch(e) { console.error(e); return {success:false}; }
         }
 
         function switchView(view) {
@@ -192,7 +251,7 @@
             ALL_SITES.forEach(s => {
                 const isActive = preferredSites.includes(s);
                 const btn = document.createElement('button');
-                btn.className = `p-2 text-[10px] rounded-lg border transition ${isActive ? 'bg-indigo-600 border-indigo-400' : 'bg-slate-800 border-slate-700 text-slate-500'}`;
+                btn.className = `p-3 text-[10px] rounded-xl border font-bold transition ${isActive ? 'bg-indigo-600 border-indigo-400 text-white' : 'bg-slate-800/50 border-slate-700 text-slate-500'}`;
                 btn.textContent = s;
                 btn.onclick = () => {
                     if(preferredSites.includes(s)) preferredSites = preferredSites.filter(x => x !== s);
@@ -206,18 +265,19 @@
         }
 
         async function loadPresets() {
+            if(!APP_URL) return;
             const res = await fetch(`${APP_URL}?action=getPresets`).then(r => r.json());
             if(res.success) {
                 presets = res.presets;
                 const container = document.getElementById('quick-log-container');
                 container.innerHTML = '';
                 const select = document.getElementById('log-peptide');
-                select.innerHTML = '<option value="">Select Peptide</option>';
+                select.innerHTML = '<option value="">Peptide</option>';
                 
                 res.presets.forEach(p => {
                     const btn = document.createElement('button');
-                    btn.className = "glass-card p-4 rounded-2xl text-left border border-slate-700 active:bg-indigo-600 transition";
-                    btn.innerHTML = `<p class="font-bold text-sm">${p.label}</p><p class="text-[10px] text-slate-400">${p.value}${p.unit}</p>`;
+                    btn.className = "glass-card p-4 rounded-2xl text-left border border-slate-700 active:scale-95 transition-all";
+                    btn.innerHTML = `<p class="font-bold text-sm text-white">${p.label}</p><p class="text-[10px] text-indigo-400 font-bold">${p.value} ${p.unit}</p>`;
                     btn.onclick = () => openSiteModal(p);
                     container.appendChild(btn);
 
@@ -233,15 +293,15 @@
             container.innerHTML = '';
             presets.forEach(p => {
                 const div = document.createElement('div');
-                div.className = "flex justify-between items-center glass-card p-3 rounded-xl";
-                div.innerHTML = `<div><p class="text-sm font-bold">${p.label}</p><p class="text-[10px] text-slate-500">${p.peptide}</p></div>
-                <button onclick="deletePreset(${p.row})" class="text-red-500 p-2">✕</button>`;
+                div.className = "flex justify-between items-center glass-card p-4 rounded-2xl";
+                div.innerHTML = `<div><p class="text-sm font-bold text-white">${p.label}</p><p class="text-[10px] text-slate-500">${p.peptide} (${p.value}${p.unit})</p></div>
+                <button onclick="deletePreset(${p.row})" class="bg-red-500/10 text-red-500 h-8 w-8 rounded-full flex items-center justify-center">✕</button>`;
                 container.appendChild(div);
             });
         }
 
         async function deletePreset(row) {
-            if(!confirm("Delete this preset?")) return;
+            if(!confirm("Supprimer ce raccourci ?")) return;
             const res = await api({ action: 'deleteConfig', row: row });
             if(res.success) loadPresets().then(renderPresetsList);
         }
@@ -253,7 +313,7 @@
             container.innerHTML = '';
             ALL_SITES.forEach(s => {
                 const btn = document.createElement('button');
-                btn.className = "bg-slate-800 p-3 rounded-xl text-xs hover:bg-indigo-600";
+                btn.className = "bg-slate-800/80 p-3 rounded-xl text-xs font-bold text-white hover:bg-indigo-600 border border-slate-700 transition";
                 btn.textContent = s;
                 btn.onclick = () => finalizeQuickLog(s);
                 container.appendChild(btn);
@@ -270,10 +330,12 @@
                 timestamp: new Date().toISOString()
             };
             const res = await api(data);
-            if(res.success) { alert("Logged!"); loadHistory(); }
+            if(res.success) { alert("Log enregistré !"); loadHistory(); }
+            pendingQuickLog = null;
         }
 
         async function loadHistory() {
+            if(!APP_URL) return;
             const res = await fetch(`${APP_URL}?action=getHistory`).then(r => r.json());
             if(res.success) {
                 history = res.history;
@@ -290,18 +352,18 @@
             .forEach(h => {
                 const date = new Date(h.date).toLocaleDateString('fr-FR', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'});
                 const card = document.createElement('div');
-                card.className = "glass-card p-4 rounded-2xl flex justify-between items-center border border-slate-800";
+                card.className = "glass-card p-4 rounded-2xl flex justify-between items-center animate-fade-in";
                 card.innerHTML = `<div>
-                    <p class="font-bold text-sm">${h.peptide} <span class="text-indigo-400 ml-2">${h.dosage}</span></p>
-                    <p class="text-[10px] text-slate-500">${h.site} • ${date}</p>
+                    <p class="font-bold text-sm text-white">${h.peptide} <span class="text-indigo-400 ml-2">${h.dosage}</span></p>
+                    <p class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">${h.site} • ${date}</p>
                 </div>
-                <button onclick="deleteLog(${h.row})" class="text-slate-600">✕</button>`;
+                <button onclick="deleteLog(${h.row})" class="text-slate-600 hover:text-red-500">✕</button>`;
                 container.appendChild(card);
             });
         }
 
         async function deleteLog(row) {
-            if(!confirm("Delete log?")) return;
+            if(!confirm("Supprimer ce log ?")) return;
             const res = await api({action:'deleteLog', row:row});
             if(res.success) loadHistory();
         }
@@ -311,23 +373,15 @@
                 document.getElementById('suggestion-box').classList.add('hidden');
                 return;
             }
-
-            // Trouver le site préféré qui a été utilisé il y a le plus longtemps
             let bestSite = preferredSites[0];
-            let oldestDate = new Date();
-
-            // On cherche parmis les sites préférés
             const siteUsage = {};
-            preferredSites.forEach(s => siteUsage[s] = new Date(0)); // Init à l'an 0
-
+            preferredSites.forEach(s => siteUsage[s] = new Date(0));
             history.forEach(h => {
                 if (siteUsage.hasOwnProperty(h.site)) {
                     const d = new Date(h.date);
                     if (d > siteUsage[h.site]) siteUsage[h.site] = d;
                 }
             });
-
-            // On prend celui dont la date d'utilisation est la plus ancienne
             let minDate = new Date();
             for (const [site, lastUsed] of Object.entries(siteUsage)) {
                 if (lastUsed < minDate) {
@@ -335,13 +389,22 @@
                     bestSite = site;
                 }
             }
-
             document.getElementById('suggestion-text').textContent = bestSite;
             document.getElementById('suggestion-box').classList.remove('hidden');
         }
 
         function useSuggestion() {
             document.getElementById('log-site').value = document.getElementById('suggestion-text').textContent;
+        }
+
+        function initSyringe() {
+            const container = document.getElementById('syringe-marks');
+            container.innerHTML = '';
+            for(let i=0; i<=10; i++) {
+                const m = document.createElement('div');
+                m.className = 'mark major'; m.style.bottom = `${i*10}%`;
+                container.appendChild(m);
+            }
         }
 
         function runCalc() {
@@ -352,23 +415,22 @@
                 const units = (d / (v * 1000 / w)) * 100;
                 document.getElementById('calc-result').textContent = Math.round(units);
                 document.getElementById('visual-liquid').style.height = Math.min(units, 100) + '%';
+                document.getElementById('visual-plunger').style.bottom = Math.min(units, 100) + '%';
             }
         }
 
-        // Init
         if(!APP_URL) {
             document.getElementById('setup-screen').classList.remove('hidden');
         } else {
             document.getElementById('app-container').classList.remove('hidden');
-            // Fill site selects
             const s1 = document.getElementById('log-site');
             ALL_SITES.forEach(s => {
                 const o = document.createElement('option'); o.value = s; o.textContent = s;
                 s1.appendChild(o);
             });
-            document.getElementById('log-time').value = new Date().toISOString().slice(0,16);
+            document.getElementById('log-time').value = new Date(new Date() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0,16);
+            initSyringe();
             
-            // Events
             document.getElementById('log-form').onsubmit = async (e) => {
                 e.preventDefault();
                 const data = {
@@ -379,7 +441,7 @@
                     notes: document.getElementById('log-notes').value
                 };
                 const res = await api(data);
-                if(res.success) { alert("Logged!"); loadHistory(); e.target.reset(); }
+                if(res.success) { alert("Log enregistré !"); loadHistory(); e.target.reset(); }
             };
 
             document.getElementById('config-form').onsubmit = async (e) => {
@@ -392,7 +454,7 @@
                     unit: document.getElementById('conf-unit').value
                 };
                 const res = await api(data);
-                if(res.success) { alert("Preset Saved!"); loadPresets(); e.target.reset(); }
+                if(res.success) { alert("Raccourci enregistré !"); loadPresets(); e.target.reset(); }
             };
 
             switchView('log');
