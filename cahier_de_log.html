@@ -37,7 +37,6 @@
         .nav-pill { color: #94a3b8; transition: all 0.3s; }
         .nav-pill.active { background: #6366f1; color: white; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25); }
         
-        /* Syringe Visuals */
         .syringe-container { position: relative; width: 60px; height: 250px; margin: 0 auto; background: rgba(255,255,255,0.05); border-radius: 8px; border: 2px solid #475569; overflow: hidden; }
         .syringe-marks { position: absolute; top: 0; right: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none; }
         .mark { position: absolute; left: 0; width: 40%; height: 1px; background: rgba(255,255,255,0.3); }
@@ -48,7 +47,6 @@
 </head>
 <body class="flex flex-col items-center pb-10">
 
-    <!-- SETUP OVERLAY -->
     <div id="setup-screen" class="fixed inset-0 z-50 bg-slate-900 flex items-center justify-center p-6 hidden">
         <div class="glass-card w-full max-w-md p-8 rounded-3xl text-center space-y-6">
             <h2 class="text-2xl font-bold">Connect Database</h2>
@@ -58,7 +56,6 @@
         </div>
     </div>
 
-    <!-- APP CONTAINER -->
     <div id="app-container" class="w-full max-w-lg hidden animate-fade-in">
         <header class="p-6 flex justify-between items-center">
             <h1 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-white">Peptide Log</h1>
@@ -78,9 +75,7 @@
 
         <main class="px-4 space-y-6">
             
-            <!-- TAB: LOG -->
             <div id="view-log" class="space-y-6 animate-slide-up">
-                <!-- Suggestion Box -->
                 <div id="suggestion-box" class="glass-card p-4 rounded-2xl border-l-4 border-l-indigo-500 flex justify-between items-center hidden relative overflow-hidden">
                     <div>
                         <p class="text-[10px] text-indigo-400 font-bold uppercase tracking-wider">Suggested Rotation</p>
@@ -125,7 +120,6 @@
                 </form>
             </div>
 
-            <!-- TAB: HISTORY -->
             <div id="view-history" class="hidden space-y-4 animate-slide-up">
                 <div class="input-group">
                     <svg class="input-icon w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
@@ -134,7 +128,6 @@
                 <div id="history-list" class="space-y-3 pb-20"></div>
             </div>
 
-            <!-- TAB: CALCULATOR -->
             <div id="view-calculator" class="hidden animate-slide-up">
                 <div class="glass-card p-6 rounded-3xl flex flex-col items-center">
                     <div class="syringe-container mb-6">
@@ -165,16 +158,24 @@
                 </div>
             </div>
 
-            <!-- TAB: CONFIG -->
             <div id="view-config" class="hidden space-y-6 animate-slide-up">
-                <!-- Preferred Sites -->
                 <section class="glass-card p-6 rounded-3xl">
                     <h2 class="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-4">Preferred Sites</h2>
                     <p class="text-[10px] text-slate-400 mb-4 italic">Select the zones you want to include in the automatic rotation.</p>
                     <div id="preferred-sites-grid" class="grid grid-cols-2 gap-2"></div>
                 </section>
 
-                <!-- Add QuickLog -->
+                <section class="glass-card p-6 rounded-3xl">
+                    <h2 class="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-4">Peptide Management</h2>
+                    <form id="peptide-add-form" class="space-y-3 mb-6">
+                        <div class="flex gap-2">
+                            <input type="text" id="new-peptide-name" placeholder="New Peptide Name" class="input-field pl-4 flex-1">
+                            <button type="submit" class="btn-primary px-6 rounded-xl font-bold">Add</button>
+                        </div>
+                    </form>
+                    <div id="peptide-list" class="flex flex-wrap gap-2"></div>
+                </section>
+
                 <section class="glass-card p-6 rounded-3xl">
                     <h2 class="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-4">Add Quick Log</h2>
                     <form id="config-form" class="space-y-4">
@@ -200,7 +201,6 @@
         </main>
     </div>
 
-    <!-- MODAL SITE SELECTION -->
     <div id="site-modal" class="fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-sm hidden flex items-center justify-center p-6 animate-fade-in">
         <div class="glass-card w-full max-w-sm p-6 rounded-3xl space-y-4">
             <h3 class="font-bold text-center text-lg text-white">Select Site</h3>
@@ -213,6 +213,7 @@
         let APP_URL = localStorage.getItem('pep_url');
         let history = [];
         let presets = [];
+        let peptideLibrary = [];
         let preferredSites = JSON.parse(localStorage.getItem('pref_sites')) || ["Right Abdomen (Lower)", "Left Abdomen (Lower)", "Right Flank", "Left Flank"];
 
         const ALL_SITES = [
@@ -241,8 +242,13 @@
             document.querySelectorAll('.nav-pill').forEach(b => b.classList.remove('active'));
             document.getElementById('tab-' + view).classList.add('active');
             if(view === 'history') loadHistory();
-            if(view === 'log') { loadPresets(); loadHistory(); }
-            if(view === 'config') { renderPrefSites(); renderPresetsList(); }
+            if(view === 'log') { loadAllData(); }
+            if(view === 'config') { renderPrefSites(); renderPresetsList(); loadPeptideLibrary(); }
+        }
+
+        async function loadAllData() {
+            await Promise.all([loadPresets(), loadPeptideLibrary(), loadHistory()]);
+            populatePeptideSelect();
         }
 
         function renderPrefSites() {
@@ -264,6 +270,33 @@
             });
         }
 
+        async function loadPeptideLibrary() {
+            if(!APP_URL) return;
+            const res = await fetch(`${APP_URL}?action=getPeptides`).then(r => r.json());
+            if(res.success) {
+                peptideLibrary = res.peptides;
+                renderPeptideList();
+                populatePeptideSelect();
+            }
+        }
+
+        function renderPeptideList() {
+            const container = document.getElementById('peptide-list');
+            if(!container) return;
+            container.innerHTML = '';
+            peptideLibrary.forEach(p => {
+                const tag = document.createElement('div');
+                tag.className = "bg-slate-800 border border-slate-700 px-3 py-1 rounded-full text-xs flex items-center gap-2 text-white animate-fade-in";
+                tag.innerHTML = `<span>${p.name}</span><button onclick="deletePeptide(${p.row})" class="text-slate-500 hover:text-red-400">✕</button>`;
+                container.appendChild(tag);
+            });
+        }
+
+        async function deletePeptide(row) {
+            const res = await api({ action: 'deletePeptide', row: row });
+            if(res.success) loadPeptideLibrary();
+        }
+
         async function loadPresets() {
             if(!APP_URL) return;
             const res = await fetch(`${APP_URL}?action=getPresets`).then(r => r.json());
@@ -271,8 +304,6 @@
                 presets = res.presets;
                 const container = document.getElementById('quick-log-container');
                 container.innerHTML = '';
-                const select = document.getElementById('log-peptide');
-                select.innerHTML = '<option value="">Select Peptide</option>';
                 
                 res.presets.forEach(p => {
                     const btn = document.createElement('button');
@@ -280,12 +311,30 @@
                     btn.innerHTML = `<p class="font-bold text-sm text-white">${p.label}</p><p class="text-[10px] text-indigo-400 font-bold">${p.value} ${p.unit}</p>`;
                     btn.onclick = () => openSiteModal(p);
                     container.appendChild(btn);
-
-                    const opt = document.createElement('option');
-                    opt.value = p.peptide; opt.textContent = p.peptide;
-                    select.appendChild(opt);
                 });
             }
+        }
+
+        function populatePeptideSelect() {
+            const select = document.getElementById('log-peptide');
+            if(!select) return;
+            const currentValue = select.value;
+            select.innerHTML = '<option value="">Select Peptide</option>';
+            
+            // Create a unique set of names from both presets and library
+            const names = new Set();
+            presets.forEach(p => names.add(p.peptide));
+            peptideLibrary.forEach(p => names.add(p.name));
+            
+            // Add custom "Other" option back too
+            names.add("Other");
+
+            Array.from(names).sort().forEach(name => {
+                const opt = document.createElement('option');
+                opt.value = name; opt.textContent = name;
+                select.appendChild(opt);
+            });
+            select.value = currentValue;
         }
 
         function renderPresetsList() {
@@ -373,7 +422,6 @@
                 document.getElementById('suggestion-box').classList.add('hidden');
                 return;
             }
-            // Logic: Pick the preferred site that hasn't been used for the longest time
             let bestSite = preferredSites[0];
             const siteUsage = {};
             preferredSites.forEach(s => siteUsage[s] = new Date(0));
@@ -422,7 +470,6 @@
             }
         }
 
-        // Initialization
         if(!APP_URL) {
             document.getElementById('setup-screen').classList.remove('hidden');
         } else {
@@ -460,6 +507,14 @@
                 const res = await api(data);
                 if(res.success) { alert("Preset saved!"); loadPresets(); e.target.reset(); }
             };
+
+            document.getElementById('peptide-add-form').onsubmit = async (e) => {
+                e.preventDefault();
+                const name = document.getElementById('new-peptide-name').value.trim();
+                if(!name) return;
+                const res = await api({ action: 'savePeptide', name: name });
+                if(res.success) { document.getElementById('new-peptide-name').value = ''; loadPeptideLibrary(); }
+            }
 
             switchView('log');
         }
