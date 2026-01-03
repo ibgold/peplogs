@@ -44,7 +44,7 @@
         
         /* Toast Notification */
         #toast-container { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%); z-index: 100; width: 90%; max-width: 400px; pointer-events: none; }
-        .toast { background: rgba(30, 41, 59, 0.95); backdrop-filter: blur(8px); border: 1px solid rgba(99, 102, 241, 0.3); color: white; padding: 1rem 1.25rem; border-radius: 1rem; margin-top: 0.5rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5); pointer-events: auto; animation: bounce-in 0.4s ease-out; }
+        .toast { background: rgba(30, 41, 59, 0.95); backdrop-filter: blur(8px); border: 1px solid rgba(99, 102, 241, 0.3); color: white; padding: 1rem 1.25rem; border-radius: 1rem; margin-top: 0.5rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5); pointer-events: auto; animation: bounce-in 0.4s ease-out; transition: all 0.4s; }
         .toast.error { border-color: #ef4444; }
         
         .scrollbar-hide::-webkit-scrollbar { display: none; }
@@ -66,7 +66,7 @@
     </div>
 
     <div id="app-container" class="w-full max-w-lg hidden animate-fade-in px-4">
-        <header class="py-6 flex justify-between items-center">
+        <header class="py-6 flex justify-between items-center text-white">
             <h1 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-white">Peptide Log</h1>
             <div id="status-label" class="text-[10px] font-bold uppercase tracking-widest flex items-center gap-2">
                 <span id="status-dot" class="w-2 h-2 rounded-full bg-slate-500 animate-pulse"></span>
@@ -180,6 +180,8 @@
     <script>
         let APP_URL = localStorage.getItem('pep_url');
         let history = [], presets = [], peptideLibrary = [], chart = null;
+        let pendingPreset = null;
+        
         const ALL_SITES = ["Right Abdomen (Upper)", "Right Abdomen (Lower)", "Left Abdomen (Upper)", "Left Abdomen (Lower)", "Right Flank", "Left Flank", "Right Thigh", "Left Thigh", "Right Deltoid", "Left Deltoid", "Right Buttock", "Left Buttock", "Other"];
         const HALF_LIVES = { "tirzepatide": 120, "retatrutide": 144 };
         let preferredSites = JSON.parse(localStorage.getItem('pref_sites')) || ["Right Abdomen (Lower)", "Left Abdomen (Lower)"];
@@ -200,7 +202,13 @@
             }
             
             container.appendChild(toast);
-            setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateY(20px) translateX(-50%)'; setTimeout(() => toast.remove(), 400); }, duration);
+            setTimeout(() => { 
+                if(toast.parentNode) {
+                    toast.style.opacity = '0'; 
+                    toast.style.transform = 'translateY(20px) translateX(-50%)'; 
+                    setTimeout(() => toast.remove(), 400); 
+                }
+            }, duration);
         }
 
         async function checkStatus() {
@@ -219,7 +227,19 @@
             }
         }
 
-        async function api(data) { try { const res = await fetch(APP_URL, { method: 'POST', body: JSON.stringify(data) }); return await res.json(); } catch(e) { showToast("Connection Error", "error"); return {success:false}; } }
+        async function api(data) { 
+            try { 
+                const res = await fetch(APP_URL, { 
+                    method: 'POST', 
+                    body: JSON.stringify(data),
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' } // Apps Script requirement
+                }); 
+                return await res.json(); 
+            } catch(e) { 
+                showToast("Connection Error", "error"); 
+                return {success:false}; 
+            } 
+        }
 
         // --- NAVIGATION ---
         function switchView(view) {
@@ -227,6 +247,7 @@
             document.getElementById('view-' + view).classList.remove('hidden');
             document.querySelectorAll('.nav-pill').forEach(b => b.classList.remove('active'));
             document.getElementById('tab-' + view).classList.add('active');
+            
             loadAllData().then(() => {
                 if(view === 'levels') setTimeout(updateLevelChart, 50);
                 if(view === 'calculator') initSyringe();
@@ -300,7 +321,7 @@
                 });
                 const label = i === 0 ? "Today" : t.toLocaleDateString('en-US', {weekday: 'short', day: 'numeric'});
                 labels.push(label);
-                dataPoints.push(total / 1000); // CONVERSION EN MG POUR LE GRAPH
+                dataPoints.push(total / 1000); 
             }
 
             if(chart) chart.destroy();
@@ -346,7 +367,6 @@
             const w = parseFloat(document.getElementById('calc-water').value);
             const d = parseFloat(document.getElementById('calc-dose').value);
             if(v && w && d) {
-                // FIXED FORMULA ML -> IU
                 const conc = (v * 1000) / w; 
                 const volMl = d / conc; 
                 const iu = volMl * 100; 
@@ -388,20 +408,37 @@
         function useSuggestion() { document.getElementById('log-site').value = document.getElementById('suggestion-text').textContent; }
         
         function renderQuickLogs() { 
-            document.getElementById('quick-log-container').innerHTML = presets.map(p => `
-                <button onclick="openSiteModal('${p.label}')" class="glass-card p-4 rounded-2xl text-left border border-slate-700 active:scale-95 transition text-white">
-                    <p class="font-black text-xs uppercase tracking-wider text-indigo-300 mb-1">${p.label}</p>
-                    <p class="font-bold text-sm">${p.peptide}</p>
+            const container = document.getElementById('quick-log-container');
+            if(!presets.length) {
+                container.innerHTML = '<div class="col-span-2 p-8 text-center text-slate-500 text-xs italic">No quick logs. Add them in Config.</div>';
+                return;
+            }
+            container.innerHTML = presets.map(p => `
+                <button onclick="openSiteModal(${p.row})" class="glass-card p-4 rounded-2xl text-left border border-slate-700 active:scale-95 transition text-white">
+                    <p class="font-black text-[9px] uppercase tracking-wider text-indigo-300 mb-1 opacity-70">${p.label}</p>
+                    <p class="font-bold text-sm truncate">${p.peptide}</p>
                     <p class="text-[10px] opacity-70">${p.value} ${p.unit}</p>
                 </button>
             `).join(''); 
         }
 
         function renderPeptideList() { document.getElementById('peptide-list').innerHTML = peptideLibrary.map(p => `<div class="glass-card px-3 py-1 rounded-full text-[10px] flex items-center gap-2 text-white border-slate-700"><span>${p.name}</span><button onclick="deletePeptide(${p.row})" class="text-slate-500">✕</button></div>`).join(''); }
-        function renderPresetsList() { document.getElementById('presets-list').innerHTML = presets.map(p => `<div class="flex justify-between items-center glass-card p-4 rounded-2xl text-white mb-2"><div><p class="text-sm font-bold">${p.label}</p><p class="text-[10px] text-slate-500">${p.peptide}</p></div><button onclick="deletePreset(${p.row})" class="text-red-500 font-bold p-2">✕</button></div>`).join(''); }
+        
+        function renderPresetsList() { 
+            document.getElementById('presets-list').innerHTML = presets.map(p => `
+                <div class="flex justify-between items-center glass-card p-4 rounded-2xl text-white mb-2">
+                    <div>
+                        <p class="text-sm font-bold">${p.label}</p>
+                        <p class="text-[10px] text-slate-500">${p.peptide} • ${p.value}${p.unit}</p>
+                    </div>
+                    <button onclick="deletePreset(${p.row})" class="text-red-500 font-bold p-2">✕</button>
+                </div>
+            `).join(''); 
+        }
         
         function renderHistory() { 
-            const filter = document.getElementById('history-filter').value.toLowerCase();
+            const filterInput = document.getElementById('history-filter');
+            const filter = filterInput ? filterInput.value.toLowerCase() : "";
             const container = document.getElementById('history-list');
             const filtered = history.filter(h => h.peptide.toLowerCase().includes(filter) || h.site.toLowerCase().includes(filter));
             
@@ -432,7 +469,10 @@
             setTimeout(async () => {
                 if(!cancelled) {
                     const res = await api({ action: 'deleteLog', row: row });
-                    if(res.success) loadAllData();
+                    if(res.success) {
+                        history = history.filter(h => h.row != row);
+                        renderHistory();
+                    }
                 }
             }, 3000);
         }
@@ -440,12 +480,42 @@
         function saveUrl() { const url = document.getElementById('setup-url').value.trim(); if(url) { localStorage.setItem('pep_url', url); location.reload(); } }
         function resetApp() { if(confirm("Disconnect database? Local settings will be kept.")) { localStorage.removeItem('pep_url'); location.reload(); } }
         
-        let pendingPreset = null;
-        function openSiteModal(label) { pendingPreset = presets.find(p => p.label === label); document.getElementById('modal-sites').innerHTML = ALL_SITES.map(s => `<button onclick="finalizeQuickLog('${s}')" class="bg-slate-800 p-3 rounded-xl text-[10px] font-bold text-white border border-slate-700 active:bg-indigo-600 transition">${s}</button>`).join(''); document.getElementById('site-modal').classList.remove('hidden'); }
+        function openSiteModal(row) { 
+            pendingPreset = presets.find(p => p.row == row); 
+            if(!pendingPreset) return;
+            document.getElementById('modal-sites').innerHTML = ALL_SITES.map(s => `<button onclick="finalizeQuickLog('${s}')" class="bg-slate-800 p-3 rounded-xl text-[10px] font-bold text-white border border-slate-700 active:bg-indigo-600 transition">${s}</button>`).join(''); 
+            document.getElementById('site-modal').classList.remove('hidden'); 
+        }
+        
         function closeModal() { document.getElementById('site-modal').classList.add('hidden'); }
-        async function finalizeQuickLog(site) { closeModal(); const data = { peptide: pendingPreset.peptide, dosage: `${pendingPreset.value} ${pendingPreset.unit}`, site: site, timestamp: new Date().toISOString() }; const res = await api(data); if(res.success) { showToast(`Logged: ${pendingPreset.peptide}`); loadAllData(); } }
-        async function deletePreset(row) { const res = await api({action:'deleteConfig', row}); if(res.success) { showToast("Preset removed"); loadAllData(); } }
-        async function deletePeptide(row) { const res = await api({action:'deletePeptide', row}); if(res.success) { showToast("Library item removed"); loadAllData(); } }
+        
+        async function finalizeQuickLog(site) { 
+            closeModal(); 
+            const data = { 
+                action: 'logInjection', // Explicit action
+                peptide: pendingPreset.peptide, 
+                dosage: `${pendingPreset.value} ${pendingPreset.unit}`, 
+                site: site, 
+                timestamp: new Date().toISOString() 
+            }; 
+            const res = await api(data); 
+            if(res.success) { 
+                showToast(`Logged: ${pendingPreset.peptide}`); 
+                loadAllData(); 
+            } 
+        }
+        
+        async function deletePreset(row) { 
+            if(!confirm("Delete this preset?")) return;
+            const res = await api({action:'deleteConfig', row}); 
+            if(res.success) { showToast("Preset removed"); loadAllData(); } 
+        }
+        
+        async function deletePeptide(row) { 
+            if(!confirm("Remove from library?")) return;
+            const res = await api({action:'deletePeptide', row}); 
+            if(res.success) { showToast("Library item removed"); loadAllData(); } 
+        }
 
         window.onload = () => {
             if(!APP_URL) document.getElementById('setup-screen').classList.remove('hidden');
@@ -455,25 +525,47 @@
                 document.getElementById('log-time').value = new Date(new Date() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0,16);
                 checkStatus();
                 loadAllData();
-                // Status check every 30s
                 setInterval(checkStatus, 30000);
             }
         };
 
         document.getElementById('log-form').onsubmit = async (e) => {
             e.preventDefault();
-            const data = { peptide: document.getElementById('log-peptide').value, dosage: document.getElementById('log-dosage').value + ' ' + document.getElementById('log-unit').value, site: document.getElementById('log-site').value, timestamp: document.getElementById('log-time').value };
+            const data = { 
+                action: 'logInjection',
+                peptide: document.getElementById('log-peptide').value, 
+                dosage: document.getElementById('log-dosage').value + ' ' + document.getElementById('log-unit').value, 
+                site: document.getElementById('log-site').value, 
+                timestamp: document.getElementById('log-time').value 
+            };
             const res = await api(data);
-            if(res.success) { showToast("Injection Logged!"); loadAllData(); e.target.reset(); document.getElementById('log-time').value = new Date(new Date() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0,16); }
+            if(res.success) { 
+                showToast("Injection Logged!"); 
+                loadAllData(); 
+                e.target.reset(); 
+                document.getElementById('log-time').value = new Date(new Date() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0,16); 
+            }
         };
+        
         document.getElementById('peptide-add-form').onsubmit = async (e) => {
             e.preventDefault();
-            const name = document.getElementById('new-peptide-name').value.trim();
-            if(name) { const res = await api({ action: 'savePeptide', name }); if(res.success) { showToast("Added to library"); loadAllData(); e.target.reset(); } }
+            const nameInput = document.getElementById('new-peptide-name');
+            const name = nameInput.value.trim();
+            if(name) { 
+                const res = await api({ action: 'savePeptide', name }); 
+                if(res.success) { showToast("Added to library"); loadAllData(); e.target.reset(); } 
+            }
         };
+        
         document.getElementById('config-form').onsubmit = async (e) => {
             e.preventDefault();
-            const data = { action: 'saveConfig', label: document.getElementById('conf-label').value, peptide: document.getElementById('conf-peptide-select').value, value: document.getElementById('conf-val').value, unit: document.getElementById('conf-unit').value };
+            const data = { 
+                action: 'saveConfig', 
+                label: document.getElementById('conf-label').value, 
+                peptide: document.getElementById('conf-peptide-select').value, 
+                value: document.getElementById('conf-val').value, 
+                unit: document.getElementById('conf-unit').value 
+            };
             const res = await api(data);
             if(res.success) { showToast("Quick Log Saved"); loadAllData(); e.target.reset(); }
         };
