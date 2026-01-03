@@ -56,16 +56,17 @@
 
         <nav class="px-4 mb-4">
             <div class="flex bg-slate-800/50 p-1 rounded-2xl border border-slate-700/50 backdrop-blur-md">
-                <button onclick="switchView('log')" id="tab-log" class="nav-pill active flex-1 py-2 rounded-xl text-xs font-medium">Log</button>
-                <button onclick="switchView('levels')" id="tab-levels" class="nav-pill flex-1 py-2 rounded-xl text-xs font-medium">Levels</button>
-                <button onclick="switchView('history')" id="tab-history" class="nav-pill flex-1 py-2 rounded-xl text-xs font-medium">History</button>
-                <button onclick="switchView('calculator')" id="tab-calculator" class="nav-pill flex-1 py-2 rounded-xl text-xs font-medium">Calc</button>
-                <button onclick="switchView('config')" id="tab-config" class="nav-pill flex-1 py-2 rounded-xl text-xs font-medium">Config</button>
+                <button onclick="switchView('log')" id="tab-log" class="nav-pill active flex-1 py-2.5 rounded-xl text-xs font-medium">Log</button>
+                <button onclick="switchView('levels')" id="tab-levels" class="nav-pill flex-1 py-2.5 rounded-xl text-xs font-medium">Levels</button>
+                <button onclick="switchView('history')" id="tab-history" class="nav-pill flex-1 py-2.5 rounded-xl text-xs font-medium">History</button>
+                <button onclick="switchView('calculator')" id="tab-calculator" class="nav-pill flex-1 py-2.5 rounded-xl text-xs font-medium">Calc</button>
+                <button onclick="switchView('config')" id="tab-config" class="nav-pill flex-1 py-2.5 rounded-xl text-xs font-medium">Config</button>
             </div>
         </nav>
 
         <main class="px-4 space-y-6">
             
+            <!-- TAB: LOG -->
             <div id="view-log" class="space-y-6 animate-slide-up">
                 <div id="suggestion-box" class="glass-card p-4 rounded-2xl border-l-4 border-l-indigo-500 flex justify-between items-center hidden relative overflow-hidden">
                     <div><p class="text-[10px] text-indigo-400 font-bold uppercase tracking-wider">Suggested Rotation</p><p id="suggestion-text" class="text-lg font-bold">Loading...</p></div>
@@ -83,6 +84,7 @@
                 </form>
             </div>
 
+            <!-- TAB: LEVELS -->
             <div id="view-levels" class="hidden space-y-6 animate-slide-up">
                 <div class="glass-card p-6 rounded-3xl">
                     <div class="flex justify-between items-center mb-6">
@@ -127,7 +129,7 @@
                 <section class="glass-card p-6 rounded-3xl">
                     <h2 class="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-4">Peptide Management</h2>
                     <form id="peptide-add-form" class="space-y-3 mb-6">
-                        <input type="text" id="new-peptide-name" placeholder="Name" class="input-field pl-4">
+                        <input type="text" id="new-peptide-name" placeholder="Name (e.g. Tirzepatide)" class="input-field pl-4" oninput="handlePeptideNameInput(this.value)">
                         <div class="flex gap-2">
                             <input type="number" id="new-peptide-hl" placeholder="Half-Life" step="any" class="input-field pl-4 flex-1">
                             <select id="new-peptide-hl-unit" class="bg-slate-700 text-white rounded-xl px-2 text-xs">
@@ -166,6 +168,12 @@
         let history = [], presets = [], peptideLibrary = [], chart = null;
         let preferredSites = JSON.parse(localStorage.getItem('pref_sites')) || ["Right Abdomen (Lower)", "Left Abdomen (Lower)", "Right Flank", "Left Flank"];
         const ALL_SITES = ["Right Abdomen (Upper)", "Right Abdomen (Lower)", "Left Abdomen (Upper)", "Left Abdomen (Lower)", "Right Flank", "Left Flank", "Right Thigh", "Left Thigh", "Right Deltoid", "Left Deltoid", "Right Buttock", "Left Buttock", "Nasal Spray", "Other"];
+
+        // Half-life defaults for GLPs
+        const GLP_DEFAULTS = {
+            "tirzepatide": { hl: 5, unit: "days" },
+            "retatrutide": { hl: 6, unit: "days" }
+        };
 
         function saveUrl() { const url = document.getElementById('setup-url').value.trim(); if(url) { localStorage.setItem('pep_url', url); location.reload(); } }
         function resetApp() { if(confirm("Reset?")) { localStorage.clear(); location.reload(); } }
@@ -229,6 +237,16 @@
             });
         }
 
+        function handlePeptideNameInput(val) {
+            const normalized = val.trim().toLowerCase();
+            const hlInput = document.getElementById('new-peptide-hl');
+            const unitSelect = document.getElementById('new-peptide-hl-unit');
+            if (GLP_DEFAULTS[normalized]) {
+                hlInput.value = GLP_DEFAULTS[normalized].hl;
+                unitSelect.value = GLP_DEFAULTS[normalized].unit;
+            }
+        }
+
         async function loadPresets() {
             if(!APP_URL) return; const res = await fetch(`${APP_URL}?action=getPresets`).then(r => r.json());
             if(res.success) {
@@ -245,16 +263,26 @@
         function updateLevelChart() {
             const selected = document.getElementById('level-peptide-filter').value;
             if(!selected) return;
-            const pepInfo = peptideLibrary.find(p => p.name.toLowerCase() === selected.toLowerCase());
-            if(!pepInfo || !pepInfo.halfLife) { alert("Please set a half-life for this peptide in Config first."); return; }
             
-            const hlHours = pepInfo.hlUnit === 'days' ? pepInfo.halfLife * 24 : pepInfo.halfLife;
+            const pepInfo = peptideLibrary.find(p => p.name.toLowerCase() === selected.toLowerCase());
+            let hlHours = 0;
+
+            if (pepInfo && pepInfo.halfLife) {
+                hlHours = pepInfo.hlUnit === 'days' ? pepInfo.halfLife * 24 : pepInfo.halfLife;
+            } else if (GLP_DEFAULTS[selected.toLowerCase()]) {
+                const def = GLP_DEFAULTS[selected.toLowerCase()];
+                hlHours = def.unit === 'days' ? def.hl * 24 : def.hl;
+            } else {
+                alert("Please set a half-life for this peptide in Config first.");
+                return;
+            }
+            
             const k = Math.log(2) / hlHours;
             const now = new Date();
             const start = new Date(now.getTime() - (14 * 24 * 60 * 60 * 1000)); // 14 days ago
             
             const labels = [], dataPoints = [];
-            for (let i = 0; i <= 168; i += 2) { // 7 days, every 2 hours
+            for (let i = 0; i <= 168; i += 2) { // 7 days chart, every 2 hours
                 const t = new Date(now.getTime() - ((168 - i) * 60 * 60 * 1000));
                 let total = 0;
                 history.filter(h => h.peptide.toLowerCase() === selected.toLowerCase()).forEach(log => {
