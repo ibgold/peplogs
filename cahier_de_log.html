@@ -7,9 +7,7 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-    <!-- Hammer.js for Pan/Zoom support -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
-    <!-- Chart.js Zoom Plugin -->
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1/dist/chartjs-plugin-zoom.min.js"></script>
     
     <script>
@@ -37,7 +35,6 @@
         .input-field:focus { border-color: #6366f1; outline: none; background: rgba(15, 23, 42, 0.9); }
         .btn-primary { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3); }
         
-        /* Navigation Tabs */
         .nav-pill { color: #94a3b8; transition: all 0.3s; display: flex; align-items: center; justify-content: center; text-align: center; border-radius: 0.75rem; font-size: 10px; font-weight: 700; text-transform: uppercase; border: 1px solid transparent; }
         .nav-pill.active { background: #6366f1 !important; color: white !important; border-color: rgba(255,255,255,0.1); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25); }
         
@@ -58,7 +55,7 @@
 
     <div id="setup-screen" class="fixed inset-0 z-50 bg-slate-900 flex items-center justify-center p-6 hidden">
         <div class="glass-card w-full max-w-md p-8 rounded-3xl text-center space-y-6 text-white">
-            <h2 class="text-2xl font-bold">Connect Database</h2>
+            <h2 class="text-2xl font-bold">Database Setup</h2>
             <input type="url" id="setup-url" placeholder="https://script.google.com/..." class="input-field text-center">
             <button onclick="saveUrl()" class="btn-primary w-full py-4 rounded-2xl font-bold">Connect</button>
         </div>
@@ -117,7 +114,7 @@
                         <button onclick="resetToToday()" class="text-[10px] text-indigo-400 font-bold uppercase tracking-widest border border-indigo-500/30 px-4 py-2 rounded-full hover:bg-indigo-500/10 transition-colors">
                             Reset to Today
                         </button>
-                        <p class="text-[8px] text-slate-500 text-center uppercase tracking-tighter italic">Pinch/Scroll to zoom • Drag to explore history</p>
+                        <p class="text-[8px] text-slate-500 text-center uppercase tracking-tighter italic">Pinch/Scroll to zoom • Drag to navigate</p>
                     </div>
 
                     <div class="grid grid-cols-2 gap-4 mt-8">
@@ -159,7 +156,7 @@
                     </div>
                     <div class="w-full space-y-4 mt-8 text-white">
                         <input type="number" id="calc-vial" placeholder="Vial Mass (mg)" step="any" class="input-field" oninput="runCalc()">
-                        <input type="number" id="calc-water" placeholder="Bac Water (mL)" step="any" class="input-field" oninput="runCalc()">
+                        <input type="number" id="calc-water" placeholder="Water (mL)" step="any" class="input-field" oninput="runCalc()">
                         <input type="number" id="calc-dose" placeholder="Target Dose (mcg)" step="any" class="input-field" oninput="runCalc()">
                     </div>
                 </div>
@@ -168,11 +165,11 @@
             <!-- VIEW: CONFIG -->
             <div id="view-config" class="hidden space-y-6 animate-slide-up text-white pb-10">
                 <section class="glass-card p-6 rounded-3xl"><h2 class="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-4">Preferred Sites</h2><div id="preferred-sites-grid" class="grid grid-cols-2 gap-2"></div></section>
-                <section class="glass-card p-6 rounded-3xl"><h2 class="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-4 text-center">Library</h2><form id="peptide-add-form" class="flex gap-2 mb-4"><input type="text" id="new-peptide-name" placeholder="Peptide Name" class="input-field flex-1"><button type="submit" class="btn-primary px-6 rounded-xl font-bold text-xs uppercase">Add</button></form><div id="peptide-list" class="flex flex-wrap gap-2"></div></section>
+                <section class="glass-card p-6 rounded-3xl"><h2 class="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-4 text-center">Peptide Library</h2><form id="peptide-add-form" class="flex gap-2 mb-4"><input type="text" id="new-peptide-name" placeholder="Name" class="input-field flex-1"><button type="submit" class="btn-primary px-6 rounded-xl font-bold text-xs uppercase">Add</button></form><div id="peptide-list" class="flex flex-wrap gap-2"></div></section>
                 <section class="glass-card p-6 rounded-3xl">
                     <h2 class="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-4 text-center">Add Quick Log</h2>
                     <form id="config-form" class="space-y-4">
-                        <input type="text" id="conf-label" placeholder="Label (e.g. BPC Morning)" class="input-field" required>
+                        <input type="text" id="conf-label" placeholder="Label (e.g. Morning BPC)" class="input-field" required>
                         <select id="conf-peptide-select" class="input-field" required></select>
                         <div class="flex gap-2"><input type="number" id="conf-val" placeholder="Dose" step="any" class="input-field flex-1" required><select id="conf-unit" class="bg-slate-700 text-white rounded-xl px-3 font-bold"><option>mcg</option><option>mg</option></select></div>
                         <button type="submit" class="btn-primary w-full py-3 rounded-xl font-bold uppercase text-sm tracking-widest">Save Preset</button>
@@ -184,9 +181,18 @@
         </main>
     </div>
 
+    <div id="site-modal" class="fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-sm hidden flex items-center justify-center p-6 text-white text-center">
+        <div class="glass-card w-full max-w-sm p-6 rounded-3xl space-y-4">
+            <h3 class="font-bold text-lg">Select Site</h3>
+            <div id="modal-sites" class="grid grid-cols-2 gap-2 max-h-[50vh] overflow-y-auto pr-1"></div>
+            <button onclick="closeModal()" class="w-full py-3 text-slate-500 font-bold border-t border-slate-700 mt-2">Cancel</button>
+        </div>
+    </div>
+
     <script>
         let APP_URL = localStorage.getItem('pep_url');
         let history = [], presets = [], peptideLibrary = [], chart = null;
+        let pendingPreset = null;
         let currentChartLabels = [];
         
         const ALL_SITES = ["Right Abdomen (Upper)", "Right Abdomen (Lower)", "Left Abdomen (Upper)", "Left Abdomen (Lower)", "Right Flank", "Left Flank", "Right Thigh", "Left Thigh", "Right Deltoid", "Left Deltoid", "Right Buttock", "Left Buttock", "Other"];
@@ -350,11 +356,8 @@
                 plugins: [todayLinePlugin]
             });
 
-            // --- STATS CALCULATION ---
             const todayIdx = labels.indexOf("Today");
             const current = todayIdx !== -1 ? dataPoints[todayIdx] : 0;
-            
-            // Peak calculation for the current 14-day window around today
             const searchStart = Math.max(0, todayIdx - (14 * 24 / stepHours));
             const recentData = dataPoints.slice(searchStart);
             const peakVal = Math.max(...recentData);
@@ -365,7 +368,7 @@
             document.getElementById('stat-peak-level').innerText = peakVal.toFixed(2);
             
             const formattedPeak = peakDateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric' });
-            document.getElementById('stat-peak-date').innerText = `Estimated Peak: ${formattedPeak}`;
+            document.getElementById('stat-peak-date').innerText = `Peak: ${formattedPeak}`;
             
             resetToToday();
         }
@@ -374,8 +377,6 @@
             if(!chart || !currentChartLabels.length) return;
             const todayIdx = currentChartLabels.indexOf("Today");
             if(todayIdx === -1) return;
-            
-            // Display a ~10 days window around today
             const range = 20; 
             chart.options.scales.x.min = Math.max(0, todayIdx - range);
             chart.options.scales.x.max = Math.min(currentChartLabels.length - 1, todayIdx + 10);
@@ -434,7 +435,7 @@
         
         function renderQuickLogs() { 
             const container = document.getElementById('quick-log-container');
-            if(!presets.length) { container.innerHTML = '<div class="col-span-2 p-8 text-center text-slate-500 text-xs italic text-white">No presets.</div>'; return; }
+            if(!presets || !presets.length) { container.innerHTML = '<div class="col-span-2 p-8 text-center text-slate-500 text-xs italic text-white">No presets found.</div>'; return; }
             container.innerHTML = presets.map(p => `
                 <button onclick="openSiteModal(${p.row})" class="glass-card p-4 rounded-2xl text-left border border-slate-700 active:scale-95 transition text-white">
                     <p class="font-black text-[9px] uppercase tracking-wider text-indigo-300 mb-1 opacity-70">${p.label}</p>
@@ -468,10 +469,11 @@
         }
 
         function saveUrl() { const url = document.getElementById('setup-url').value.trim(); if(url) { localStorage.setItem('pep_url', url); location.reload(); } }
-        function resetApp() { if(confirm("Disconnect database? Local settings will be kept.")) { localStorage.removeItem('pep_url'); location.reload(); } }
+        function resetApp() { if(confirm("Disconnect database?")) { localStorage.removeItem('pep_url'); location.reload(); } }
         
         function openSiteModal(row) { 
-            pendingPreset = presets.find(p => p.row == row); if(!pendingPreset) return;
+            pendingPreset = presets.find(p => p.row == row); 
+            if(!pendingPreset) return;
             document.getElementById('modal-sites').innerHTML = ALL_SITES.map(s => `<button onclick="finalizeQuickLog('${s}')" class="bg-slate-800 p-3 rounded-xl text-[10px] font-bold text-white border border-slate-700 active:bg-indigo-600 transition text-center">${s}</button>`).join(''); 
             document.getElementById('site-modal').classList.remove('hidden'); 
         }
@@ -514,7 +516,7 @@
                 timestampMs: new Date(logTime).getTime()
             };
             const res = await api(data);
-            if(res.success) { showToast("Log saved!"); loadAllData(); e.target.reset(); document.getElementById('log-time').value = new Date(new Date() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0,16); }
+            if(res.success) { showToast("Logged!"); loadAllData(); e.target.reset(); document.getElementById('log-time').value = new Date(new Date() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0,16); }
         };
         
         document.getElementById('peptide-add-form').onsubmit = async (e) => {
@@ -532,3 +534,4 @@
     </script>
 </body>
 </html>
+
