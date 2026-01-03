@@ -24,9 +24,8 @@
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Outfit', sans-serif; background-color: #0f172a; background-image: radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%); color: #f8fafc; min-height: 100vh; }
         .glass-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); }
-        .input-field { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(148, 163, 184, 0.2); color: white; border-radius: 1rem; padding: 0.75rem 1rem 0.75rem 2.5rem; width: 100%; font-size: 16px; transition: all 0.2s; }
+        .input-field { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(148, 163, 184, 0.2); color: white; border-radius: 1rem; padding: 0.75rem 1rem 0.75rem 1rem; width: 100%; font-size: 16px; transition: all 0.2s; }
         .input-field:focus { border-color: #6366f1; outline: none; background: rgba(15, 23, 42, 0.9); }
-        .input-icon { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: #94a3b8; pointer-events: none; }
         .btn-primary { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3); }
         .nav-pill { color: #94a3b8; transition: all 0.3s; }
         .nav-pill.active { background: #6366f1; color: white; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25); }
@@ -43,7 +42,7 @@
     <div id="setup-screen" class="fixed inset-0 z-50 bg-slate-900 flex items-center justify-center p-6 hidden">
         <div class="glass-card w-full max-w-md p-8 rounded-3xl text-center space-y-6">
             <h2 class="text-2xl font-bold">Connect Database</h2>
-            <input type="url" id="setup-url" placeholder="https://script.google.com/..." class="input-field pl-4 text-center">
+            <input type="url" id="setup-url" placeholder="https://script.google.com/..." class="input-field text-center">
             <button onclick="saveUrl()" class="btn-primary w-full py-4 rounded-2xl font-bold">Connect</button>
         </div>
     </div>
@@ -56,17 +55,16 @@
 
         <nav class="px-4 mb-4">
             <div class="flex bg-slate-800/50 p-1 rounded-2xl border border-slate-700/50 backdrop-blur-md">
-                <button onclick="switchView('log')" id="tab-log" class="nav-pill active flex-1 py-2.5 rounded-xl text-xs font-medium">Log</button>
-                <button onclick="switchView('levels')" id="tab-levels" class="nav-pill flex-1 py-2.5 rounded-xl text-xs font-medium">Levels</button>
-                <button onclick="switchView('history')" id="tab-history" class="nav-pill flex-1 py-2.5 rounded-xl text-xs font-medium">History</button>
-                <button onclick="switchView('calculator')" id="tab-calculator" class="nav-pill flex-1 py-2.5 rounded-xl text-xs font-medium">Calc</button>
-                <button onclick="switchView('config')" id="tab-config" class="nav-pill flex-1 py-2.5 rounded-xl text-xs font-medium">Config</button>
+                <button onclick="switchView('log')" id="tab-log" class="nav-pill active flex-1 py-2 rounded-xl text-xs font-medium">Log</button>
+                <button onclick="switchView('levels')" id="tab-levels" class="nav-pill flex-1 py-2 rounded-xl text-xs font-medium">Levels</button>
+                <button onclick="switchView('history')" id="tab-history" class="nav-pill flex-1 py-2 rounded-xl text-xs font-medium">History</button>
+                <button onclick="switchView('calculator')" id="tab-calculator" class="nav-pill flex-1 py-2 rounded-xl text-xs font-medium">Calc</button>
+                <button onclick="switchView('config')" id="tab-config" class="nav-pill flex-1 py-2 rounded-xl text-xs font-medium">Config</button>
             </div>
         </nav>
 
         <main class="px-4 space-y-6">
             
-            <!-- TAB: LOG -->
             <div id="view-log" class="space-y-6 animate-slide-up">
                 <div id="suggestion-box" class="glass-card p-4 rounded-2xl border-l-4 border-l-indigo-500 flex justify-between items-center hidden relative overflow-hidden">
                     <div><p class="text-[10px] text-indigo-400 font-bold uppercase tracking-wider">Suggested Rotation</p><p id="suggestion-text" class="text-lg font-bold">Loading...</p></div>
@@ -75,40 +73,42 @@
                 <section><h2 class="text-xs font-bold text-indigo-300 uppercase tracking-wider mb-3 ml-1">Quick Logs</h2><div id="quick-log-container" class="grid grid-cols-2 gap-3"></div></section>
                 <form id="log-form" class="glass-card p-6 rounded-3xl space-y-4">
                     <h2 class="text-xs font-bold text-indigo-300 uppercase tracking-wider mb-2">Manual Entry</h2>
-                    <select id="log-peptide" class="input-field" style="padding-left: 1rem;" required><option value="">Select Peptide</option></select>
-                    <div class="flex gap-2"><input type="number" id="log-dosage" placeholder="Dose" step="any" class="input-field" style="padding-left: 1rem;"><select id="log-unit" class="bg-slate-700 text-white rounded-xl px-3 font-bold"><option>mcg</option><option>mg</option><option>IU</option></select></div>
-                    <select id="log-site" class="input-field" style="padding-left: 1rem;" required></select>
-                    <input type="text" id="log-notes" placeholder="Notes (optional)..." class="input-field" style="padding-left: 1rem;">
-                    <input type="datetime-local" id="log-time" class="input-field" style="padding-left: 1rem; color-scheme: dark;">
+                    <select id="log-peptide" class="input-field" required><option value="">Select Peptide</option></select>
+                    <div class="flex gap-2"><input type="number" id="log-dosage" placeholder="Dose" step="any" class="input-field"><select id="log-unit" class="bg-slate-700 text-white rounded-xl px-3 font-bold"><option>mcg</option><option>mg</option><option>IU</option></select></div>
+                    <select id="log-site" class="input-field" required></select>
+                    <input type="text" id="log-notes" placeholder="Notes (optional)..." class="input-field">
+                    <input type="datetime-local" id="log-time" class="input-field" style="color-scheme: dark;">
                     <button type="submit" class="btn-primary w-full py-4 rounded-2xl font-bold text-lg mt-2">Log Injection</button>
                 </form>
             </div>
 
-            <!-- TAB: LEVELS -->
             <div id="view-levels" class="hidden space-y-6 animate-slide-up">
                 <div class="glass-card p-6 rounded-3xl">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-xs font-bold text-indigo-300 uppercase tracking-wider">Estimated System Levels</h2>
-                        <select id="level-peptide-filter" class="bg-slate-800 text-xs border border-slate-700 rounded-lg px-2 py-1 outline-none" onchange="updateLevelChart()"></select>
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
+                        <h2 class="text-xs font-bold text-indigo-300 uppercase tracking-wider">Accumulation levels</h2>
+                        <select id="level-peptide-filter" class="w-full sm:w-auto bg-slate-800 text-xs border border-slate-700 rounded-lg px-3 py-2 outline-none focus:border-indigo-500" onchange="updateLevelChart()"></select>
                     </div>
-                    <div class="h-64 w-full"><canvas id="levelChart"></canvas></div>
-                    <div class="grid grid-cols-2 gap-4 mt-6">
-                        <div class="bg-slate-800/50 p-4 rounded-2xl border border-slate-700">
-                            <p class="text-[10px] text-slate-500 uppercase font-bold">Current Level</p>
-                            <p id="stat-current-level" class="text-2xl font-black text-indigo-400">0.00</p>
-                            <p id="stat-current-unit" class="text-[10px] text-slate-500">mcg</p>
+                    <div class="relative h-64 w-full px-2">
+                        <canvas id="levelChart"></canvas>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 mt-8">
+                        <div class="bg-slate-800/50 p-4 rounded-2xl border border-slate-700/50 flex flex-col items-center text-center">
+                            <p class="text-[10px] text-slate-500 uppercase font-bold mb-1">Current Level</p>
+                            <div class="flex items-baseline gap-1">
+                                <span id="stat-current-level" class="text-2xl font-black text-indigo-400 leading-none">0.00</span>
+                                <span id="stat-current-unit" class="text-[10px] text-slate-500">mcg</span>
+                            </div>
                         </div>
-                        <div class="bg-slate-800/50 p-4 rounded-2xl border border-slate-700">
-                            <p class="text-[10px] text-slate-500 uppercase font-bold">Peak (7d)</p>
-                            <p id="stat-peak-level" class="text-2xl font-black text-white">0.00</p>
-                            <p class="text-[10px] text-slate-500">Estimated</p>
+                        <div class="bg-slate-800/50 p-4 rounded-2xl border border-slate-700/50 flex flex-col items-center text-center">
+                            <p class="text-[10px] text-slate-500 uppercase font-bold mb-1">7d Peak</p>
+                            <span id="stat-peak-level" class="text-2xl font-black text-white leading-none">0.00</span>
                         </div>
                     </div>
                 </div>
             </div>
 
             <div id="view-history" class="hidden space-y-4 animate-slide-up">
-                <input type="text" id="history-filter" placeholder="Filter history..." class="input-field" style="padding-left: 1rem;" oninput="renderHistory()">
+                <input type="text" id="history-filter" placeholder="Filter history..." class="input-field" oninput="renderHistory()">
                 <div id="history-list" class="space-y-3 pb-20"></div>
             </div>
 
@@ -117,9 +117,9 @@
                     <div class="syringe-container mb-6"><div class="syringe-marks" id="syringe-marks"></div><div id="visual-liquid" class="liquid"></div><div id="visual-plunger" class="plunger"></div></div>
                     <div class="text-center"><p class="text-indigo-300 text-xs font-bold uppercase tracking-widest mb-1">Draw to tick mark</p><div class="text-6xl font-black text-white flex items-end justify-center gap-2"><span id="calc-result">0</span> <span class="text-2xl text-slate-500 mb-2">IU</span></div></div>
                     <div class="w-full space-y-4 mt-8">
-                        <input type="number" id="calc-vial" placeholder="Vial Mass (mg)" step="any" class="input-field pl-4" oninput="runCalc()">
-                        <input type="number" id="calc-water" placeholder="Bac Water (mL)" step="any" class="input-field pl-4" oninput="runCalc()">
-                        <input type="number" id="calc-dose" placeholder="Target Dose (mcg)" step="any" class="input-field pl-4" oninput="runCalc()">
+                        <input type="number" id="calc-vial" placeholder="Vial Mass (mg)" step="any" class="input-field" oninput="runCalc()">
+                        <input type="number" id="calc-water" placeholder="Bac Water (mL)" step="any" class="input-field" oninput="runCalc()">
+                        <input type="number" id="calc-dose" placeholder="Target Dose (mcg)" step="any" class="input-field" oninput="runCalc()">
                     </div>
                 </div>
             </div>
@@ -129,9 +129,9 @@
                 <section class="glass-card p-6 rounded-3xl">
                     <h2 class="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-4">Peptide Management</h2>
                     <form id="peptide-add-form" class="space-y-3 mb-6">
-                        <input type="text" id="new-peptide-name" placeholder="Name (e.g. Tirzepatide)" class="input-field pl-4" oninput="handlePeptideNameInput(this.value)">
+                        <input type="text" id="new-peptide-name" placeholder="Name (e.g. Retatrutide)" class="input-field" oninput="handlePeptideNameInput(this.value)">
                         <div class="flex gap-2">
-                            <input type="number" id="new-peptide-hl" placeholder="Half-Life" step="any" class="input-field pl-4 flex-1">
+                            <input type="number" id="new-peptide-hl" placeholder="Half-Life" step="any" class="input-field flex-1">
                             <select id="new-peptide-hl-unit" class="bg-slate-700 text-white rounded-xl px-2 text-xs">
                                 <option value="hours">Hours</option><option value="days">Days</option>
                             </select>
@@ -143,9 +143,9 @@
                 <section class="glass-card p-6 rounded-3xl">
                     <h2 class="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-4">Add Quick Log</h2>
                     <form id="config-form" class="space-y-4">
-                        <input type="text" id="conf-label" placeholder="Label" class="input-field pl-4" required>
-                        <select id="conf-peptide-select" class="input-field pl-4" required></select>
-                        <div class="flex gap-2"><input type="number" id="conf-val" placeholder="Dose" step="any" class="input-field pl-4 flex-1" required><select id="conf-unit" class="bg-slate-700 text-white rounded-xl px-3 font-bold"><option>mcg</option><option>mg</option><option>IU</option></select></div>
+                        <input type="text" id="conf-label" placeholder="Label" class="input-field" required>
+                        <select id="conf-peptide-select" class="input-field" required></select>
+                        <div class="flex gap-2"><input type="number" id="conf-val" placeholder="Dose" step="any" class="input-field flex-1" required><select id="conf-unit" class="bg-slate-700 text-white rounded-xl px-3 font-bold"><option>mcg</option><option>mg</option><option>IU</option></select></div>
                         <button type="submit" class="btn-primary w-full py-3 rounded-xl font-bold">Save Preset</button>
                     </form>
                 </section>
@@ -156,8 +156,8 @@
     </div>
 
     <div id="site-modal" class="fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-sm hidden flex items-center justify-center p-6">
-        <div class="glass-card w-full max-w-sm p-6 rounded-3xl space-y-4">
-            <h3 class="font-bold text-center text-lg text-white">Select Site</h3>
+        <div class="glass-card w-full max-w-sm p-6 rounded-3xl space-y-4 text-center">
+            <h3 class="font-bold text-lg text-white">Select Site</h3>
             <div id="modal-sites" class="grid grid-cols-2 gap-2 max-h-96 overflow-y-auto pr-1"></div>
             <button onclick="closeModal()" class="w-full py-3 text-slate-500 font-bold">Cancel</button>
         </div>
@@ -169,7 +169,6 @@
         let preferredSites = JSON.parse(localStorage.getItem('pref_sites')) || ["Right Abdomen (Lower)", "Left Abdomen (Lower)", "Right Flank", "Left Flank"];
         const ALL_SITES = ["Right Abdomen (Upper)", "Right Abdomen (Lower)", "Left Abdomen (Upper)", "Left Abdomen (Lower)", "Right Flank", "Left Flank", "Right Thigh", "Left Thigh", "Right Deltoid", "Left Deltoid", "Right Buttock", "Left Buttock", "Nasal Spray", "Other"];
 
-        // Half-life defaults for GLPs
         const GLP_DEFAULTS = {
             "tirzepatide": { hl: 5, unit: "days" },
             "retatrutide": { hl: 6, unit: "days" }
@@ -225,16 +224,29 @@
         async function deletePeptide(row) { const res = await api({ action: 'deletePeptide', row: row }); if(res.success) loadPeptideLibrary(); }
 
         function populatePeptideSelects() {
-            const selects = [document.getElementById('log-peptide'), document.getElementById('conf-peptide-select'), document.getElementById('level-peptide-filter')];
+            const logPep = document.getElementById('log-peptide');
+            const confPep = document.getElementById('conf-peptide-select');
+            const levelFilter = document.getElementById('level-peptide-filter');
+            
             const namesMap = new Map();
             presets.forEach(p => namesMap.set(p.peptide.toLowerCase(), p.peptide));
             peptideLibrary.forEach(p => namesMap.set(p.name.toLowerCase(), p.name));
             const sortedNames = Array.from(namesMap.values()).sort();
-            selects.forEach(s => {
+
+            // All peptides for regular selects
+            [logPep, confPep].forEach(s => {
                 if(!s) return; const prev = s.value;
                 s.innerHTML = '<option value="">Select Peptide</option>' + sortedNames.map(n => `<option value="${n}">${n}</option>`).join('');
-                s.value = prev || (s.id === 'level-peptide-filter' && sortedNames.length ? sortedNames[0] : "");
+                s.value = prev;
             });
+
+            // Filtered list for Level Chart (only Tirz/Reta)
+            if(levelFilter) {
+                const prev = levelFilter.value;
+                const chartNames = sortedNames.filter(n => ["tirzepatide", "retatrutide"].includes(n.toLowerCase()));
+                levelFilter.innerHTML = chartNames.length ? chartNames.map(n => `<option value="${n}">${n}</option>`).join('') : '<option value="">No GLP-1 found</option>';
+                levelFilter.value = prev || (chartNames.length ? chartNames[0] : "");
+            }
         }
 
         function handlePeptideNameInput(val) {
@@ -273,17 +285,16 @@
                 const def = GLP_DEFAULTS[selected.toLowerCase()];
                 hlHours = def.unit === 'days' ? def.hl * 24 : def.hl;
             } else {
-                alert("Please set a half-life for this peptide in Config first.");
                 return;
             }
             
             const k = Math.log(2) / hlHours;
             const now = new Date();
-            const start = new Date(now.getTime() - (14 * 24 * 60 * 60 * 1000)); // 14 days ago
-            
             const labels = [], dataPoints = [];
-            for (let i = 0; i <= 168; i += 2) { // 7 days chart, every 2 hours
-                const t = new Date(now.getTime() - ((168 - i) * 60 * 60 * 1000));
+            const steps = 84; // 7 days chart, every 2 hours
+            
+            for (let i = 0; i <= steps; i++) {
+                const t = new Date(now.getTime() - ((steps - i) * 2 * 60 * 60 * 1000));
                 let total = 0;
                 history.filter(h => h.peptide.toLowerCase() === selected.toLowerCase()).forEach(log => {
                     const logDate = new Date(log.date);
@@ -301,8 +312,8 @@
             const peakLevel = Math.max(...dataPoints);
             document.getElementById('stat-current-level').innerText = currentLevel.toFixed(2);
             document.getElementById('stat-peak-level').innerText = peakLevel.toFixed(2);
-            const unit = history.find(h => h.peptide.toLowerCase() === selected.toLowerCase())?.dosage.split(' ')[1] || 'mcg';
-            document.getElementById('stat-current-unit').innerText = unit;
+            const logEntry = history.find(h => h.peptide.toLowerCase() === selected.toLowerCase());
+            document.getElementById('stat-current-unit').innerText = logEntry ? logEntry.dosage.split(' ')[1] : 'mcg';
 
             if(chart) chart.destroy();
             const ctx = document.getElementById('levelChart').getContext('2d');
@@ -311,20 +322,32 @@
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: 'Concentration',
                         data: dataPoints,
                         borderColor: '#6366f1',
+                        borderWidth: 3,
                         backgroundColor: 'rgba(99, 102, 241, 0.1)',
                         fill: true, tension: 0.4, pointRadius: 0
                     }]
                 },
-                options: { responsive: true, maintainAspectRatio: false, scales: { x: { display: false }, y: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.05)' } } }, plugins: { legend: { display: false } } }
+                options: { 
+                    responsive: true, maintainAspectRatio: false,
+                    layout: { padding: { left: 0, right: 10, top: 10, bottom: 0 } },
+                    scales: { 
+                        x: { display: false }, 
+                        y: { 
+                            beginAtZero: true,
+                            ticks: { color: '#64748b', font: { size: 9 }, maxTicksLimit: 5 }, 
+                            grid: { color: 'rgba(255,255,255,0.03)', drawBorder: false } 
+                        } 
+                    }, 
+                    plugins: { legend: { display: false }, tooltip: { enabled: true, mode: 'index', intersect: false } } 
+                }
             });
         }
 
         async function loadHistory() {
             if(!APP_URL) return; const res = await fetch(`${APP_URL}?action=getHistory`).then(r => r.json());
-            if(res.success) { history = res.history; renderHistory(); calculateSuggestion(); }
+            if(res.success) { history = res.history; renderHistory(); calculateSuggestion(); if(document.getElementById('tab-levels').classList.contains('active')) updateLevelChart(); }
         }
 
         function renderHistory() {
@@ -334,13 +357,13 @@
             .forEach(h => {
                 const date = new Date(h.date).toLocaleDateString('en-US', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'});
                 const card = document.createElement('div');
-                card.className = "glass-card p-4 rounded-2xl flex justify-between items-center";
-                card.innerHTML = `<div><p class="font-bold text-sm text-white">${h.peptide} <span class="text-indigo-400 ml-2">${h.dosage}</span></p><p class="text-[10px] text-slate-500 uppercase font-bold">${h.site} • ${date}</p></div><button onclick="deleteLog(${h.row})" class="text-slate-600 hover:text-red-500">✕</button>`;
+                card.className = "glass-card p-4 rounded-2xl flex justify-between items-center animate-fade-in";
+                card.innerHTML = `<div><p class="font-bold text-sm text-white">${h.peptide} <span class="text-indigo-400 ml-2">${h.dosage}</span></p><p class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">${h.site} • ${date}</p></div><button onclick="deleteLog(${h.row})" class="text-slate-600 hover:text-red-500 transition">✕</button>`;
                 container.appendChild(card);
             });
         }
 
-        async function deleteLog(row) { if(!confirm("Delete?")) return; const res = await api({action:'deleteLog', row:row}); if(res.success) loadHistory(); }
+        async function deleteLog(row) { if(!confirm("Delete this entry?")) return; const res = await api({action:'deleteLog', row:row}); if(res.success) loadHistory(); }
 
         function calculateSuggestion() {
             if (!preferredSites.length) { document.getElementById('suggestion-box').classList.add('hidden'); return; }
@@ -354,7 +377,7 @@
         function initSyringe() { const container = document.getElementById('syringe-marks'); if(!container) return; container.innerHTML = ''; for(let i=0; i<=10; i++) { const m = document.createElement('div'); m.className = 'mark major'; m.style.bottom = `${i*10}%`; container.appendChild(m); } }
         function runCalc() { const v = document.getElementById('calc-vial').value, w = document.getElementById('calc-water').value, d = document.getElementById('calc-dose').value; if(v && w && d) { const units = (d / (v * 1000 / w)) * 100; document.getElementById('calc-result').textContent = Math.round(units); document.getElementById('visual-liquid').style.height = Math.min(units, 100) + '%'; document.getElementById('visual-plunger').style.bottom = Math.min(units, 100) + '%'; } }
         function closeModal() { document.getElementById('site-modal').classList.add('hidden'); }
-        function openSiteModal(p) { pendingQuickLog = p; const container = document.getElementById('modal-sites'); container.innerHTML = ALL_SITES.map(s => `<button onclick="finalizeQuickLog('${s}')" class="bg-slate-800/80 p-3 rounded-xl text-xs font-bold text-white border border-slate-700">${s}</button>`).join(''); document.getElementById('site-modal').classList.remove('hidden'); }
+        function openSiteModal(p) { pendingQuickLog = p; const container = document.getElementById('modal-sites'); container.innerHTML = ALL_SITES.map(s => `<button onclick="finalizeQuickLog('${s}')" class="bg-slate-800/80 p-3 rounded-xl text-xs font-bold text-white border border-slate-700 active:bg-indigo-600 transition">${s}</button>`).join(''); document.getElementById('site-modal').classList.remove('hidden'); }
         async function finalizeQuickLog(site) { document.getElementById('site-modal').classList.add('hidden'); const data = { peptide: pendingQuickLog.peptide, dosage: `${pendingQuickLog.value} ${pendingQuickLog.unit}`, site: site, timestamp: new Date().toISOString() }; const res = await api(data); if(res.success) { alert("Log saved!"); loadHistory(); } }
 
         if(!APP_URL) document.getElementById('setup-screen').classList.remove('hidden');
