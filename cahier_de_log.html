@@ -23,14 +23,14 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Outfit', sans-serif; background-color: #0f172a; background-image: radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%); color: #f8fafc; min-height: 100vh; }
-        .glass-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); }
+        .glass-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); }
         .input-field { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(148, 163, 184, 0.2); color: white; border-radius: 1rem; padding: 0.75rem 1rem; width: 100%; font-size: 16px; transition: all 0.2s; }
         .input-field:focus { border-color: #6366f1; outline: none; background: rgba(15, 23, 42, 0.9); }
         .btn-primary { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3); }
         .nav-pill { color: #94a3b8; transition: all 0.3s; display: flex; align-items: center; justify-content: center; }
-        .nav-pill.active { background: #6366f1; color: white; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25); }
+        .nav-pill.active { background: #6366f1 !important; color: white !important; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25); }
         
-        .syringe-container { position: relative; width: 60px; height: 220px; margin: 0 auto; background: rgba(255,255,255,0.05); border-radius: 8px; border: 2px solid #475569; overflow: hidden; }
+        .syringe-container { position: relative; width: 60px; height: 250px; margin: 0 auto; background: rgba(255,255,255,0.05); border-radius: 8px; border: 2px solid #475569; overflow: hidden; }
         .syringe-marks { position: absolute; top: 0; right: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none; }
         .mark { position: absolute; left: 0; width: 40%; height: 1px; background: rgba(255,255,255,0.3); }
         .mark.major { width: 100%; background: rgba(255,255,255,0.6); }
@@ -44,22 +44,21 @@
 <body class="flex flex-col items-center pb-10">
 
     <div id="setup-screen" class="fixed inset-0 z-50 bg-slate-900 flex items-center justify-center p-6 hidden">
-        <div class="glass-card w-full max-w-md p-8 rounded-3xl text-center space-y-6 text-white">
+        <div class="glass-card w-full max-w-md p-8 rounded-3xl text-center space-y-6">
             <h2 class="text-2xl font-bold">Connect Database</h2>
-            <p class="text-slate-400">Paste your Google Apps Script URL to start</p>
             <input type="url" id="setup-url" placeholder="https://script.google.com/..." class="input-field text-center">
             <button onclick="saveUrl()" class="btn-primary w-full py-4 rounded-2xl font-bold">Connect</button>
         </div>
     </div>
 
-    <div id="app-container" class="w-full max-w-lg hidden animate-fade-in">
-        <header class="p-6 flex justify-between items-center">
+    <div id="app-container" class="w-full max-w-lg hidden animate-fade-in px-4">
+        <header class="py-6 flex justify-between items-center">
             <h1 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-white">Peptide Log</h1>
             <div id="status-label" class="text-xs text-slate-500">Connected</div>
         </header>
 
-        <nav class="px-4 mb-4">
-            <div class="flex bg-slate-800/50 p-1 rounded-2xl border border-slate-700/50 backdrop-blur-md w-full justify-between gap-1">
+        <nav class="mb-4">
+            <div class="flex bg-slate-800/50 p-1 rounded-2xl border border-slate-700/50 backdrop-blur-md w-full justify-between gap-1 shadow-lg">
                 <button onclick="switchView('log')" id="tab-log" class="nav-pill active flex-1 py-2.5 rounded-xl text-[10px] font-bold">Log</button>
                 <button onclick="switchView('levels')" id="tab-levels" class="nav-pill flex-1 py-2.5 rounded-xl text-[10px] font-bold">Levels</button>
                 <button onclick="switchView('history')" id="tab-history" class="nav-pill flex-1 py-2.5 rounded-xl text-[10px] font-bold">History</button>
@@ -68,17 +67,15 @@
             </div>
         </nav>
 
-        <main class="px-4 space-y-6">
+        <main class="space-y-6">
             
-            <!-- VIEW: LOG -->
             <div id="view-log" class="space-y-6 animate-slide-up">
                 <div id="suggestion-box" class="glass-card p-4 rounded-2xl border-l-4 border-l-indigo-500 flex justify-between items-center hidden">
                     <div><p class="text-[10px] text-indigo-400 font-bold uppercase tracking-wider">Suggested Site</p><p id="suggestion-text" class="text-lg font-bold text-white">--</p></div>
                     <button onclick="useSuggestion()" class="btn-primary px-4 py-2 rounded-lg text-xs font-bold text-white">Use</button>
                 </div>
                 <div id="quick-log-container" class="grid grid-cols-2 gap-3"></div>
-                <form id="log-form" class="glass-card p-6 rounded-3xl space-y-4 text-white">
-                    <h2 class="text-xs font-bold text-indigo-300 uppercase tracking-wider mb-2 text-center">Manual Entry</h2>
+                <form id="log-form" class="glass-card p-6 rounded-3xl space-y-4 text-white shadow-xl">
                     <select id="log-peptide" class="input-field" required></select>
                     <div class="flex gap-2"><input type="number" id="log-dosage" placeholder="Dose" step="any" class="input-field"><select id="log-unit" class="bg-slate-700 text-white rounded-xl px-3 font-bold"><option>mcg</option><option>mg</option></select></div>
                     <select id="log-site" class="input-field" required></select>
@@ -87,12 +84,11 @@
                 </form>
             </div>
 
-            <!-- VIEW: LEVELS -->
             <div id="view-levels" class="hidden space-y-6 animate-slide-up">
-                <div class="glass-card p-6 rounded-3xl">
+                <div class="glass-card p-6 rounded-3xl shadow-xl">
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-xs font-bold text-indigo-300 uppercase tracking-wider">System Projection (14d)</h2>
-                        <select id="level-peptide-filter" class="bg-slate-800 text-xs border border-slate-700 rounded-lg px-2 py-1 text-white" onchange="updateLevelChart()"></select>
+                        <select id="level-peptide-filter" class="bg-slate-800 text-xs border border-slate-700 rounded-lg px-2 py-1 text-white outline-none" onchange="updateLevelChart()"></select>
                     </div>
                     <div class="relative h-64 w-full px-2">
                         <canvas id="levelChart"></canvas>
@@ -100,31 +96,29 @@
                     <div class="grid grid-cols-2 gap-4 mt-8">
                         <div class="bg-slate-800/50 p-4 rounded-2xl border border-slate-700/50 text-center text-white">
                             <p class="text-[10px] text-slate-500 uppercase font-bold">Current Level</p>
-                            <p id="stat-current-level" class="text-2xl font-black text-indigo-400 leading-none mt-1">0.00</p>
+                            <p id="stat-current-level" class="text-2xl font-black text-indigo-400 mt-1">0.00</p>
                         </div>
                         <div class="bg-slate-800/50 p-4 rounded-2xl border border-slate-700/50 text-center text-white">
-                            <p class="text-[10px] text-slate-500 uppercase font-bold">Expected Peak</p>
-                            <p id="stat-peak-level" class="text-2xl font-black text-white leading-none mt-1">0.00</p>
+                            <p class="text-[10px] text-slate-500 uppercase font-bold">14d Peak</p>
+                            <p id="stat-peak-level" class="text-2xl font-black text-white mt-1">0.00</p>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- VIEW: HISTORY -->
             <div id="view-history" class="hidden space-y-4 animate-slide-up">
                 <div id="history-list" class="space-y-3 pb-20"></div>
             </div>
 
-            <!-- VIEW: CALCULATOR -->
             <div id="view-calculator" class="hidden animate-slide-up">
-                <div class="glass-card p-6 rounded-3xl flex flex-col items-center">
+                <div class="glass-card p-6 rounded-3xl flex flex-col items-center shadow-xl">
                     <div class="syringe-container mb-6">
                         <div class="syringe-marks" id="syringe-marks"></div>
                         <div id="visual-liquid" class="liquid"></div>
                         <div id="visual-plunger" class="plunger"></div>
                     </div>
                     <div class="text-center text-white">
-                        <p class="text-indigo-300 text-xs font-bold uppercase tracking-widest mb-1">Draw to IU</p>
+                        <p class="text-indigo-300 text-xs font-bold uppercase tracking-widest mb-1">Draw to mark (U-100)</p>
                         <div class="text-6xl font-black text-white flex items-end justify-center gap-2">
                             <span id="calc-result">0</span><span class="text-2xl text-slate-500 mb-2">IU</span>
                         </div>
@@ -137,17 +131,9 @@
                 </div>
             </div>
 
-            <!-- VIEW: CONFIG -->
             <div id="view-config" class="hidden space-y-6 animate-slide-up text-white">
-                <section class="glass-card p-6 rounded-3xl">
-                    <h2 class="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-4">Preferred Sites</h2>
-                    <div id="preferred-sites-grid" class="grid grid-cols-2 gap-2"></div>
-                </section>
-                <section class="glass-card p-6 rounded-3xl">
-                    <h2 class="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-4">Library</h2>
-                    <form id="peptide-add-form" class="flex gap-2 mb-4"><input type="text" id="new-peptide-name" placeholder="Peptide Name" class="input-field flex-1"><button type="submit" class="btn-primary px-6 rounded-xl font-bold">Add</button></form>
-                    <div id="peptide-list" class="flex flex-wrap gap-2"></div>
-                </section>
+                <section class="glass-card p-6 rounded-3xl"><h2 class="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-4">Preferred Sites</h2><div id="preferred-sites-grid" class="grid grid-cols-2 gap-2"></div></section>
+                <section class="glass-card p-6 rounded-3xl"><h2 class="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-4">Library</h2><form id="peptide-add-form" class="flex gap-2 mb-4"><input type="text" id="new-peptide-name" placeholder="Name" class="input-field flex-1"><button type="submit" class="btn-primary px-6 rounded-xl font-bold">Add</button></form><div id="peptide-list" class="flex flex-wrap gap-2"></div></section>
                 <section class="glass-card p-6 rounded-3xl">
                     <h2 class="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-4">Quick Logs</h2>
                     <form id="config-form" class="space-y-4">
@@ -158,14 +144,14 @@
                     </form>
                 </section>
                 <div id="presets-list" class="space-y-2"></div>
-                <button onclick="resetApp()" class="w-full py-4 text-red-400 text-xs font-bold border border-red-900/30 rounded-2xl mt-4">Reset URL / Database</button>
+                <button onclick="resetApp()" class="w-full py-4 text-red-400 text-xs font-bold border border-red-900/30 rounded-2xl">Reset URL</button>
             </div>
         </main>
     </div>
 
     <div id="site-modal" class="fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-sm hidden flex items-center justify-center p-6 text-white text-center">
         <div class="glass-card w-full max-w-sm p-6 rounded-3xl space-y-4">
-            <h3 class="font-bold text-lg">Select Site</h3>
+            <h3 class="font-bold">Select Site</h3>
             <div id="modal-sites" class="grid grid-cols-2 gap-2 max-h-[50vh] overflow-y-auto pr-1"></div>
             <button onclick="closeModal()" class="w-full py-3 text-slate-500 font-bold border-t border-slate-700 mt-2">Cancel</button>
         </div>
@@ -185,13 +171,8 @@
             document.getElementById('view-' + view).classList.remove('hidden');
             document.querySelectorAll('.nav-pill').forEach(b => b.classList.remove('active'));
             document.getElementById('tab-' + view).classList.add('active');
-            
-            // On charge les données et on lance le rendu spécifique
             loadAllData().then(() => {
-                if(view === 'levels') {
-                    // Petit délai pour s'assurer que le canvas est visible avant le rendu de Chart.js
-                    setTimeout(updateLevelChart, 50);
-                }
+                if(view === 'levels') setTimeout(updateLevelChart, 50);
                 if(view === 'calculator') initSyringe();
             });
         }
@@ -249,8 +230,6 @@
             const labels = [], dataPoints = [];
             const nowTime = now.getTime();
             
-            // On calcule sur 14 jours (7 passés, 7 futurs)
-            // Échantillonnage toutes les 4 heures
             for (let i = -168; i <= 168; i += 4) { 
                 const t = new Date(nowTime + (i * 60 * 60 * 1000));
                 let total = 0;
@@ -263,16 +242,13 @@
                         total += doseVal * Math.pow(Math.E, -k * diffHours);
                     }
                 });
-                // Formater le label pour l'axe des abscisses
                 const label = i === 0 ? "Today" : t.toLocaleDateString('en-US', {weekday: 'short', day: 'numeric'});
                 labels.push(label);
                 dataPoints.push(total);
             }
 
             if(chart) chart.destroy();
-            const ctx = canvas.getContext('2d');
-            
-            chart = new Chart(ctx, {
+            chart = new Chart(canvas.getContext('2d'), {
                 type: 'line',
                 data: {
                     labels: labels,
@@ -281,25 +257,15 @@
                         borderColor: '#6366f1',
                         borderWidth: 3,
                         backgroundColor: 'rgba(99, 102, 241, 0.1)',
-                        fill: true,
-                        tension: 0.4,
-                        pointRadius: 0
+                        fill: true, tension: 0.4, pointRadius: 0
                     }]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    layout: { padding: { bottom: 10 } },
+                    responsive: true, maintainAspectRatio: false,
                     scales: {
                         x: { 
                             display: true, 
-                            ticks: { 
-                                color: '#64748b', 
-                                font: { size: 9 },
-                                maxRotation: 0,
-                                autoSkip: true,
-                                maxTicksLimit: 7
-                            },
+                            ticks: { color: '#64748b', font: { size: 9 }, autoSkip: true, maxTicksLimit: 7 },
                             grid: { display: false }
                         },
                         y: { 
@@ -308,16 +274,11 @@
                             grid: { color: 'rgba(255,255,255,0.03)', drawBorder: false } 
                         }
                     },
-                    plugins: { 
-                        legend: { display: false },
-                        tooltip: { enabled: true, mode: 'index', intersect: false }
-                    }
+                    plugins: { legend: { display: false }, tooltip: { enabled: true, mode: 'index', intersect: false } }
                 }
             });
 
-            // "Today" est à l'index milieu de la boucle (-168 à 168 par pas de 4 => 336/4 = 84 pas, Today à l'index 42)
-            const current = dataPoints[42] || 0;
-            document.getElementById('stat-current-level').innerText = current.toFixed(2);
+            document.getElementById('stat-current-level').innerText = dataPoints[42].toFixed(2);
             document.getElementById('stat-peak-level').innerText = Math.max(...dataPoints).toFixed(2);
         }
 
@@ -333,14 +294,18 @@
         }
 
         function runCalc() {
-            const v = document.getElementById('calc-vial').value;
-            const w = document.getElementById('calc-water').value;
-            const d = document.getElementById('calc-dose').value;
+            const v = parseFloat(document.getElementById('calc-vial').value);
+            const w = parseFloat(document.getElementById('calc-water').value);
+            const d = parseFloat(document.getElementById('calc-dose').value);
             if(v && w && d) {
-                const units = (d / (v * 1000 / w));
-                document.getElementById('calc-result').textContent = Math.round(units);
-                document.getElementById('visual-liquid').style.height = Math.min(units, 100) + '%';
-                document.getElementById('visual-plunger').style.bottom = Math.min(units, 100) + '%';
+                // GPT Fix: Correct IU Calculation
+                const conc = (v * 1000) / w;      // mcg/mL
+                const volMl = d / conc;           // mL
+                const iu = volMl * 100;           // IU (sur seringue U-100)
+                
+                document.getElementById('calc-result').textContent = iu.toFixed(1);
+                document.getElementById('visual-liquid').style.height = Math.min(iu, 100) + '%';
+                document.getElementById('visual-plunger').style.bottom = Math.min(iu, 100) + '%';
             }
         }
 
@@ -377,12 +342,12 @@
         function renderQuickLogs() { document.getElementById('quick-log-container').innerHTML = presets.map(p => `<button onclick="openSiteModal('${p.label}')" class="glass-card p-4 rounded-2xl text-left border border-slate-700 active:scale-95 transition text-white"><p class="font-bold text-sm">${p.label}</p><p class="text-[10px] text-indigo-400 font-bold">${p.value} ${p.unit}</p></button>`).join(''); }
         function renderPeptideList() { document.getElementById('peptide-list').innerHTML = peptideLibrary.map(p => `<div class="glass-card px-3 py-1 rounded-full text-[10px] flex items-center gap-2 text-white border-slate-700"><span>${p.name}</span><button onclick="deletePeptide(${p.row})" class="text-slate-500">✕</button></div>`).join(''); }
         function renderPresetsList() { document.getElementById('presets-list').innerHTML = presets.map(p => `<div class="flex justify-between items-center glass-card p-4 rounded-2xl text-white mb-2"><div><p class="text-sm font-bold">${p.label}</p><p class="text-[10px] text-slate-500">${p.peptide}</p></div><button onclick="deletePreset(${p.row})" class="text-red-500 font-bold p-2">✕</button></div>`).join(''); }
-        function renderHistory() { document.getElementById('history-list').innerHTML = history.map(h => `<div class="glass-card p-4 rounded-2xl flex justify-between items-center text-white"><div><p class="font-bold text-sm">${h.peptide} <span class="text-indigo-400 ml-2">${h.dosage}</span></p><p class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">${h.site} • ${new Date(h.date).toLocaleDateString()}</p></div><button onclick="deleteLog(${h.row})" class="text-slate-600">✕</button></div>`).join(''); }
+        function renderHistory() { document.getElementById('history-list').innerHTML = history.map(h => `<div class="glass-card p-4 rounded-2xl flex justify-between items-center text-white shadow-sm"><div><p class="font-bold text-sm">${h.peptide} <span class="text-indigo-400 ml-2">${h.dosage}</span></p><p class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">${h.site} • ${new Date(h.date).toLocaleDateString()}</p></div><button onclick="deleteLog(${h.row})" class="text-slate-600">✕</button></div>`).join(''); }
 
         function saveUrl() { const url = document.getElementById('setup-url').value.trim(); if(url) { localStorage.setItem('pep_url', url); location.reload(); } }
-        function resetApp() { if(confirm("Reset URL? This will clear your connection but not your spreadsheet.")) { localStorage.clear(); location.reload(); } }
+        function resetApp() { if(confirm("Reset?")) { localStorage.clear(); location.reload(); } }
         let pendingPreset = null;
-        function openSiteModal(label) { pendingPreset = presets.find(p => p.label === label); document.getElementById('modal-sites').innerHTML = ALL_SITES.map(s => `<button onclick="finalizeQuickLog('${s}')" class="bg-slate-800 p-3 rounded-xl text-xs font-bold text-white border border-slate-700 active:bg-indigo-600 transition">${s}</button>`).join(''); document.getElementById('site-modal').classList.remove('hidden'); }
+        function openSiteModal(label) { pendingPreset = presets.find(p => p.label === label); document.getElementById('modal-sites').innerHTML = ALL_SITES.map(s => `<button onclick="finalizeQuickLog('${s}')" class="bg-slate-800 p-3 rounded-xl text-[10px] font-bold text-white border border-slate-700 active:bg-indigo-600 transition">${s}</button>`).join(''); document.getElementById('site-modal').classList.remove('hidden'); }
         function closeModal() { document.getElementById('site-modal').classList.add('hidden'); }
         async function finalizeQuickLog(site) { closeModal(); const data = { peptide: pendingPreset.peptide, dosage: `${pendingPreset.value} ${pendingPreset.unit}`, site: site, timestamp: new Date().toISOString() }; await api(data); loadAllData(); }
         async function deleteLog(row) { if(confirm("Delete?")) { await api({action:'deleteLog', row}); loadAllData(); } }
@@ -403,7 +368,6 @@
             e.preventDefault();
             const data = { peptide: document.getElementById('log-peptide').value, dosage: document.getElementById('log-dosage').value + ' ' + document.getElementById('log-unit').value, site: document.getElementById('log-site').value, timestamp: document.getElementById('log-time').value };
             await api(data); loadAllData(); e.target.reset();
-            alert("Injection Logged!");
         };
         document.getElementById('peptide-add-form').onsubmit = async (e) => {
             e.preventDefault();
