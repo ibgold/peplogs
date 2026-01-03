@@ -7,6 +7,8 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <!-- Ajout de Hammer.js pour supporter le Pan (glissement) à la souris et au toucher -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
     <!-- Plugin Chart.js Zoom -->
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1/dist/chartjs-plugin-zoom.min.js"></script>
     
@@ -34,7 +36,20 @@
         .input-field { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(148, 163, 184, 0.2); color: white; border-radius: 1rem; padding: 0.75rem 1rem; width: 100%; font-size: 16px; transition: all 0.2s; }
         .input-field:focus { border-color: #6366f1; outline: none; background: rgba(15, 23, 42, 0.9); }
         .btn-primary { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3); }
-        .nav-pill { color: #94a3b8; transition: all 0.3s; display: flex; align-items: center; justify-content: center; }
+        
+        /* Navigation corrigée */
+        .nav-pill { 
+            color: #94a3b8; 
+            transition: all 0.3s; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            text-align: center;
+            border-radius: 0.75rem;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
         .nav-pill.active { background: #6366f1 !important; color: white !important; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25); }
         
         .syringe-container { position: relative; width: 60px; height: 220px; margin: 0 auto; background: rgba(255,255,255,0.05); border-radius: 8px; border: 2px solid #475569; overflow: hidden; }
@@ -51,7 +66,7 @@
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="flex flex-col items-center pb-24">
+<body class="flex flex-col items-center pb-24 px-4">
 
     <div id="toast-container"></div>
 
@@ -64,7 +79,7 @@
         </div>
     </div>
 
-    <div id="app-container" class="w-full max-w-lg hidden animate-fade-in px-4">
+    <div id="app-container" class="w-full max-w-lg hidden animate-fade-in">
         <header class="py-6 flex justify-between items-center text-white">
             <h1 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-white">Peptide Log</h1>
             <div id="status-label" class="text-[10px] font-bold uppercase tracking-widest flex items-center gap-2">
@@ -73,18 +88,20 @@
             </div>
         </header>
 
-        <nav class="mb-4 sticky top-4 z-40">
-            <div class="flex bg-slate-800/60 p-1.5 rounded-2xl border border-slate-700/50 backdrop-blur-lg w-full justify-between gap-1 shadow-2xl">
-                <button onclick="switchView('log')" id="tab-log" class="nav-pill active flex-1 py-2.5 rounded-xl text-[10px] font-bold uppercase">Log</button>
-                <button onclick="switchView('levels')" id="tab-levels" class="nav-pill flex-1 py-2.5 rounded-xl text-[10px] font-bold uppercase">Levels</button>
-                <button onclick="switchView('history')" id="tab-history" class="nav-pill flex-1 py-2.5 rounded-xl text-[10px] font-bold uppercase">History</button>
-                <button onclick="switchView('calculator')" id="tab-calculator" class="nav-pill flex-1 py-2.5 rounded-xl text-[10px] font-bold uppercase">Calc</button>
-                <button onclick="switchView('config')" id="tab-config" class="nav-pill flex-1 py-2.5 rounded-xl text-[10px] font-bold uppercase">Config</button>
+        <!-- Navigation réalignée avec largeur fixe des boutons et espacement égal -->
+        <nav class="mb-6 sticky top-4 z-40">
+            <div class="flex bg-slate-800/60 p-1 rounded-2xl border border-slate-700/50 backdrop-blur-lg w-full shadow-2xl">
+                <button onclick="switchView('log')" id="tab-log" class="nav-pill active flex-1 py-3">Log</button>
+                <button onclick="switchView('levels')" id="tab-levels" class="nav-pill flex-1 py-3">Levels</button>
+                <button onclick="switchView('history')" id="tab-history" class="nav-pill flex-1 py-3">History</button>
+                <button onclick="switchView('calculator')" id="tab-calculator" class="nav-pill flex-1 py-3">Calc</button>
+                <button onclick="switchView('config')" id="tab-config" class="nav-pill flex-1 py-3">Config</button>
             </div>
         </nav>
 
         <main class="space-y-6">
             
+            <!-- VIEW: LOG -->
             <div id="view-log" class="space-y-6 animate-slide-up">
                 <div id="suggestion-box" class="glass-card p-4 rounded-2xl border-l-4 border-l-indigo-500 flex justify-between items-center hidden">
                     <div><p class="text-[10px] text-indigo-400 font-bold uppercase tracking-wider">Suggested Site</p><p id="suggestion-text" class="text-lg font-bold text-white">--</p></div>
@@ -101,6 +118,7 @@
                 </form>
             </div>
 
+            <!-- VIEW: LEVELS -->
             <div id="view-levels" class="hidden space-y-6 animate-slide-up">
                 <div class="glass-card p-6 rounded-3xl shadow-xl text-white">
                     <div class="flex justify-between items-center mb-6">
@@ -111,12 +129,12 @@
                         <canvas id="levelChart"></canvas>
                     </div>
                     
-                    <div class="flex justify-center">
-                        <button onclick="if(chart) chart.resetZoom()" class="text-[10px] mt-4 text-indigo-400 font-bold uppercase tracking-widest border border-indigo-500/30 px-3 py-1.5 rounded-full hover:bg-indigo-500/10 transition-colors">
+                    <div class="flex flex-col items-center mt-4 space-y-2">
+                        <button onclick="if(chart) chart.resetZoom()" class="text-[10px] text-indigo-400 font-bold uppercase tracking-widest border border-indigo-500/30 px-4 py-2 rounded-full hover:bg-indigo-500/10 transition-colors">
                             Reset Zoom
                         </button>
+                        <p class="text-[8px] text-slate-500 text-center uppercase tracking-tighter italic">Pinch/Scroll to zoom • Drag to navigate</p>
                     </div>
-                    <p class="text-[8px] text-slate-500 text-center mt-2 uppercase tracking-tighter italic">Pinch or scroll to zoom • Drag to pan</p>
 
                     <div class="grid grid-cols-2 gap-4 mt-8">
                         <div class="bg-slate-800/50 p-4 rounded-2xl border border-slate-700/50 text-center">
@@ -133,6 +151,7 @@
                 </div>
             </div>
 
+            <!-- VIEW: HISTORY -->
             <div id="view-history" class="hidden space-y-4 animate-slide-up">
                 <div class="glass-card p-2 rounded-2xl mb-4">
                     <input type="text" id="history-filter" placeholder="Search by peptide or site..." class="input-field border-none bg-transparent" oninput="renderHistory()">
@@ -140,6 +159,7 @@
                 <div id="history-list" class="space-y-3 pb-20"></div>
             </div>
 
+            <!-- VIEW: CALCULATOR -->
             <div id="view-calculator" class="hidden animate-slide-up">
                 <div class="glass-card p-6 rounded-3xl flex flex-col items-center shadow-xl">
                     <div class="syringe-container mb-6">
@@ -161,6 +181,7 @@
                 </div>
             </div>
 
+            <!-- VIEW: CONFIG -->
             <div id="view-config" class="hidden space-y-6 animate-slide-up text-white pb-10">
                 <section class="glass-card p-6 rounded-3xl"><h2 class="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-4">Preferred Sites</h2><div id="preferred-sites-grid" class="grid grid-cols-2 gap-2"></div></section>
                 <section class="glass-card p-6 rounded-3xl"><h2 class="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-4">Library</h2><form id="peptide-add-form" class="flex gap-2 mb-4"><input type="text" id="new-peptide-name" placeholder="Name" class="input-field flex-1"><button type="submit" class="btn-primary px-6 rounded-xl font-bold text-xs uppercase">Add</button></form><div id="peptide-list" class="flex flex-wrap gap-2"></div></section>
@@ -188,7 +209,6 @@
         const HALF_LIVES = { "tirzepatide": 120, "retatrutide": 144 };
         let preferredSites = JSON.parse(localStorage.getItem('pref_sites')) || ["Right Abdomen (Lower)", "Left Abdomen (Lower)"];
 
-        // --- UTILS ---
         function showToast(msg, type = 'success', duration = 3000, action = null) {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
@@ -226,6 +246,7 @@
             document.getElementById('view-' + view).classList.remove('hidden');
             document.querySelectorAll('.nav-pill').forEach(b => b.classList.remove('active'));
             document.getElementById('tab-' + view).classList.add('active');
+            
             loadAllData().then(() => {
                 if(view === 'levels') setTimeout(updateLevelChart, 50);
                 if(view === 'calculator') initSyringe();
@@ -240,7 +261,7 @@
                     fetch(`${APP_URL}?action=getPeptides`).then(r => r.json()),
                     fetch(`${APP_URL}?action=getHistory`).then(r => r.json())
                 ]);
-                presets = r1.presets || []; peptideLibrary = r2.peptides || []; history = r3.history || [];
+                presets = r1.presets || []; history = r3.history || []; peptideLibrary = r2.peptides || [];
                 renderUI();
             } catch(e) { console.error("Data error", e); }
         }
@@ -311,7 +332,8 @@
                           },
                           pan: {
                             enabled: true,
-                            mode: 'x'
+                            mode: 'x',
+                            threshold: 10 // Améliore la réactivité du glissement
                           }
                         }
                     }
