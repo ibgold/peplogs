@@ -24,119 +24,82 @@
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Outfit', sans-serif; background-color: #0f172a; background-image: radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%); color: #f8fafc; min-height: 100vh; }
         .glass-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); }
-        .input-field { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(148, 163, 184, 0.2); color: white; border-radius: 1rem; padding: 0.75rem 1rem 0.75rem 1rem; width: 100%; font-size: 16px; transition: all 0.2s; }
-        .input-field:focus { border-color: #6366f1; outline: none; background: rgba(15, 23, 42, 0.9); }
+        .input-field { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(148, 163, 184, 0.2); color: white; border-radius: 1rem; padding: 0.75rem 1rem; width: 100%; font-size: 16px; transition: all 0.2s; }
         .btn-primary { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3); }
         .nav-pill { color: #94a3b8; transition: all 0.3s; }
         .nav-pill.active { background: #6366f1; color: white; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25); }
-        .syringe-container { position: relative; width: 60px; height: 250px; margin: 0 auto; background: rgba(255,255,255,0.05); border-radius: 8px; border: 2px solid #475569; overflow: hidden; }
-        .syringe-marks { position: absolute; top: 0; right: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none; }
-        .mark { position: absolute; left: 0; width: 40%; height: 1px; background: rgba(255,255,255,0.3); }
-        .mark.major { width: 100%; background: rgba(255,255,255,0.6); }
+        .syringe-container { position: relative; width: 60px; height: 200px; margin: 0 auto; background: rgba(255,255,255,0.05); border-radius: 8px; border: 2px solid #475569; overflow: hidden; }
         .liquid { position: absolute; bottom: 0; left: 0; width: 100%; background: linear-gradient(to top, #ef4444, #f87171); transition: height 0.5s; opacity: 0.8; }
-        .plunger { position: absolute; bottom: 0; left: 0; width: 100%; height: 8px; background: #334155; z-index: 2; transition: bottom 0.5s; border-top: 2px solid #cbd5e1; }
     </style>
 </head>
 <body class="flex flex-col items-center pb-10">
 
-    <div id="setup-screen" class="fixed inset-0 z-50 bg-slate-900 flex items-center justify-center p-6 hidden">
-        <div class="glass-card w-full max-w-md p-8 rounded-3xl text-center space-y-6">
-            <h2 class="text-2xl font-bold">Connect Database</h2>
-            <input type="url" id="setup-url" placeholder="https://script.google.com/..." class="input-field text-center">
-            <button onclick="saveUrl()" class="btn-primary w-full py-4 rounded-2xl font-bold">Connect</button>
-        </div>
-    </div>
-
-    <div id="app-container" class="w-full max-w-lg hidden animate-fade-in">
+    <div id="app-container" class="w-full max-w-lg animate-fade-in">
         <header class="p-6 flex justify-between items-center">
             <h1 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-white">Peptide Log</h1>
-            <div id="status-label" class="text-xs text-slate-500 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-green-500"></span> Connected</div>
+            <div id="status-label" class="text-xs text-slate-500">Connected</div>
         </header>
 
         <nav class="px-4 mb-4">
             <div class="flex bg-slate-800/50 p-1 rounded-2xl border border-slate-700/50 backdrop-blur-md">
-                <button onclick="switchView('log')" id="tab-log" class="nav-pill active flex-1 py-2 rounded-xl text-xs font-medium">Log</button>
-                <button onclick="switchView('levels')" id="tab-levels" class="nav-pill flex-1 py-2 rounded-xl text-xs font-medium">Levels</button>
-                <button onclick="switchView('history')" id="tab-history" class="nav-pill flex-1 py-2 rounded-xl text-xs font-medium">History</button>
-                <button onclick="switchView('calculator')" id="tab-calculator" class="nav-pill flex-1 py-2 rounded-xl text-xs font-medium">Calc</button>
-                <button onclick="switchView('config')" id="tab-config" class="nav-pill flex-1 py-2 rounded-xl text-xs font-medium">Config</button>
+                <button onclick="switchView('log')" id="tab-log" class="nav-pill active flex-1 py-2.5 rounded-xl text-xs font-medium">Log</button>
+                <button onclick="switchView('levels')" id="tab-levels" class="nav-pill flex-1 py-2.5 rounded-xl text-xs font-medium">Levels</button>
+                <button onclick="switchView('history')" id="tab-history" class="nav-pill flex-1 py-2.5 rounded-xl text-xs font-medium">History</button>
+                <button onclick="switchView('config')" id="tab-config" class="nav-pill flex-1 py-2.5 rounded-xl text-xs font-medium">Config</button>
             </div>
         </nav>
 
         <main class="px-4 space-y-6">
             
+            <!-- VIEW: LOG -->
             <div id="view-log" class="space-y-6 animate-slide-up">
-                <div id="suggestion-box" class="glass-card p-4 rounded-2xl border-l-4 border-l-indigo-500 flex justify-between items-center hidden relative overflow-hidden">
-                    <div><p class="text-[10px] text-indigo-400 font-bold uppercase tracking-wider">Suggested Rotation</p><p id="suggestion-text" class="text-lg font-bold">Loading...</p></div>
+                <div id="suggestion-box" class="glass-card p-4 rounded-2xl border-l-4 border-l-indigo-500 flex justify-between items-center hidden">
+                    <div><p class="text-[10px] text-indigo-400 font-bold uppercase tracking-wider">Suggested Site</p><p id="suggestion-text" class="text-lg font-bold">--</p></div>
                     <button onclick="useSuggestion()" class="btn-primary px-4 py-2 rounded-lg text-xs font-bold">Use</button>
                 </div>
-                <section><h2 class="text-xs font-bold text-indigo-300 uppercase tracking-wider mb-3 ml-1">Quick Logs</h2><div id="quick-log-container" class="grid grid-cols-2 gap-3"></div></section>
+                <section><div id="quick-log-container" class="grid grid-cols-2 gap-3"></div></section>
                 <form id="log-form" class="glass-card p-6 rounded-3xl space-y-4">
-                    <h2 class="text-xs font-bold text-indigo-300 uppercase tracking-wider mb-2">Manual Entry</h2>
-                    <select id="log-peptide" class="input-field" required><option value="">Select Peptide</option></select>
-                    <div class="flex gap-2"><input type="number" id="log-dosage" placeholder="Dose" step="any" class="input-field"><select id="log-unit" class="bg-slate-700 text-white rounded-xl px-3 font-bold"><option>mcg</option><option>mg</option><option>IU</option></select></div>
+                    <select id="log-peptide" class="input-field" required></select>
+                    <div class="flex gap-2"><input type="number" id="log-dosage" placeholder="Dose" step="any" class="input-field"><select id="log-unit" class="bg-slate-700 text-white rounded-xl px-3 font-bold"><option>mcg</option><option>mg</option></select></div>
                     <select id="log-site" class="input-field" required></select>
-                    <input type="text" id="log-notes" placeholder="Notes (optional)..." class="input-field">
                     <input type="datetime-local" id="log-time" class="input-field" style="color-scheme: dark;">
-                    <button type="submit" class="btn-primary w-full py-4 rounded-2xl font-bold text-lg mt-2">Log Injection</button>
+                    <button type="submit" class="btn-primary w-full py-4 rounded-2xl font-bold text-lg">Log Injection</button>
                 </form>
             </div>
 
+            <!-- VIEW: LEVELS -->
             <div id="view-levels" class="hidden space-y-6 animate-slide-up">
                 <div class="glass-card p-6 rounded-3xl">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
-                        <h2 class="text-xs font-bold text-indigo-300 uppercase tracking-wider">Accumulation levels</h2>
-                        <select id="level-peptide-filter" class="w-full sm:w-auto bg-slate-800 text-xs border border-slate-700 rounded-lg px-3 py-2 outline-none focus:border-indigo-500" onchange="updateLevelChart()"></select>
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xs font-bold text-indigo-300 uppercase tracking-wider">System Projection (14d)</h2>
+                        <select id="level-peptide-filter" class="bg-slate-800 text-xs border border-slate-700 rounded-lg px-2 py-1" onchange="updateLevelChart()"></select>
                     </div>
-                    <div class="relative h-64 w-full px-2">
-                        <canvas id="levelChart"></canvas>
-                    </div>
+                    <div class="relative h-64 w-full"><canvas id="levelChart"></canvas></div>
                     <div class="grid grid-cols-2 gap-4 mt-8">
-                        <div class="bg-slate-800/50 p-4 rounded-2xl border border-slate-700/50 flex flex-col items-center text-center">
-                            <p class="text-[10px] text-slate-500 uppercase font-bold mb-1">Current Level</p>
-                            <div class="flex items-baseline gap-1">
-                                <span id="stat-current-level" class="text-2xl font-black text-indigo-400 leading-none">0.00</span>
-                                <span id="stat-current-unit" class="text-[10px] text-slate-500">mcg</span>
-                            </div>
+                        <div class="bg-slate-800/50 p-4 rounded-2xl border border-slate-700/50 text-center">
+                            <p class="text-[10px] text-slate-500 uppercase font-bold">Current Level</p>
+                            <p id="stat-current-level" class="text-2xl font-black text-indigo-400">0.00</p>
                         </div>
-                        <div class="bg-slate-800/50 p-4 rounded-2xl border border-slate-700/50 flex flex-col items-center text-center">
-                            <p class="text-[10px] text-slate-500 uppercase font-bold mb-1">7d Peak</p>
-                            <span id="stat-peak-level" class="text-2xl font-black text-white leading-none">0.00</span>
+                        <div class="bg-slate-800/50 p-4 rounded-2xl border border-slate-700/50 text-center">
+                            <p class="text-[10px] text-slate-500 uppercase font-bold">Expected Peak</p>
+                            <p id="stat-peak-level" class="text-2xl font-black text-white">0.00</p>
                         </div>
                     </div>
                 </div>
             </div>
 
+            <!-- VIEW: HISTORY -->
             <div id="view-history" class="hidden space-y-4 animate-slide-up">
-                <input type="text" id="history-filter" placeholder="Filter history..." class="input-field" oninput="renderHistory()">
                 <div id="history-list" class="space-y-3 pb-20"></div>
             </div>
 
-            <div id="view-calculator" class="hidden animate-slide-up">
-                <div class="glass-card p-6 rounded-3xl flex flex-col items-center">
-                    <div class="syringe-container mb-6"><div class="syringe-marks" id="syringe-marks"></div><div id="visual-liquid" class="liquid"></div><div id="visual-plunger" class="plunger"></div></div>
-                    <div class="text-center"><p class="text-indigo-300 text-xs font-bold uppercase tracking-widest mb-1">Draw to tick mark</p><div class="text-6xl font-black text-white flex items-end justify-center gap-2"><span id="calc-result">0</span> <span class="text-2xl text-slate-500 mb-2">IU</span></div></div>
-                    <div class="w-full space-y-4 mt-8">
-                        <input type="number" id="calc-vial" placeholder="Vial Mass (mg)" step="any" class="input-field" oninput="runCalc()">
-                        <input type="number" id="calc-water" placeholder="Bac Water (mL)" step="any" class="input-field" oninput="runCalc()">
-                        <input type="number" id="calc-dose" placeholder="Target Dose (mcg)" step="any" class="input-field" oninput="runCalc()">
-                    </div>
-                </div>
-            </div>
-
+            <!-- VIEW: CONFIG -->
             <div id="view-config" class="hidden space-y-6 animate-slide-up">
-                <section class="glass-card p-6 rounded-3xl"><h2 class="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-4">Preferred Sites</h2><div id="preferred-sites-grid" class="grid grid-cols-2 gap-2"></div></section>
                 <section class="glass-card p-6 rounded-3xl">
-                    <h2 class="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-4">Peptide Management</h2>
-                    <form id="peptide-add-form" class="space-y-3 mb-6">
-                        <input type="text" id="new-peptide-name" placeholder="Name (e.g. Retatrutide)" class="input-field" oninput="handlePeptideNameInput(this.value)">
-                        <div class="flex gap-2">
-                            <input type="number" id="new-peptide-hl" placeholder="Half-Life" step="any" class="input-field flex-1">
-                            <select id="new-peptide-hl-unit" class="bg-slate-700 text-white rounded-xl px-2 text-xs">
-                                <option value="hours">Hours</option><option value="days">Days</option>
-                            </select>
-                        </div>
-                        <button type="submit" class="btn-primary w-full py-2 rounded-xl font-bold">Add Peptide</button>
+                    <h2 class="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-4">Peptide Library</h2>
+                    <form id="peptide-add-form" class="flex gap-2 mb-4">
+                        <input type="text" id="new-peptide-name" placeholder="Name" class="input-field flex-1">
+                        <button type="submit" class="btn-primary px-6 rounded-xl font-bold">Add</button>
                     </form>
                     <div id="peptide-list" class="flex flex-wrap gap-2"></div>
                 </section>
@@ -145,37 +108,35 @@
                     <form id="config-form" class="space-y-4">
                         <input type="text" id="conf-label" placeholder="Label" class="input-field" required>
                         <select id="conf-peptide-select" class="input-field" required></select>
-                        <div class="flex gap-2"><input type="number" id="conf-val" placeholder="Dose" step="any" class="input-field flex-1" required><select id="conf-unit" class="bg-slate-700 text-white rounded-xl px-3 font-bold"><option>mcg</option><option>mg</option><option>IU</option></select></div>
+                        <div class="flex gap-2"><input type="number" id="conf-val" placeholder="Dose" step="any" class="input-field flex-1" required><select id="conf-unit" class="bg-slate-700 text-white rounded-xl px-3 font-bold"><option>mcg</option><option>mg</option></select></div>
                         <button type="submit" class="btn-primary w-full py-3 rounded-xl font-bold">Save Preset</button>
                     </form>
                 </section>
                 <div id="presets-list" class="space-y-2"></div>
-                <button onclick="resetApp()" class="w-full py-4 text-red-400 text-xs font-bold border border-red-900/30 rounded-2xl">Reset App</button>
             </div>
         </main>
     </div>
 
     <div id="site-modal" class="fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-sm hidden flex items-center justify-center p-6">
         <div class="glass-card w-full max-w-sm p-6 rounded-3xl space-y-4 text-center">
-            <h3 class="font-bold text-lg text-white">Select Site</h3>
-            <div id="modal-sites" class="grid grid-cols-2 gap-2 max-h-96 overflow-y-auto pr-1"></div>
-            <button onclick="closeModal()" class="w-full py-3 text-slate-500 font-bold">Cancel</button>
+            <h3 class="font-bold text-white">Select Site</h3>
+            <div id="modal-sites" class="grid grid-cols-2 gap-2"></div>
+            <button onclick="closeModal()" class="w-full py-2 text-slate-500">Cancel</button>
         </div>
     </div>
 
     <script>
+        // --- LOGIQUE ET CONSTANTES ---
         let APP_URL = localStorage.getItem('pep_url');
         let history = [], presets = [], peptideLibrary = [], chart = null;
-        let preferredSites = JSON.parse(localStorage.getItem('pref_sites')) || ["Right Abdomen (Lower)", "Left Abdomen (Lower)", "Right Flank", "Left Flank"];
-        const ALL_SITES = ["Right Abdomen (Upper)", "Right Abdomen (Lower)", "Left Abdomen (Upper)", "Left Abdomen (Lower)", "Right Flank", "Left Flank", "Right Thigh", "Left Thigh", "Right Deltoid", "Left Deltoid", "Right Buttock", "Left Buttock", "Nasal Spray", "Other"];
-
-        const GLP_DEFAULTS = {
-            "tirzepatide": { hl: 5, unit: "days" },
-            "retatrutide": { hl: 6, unit: "days" }
+        const ALL_SITES = ["Right Abdomen (Upper)", "Right Abdomen (Lower)", "Left Abdomen (Upper)", "Left Abdomen (Lower)", "Right Flank", "Left Flank", "Right Thigh", "Left Thigh", "Right Deltoid", "Left Deltoid", "Right Buttock", "Left Buttock", "Other"];
+        
+        // Demi-vies fixes (Prime Directive : pas de saisie manuelle)
+        const HALF_LIVES = {
+            "tirzepatide": 120, // 5 jours en heures
+            "retatrutide": 144  // 6 jours en heures
         };
 
-        function saveUrl() { const url = document.getElementById('setup-url').value.trim(); if(url) { localStorage.setItem('pep_url', url); location.reload(); } }
-        function resetApp() { if(confirm("Reset?")) { localStorage.clear(); location.reload(); } }
         async function api(data) { try { const res = await fetch(APP_URL, { method: 'POST', body: JSON.stringify(data) }); return await res.json(); } catch(e) { return {success:false}; } }
 
         function switchView(view) {
@@ -185,116 +146,56 @@
             document.getElementById('tab-' + view).classList.add('active');
             if(view === 'history') loadHistory();
             if(view === 'log') loadAllData();
-            if(view === 'config') { renderPrefSites(); renderPresetsList(); loadPeptideLibrary(); }
-            if(view === 'levels') { loadAllData().then(updateLevelChart); }
+            if(view === 'levels') loadAllData().then(updateLevelChart);
+            if(view === 'config') loadAllData();
         }
 
         async function loadAllData() {
-            await Promise.all([loadPresets(), loadPeptideLibrary(), loadHistory()]);
-            populatePeptideSelects();
-        }
-
-        function renderPrefSites() {
-            const container = document.getElementById('preferred-sites-grid'); container.innerHTML = '';
-            ALL_SITES.forEach(s => {
-                const isActive = preferredSites.includes(s);
-                const btn = document.createElement('button');
-                btn.className = `p-3 text-[10px] rounded-xl border font-bold transition ${isActive ? 'bg-indigo-600 border-indigo-400 text-white' : 'bg-slate-800/50 border-slate-700 text-slate-500'}`;
-                btn.textContent = s; btn.onclick = () => { if(preferredSites.includes(s)) preferredSites = preferredSites.filter(x => x !== s); else preferredSites.push(s); localStorage.setItem('pref_sites', JSON.stringify(preferredSites)); renderPrefSites(); calculateSuggestion(); };
-                container.appendChild(btn);
-            });
-        }
-
-        async function loadPeptideLibrary() {
             if(!APP_URL) return;
-            const res = await fetch(`${APP_URL}?action=getPeptides`).then(r => r.json());
-            if(res.success) { peptideLibrary = res.peptides; renderPeptideList(); populatePeptideSelects(); }
+            const [r1, r2, r3] = await Promise.all([
+                fetch(`${APP_URL}?action=getPresets`).then(r => r.json()),
+                fetch(`${APP_URL}?action=getPeptides`).then(r => r.json()),
+                fetch(`${APP_URL}?action=getHistory`).then(r => r.json())
+            ]);
+            presets = r1.presets || [];
+            peptideLibrary = r2.peptides || [];
+            history = r3.history || [];
+            populatePeptideSelects();
+            renderPeptideList();
+            renderPresetsList();
+            renderQuickLogs();
         }
-
-        function renderPeptideList() {
-            const container = document.getElementById('peptide-list'); if(!container) return; container.innerHTML = '';
-            peptideLibrary.forEach(p => {
-                const tag = document.createElement('div');
-                tag.className = "glass-card px-3 py-1 rounded-full text-[10px] flex items-center gap-2 text-white border-slate-700";
-                tag.innerHTML = `<span>${p.name} (${p.halfLife}${p.hlUnit[0]})</span><button onclick="deletePeptide(${p.row})" class="text-slate-500">✕</button>`;
-                container.appendChild(tag);
-            });
-        }
-
-        async function deletePeptide(row) { const res = await api({ action: 'deletePeptide', row: row }); if(res.success) loadPeptideLibrary(); }
 
         function populatePeptideSelects() {
-            const logPep = document.getElementById('log-peptide');
-            const confPep = document.getElementById('conf-peptide-select');
-            const levelFilter = document.getElementById('level-peptide-filter');
+            const selects = [document.getElementById('log-peptide'), document.getElementById('conf-peptide-select'), document.getElementById('level-peptide-filter')];
+            const names = new Set([...presets.map(p => p.peptide), ...peptideLibrary.map(p => p.name)]);
+            const sorted = Array.from(names).sort();
             
-            const namesMap = new Map();
-            presets.forEach(p => namesMap.set(p.peptide.toLowerCase(), p.peptide));
-            peptideLibrary.forEach(p => namesMap.set(p.name.toLowerCase(), p.name));
-            const sortedNames = Array.from(namesMap.values()).sort();
-
-            // All peptides for regular selects
-            [logPep, confPep].forEach(s => {
-                if(!s) return; const prev = s.value;
-                s.innerHTML = '<option value="">Select Peptide</option>' + sortedNames.map(n => `<option value="${n}">${n}</option>`).join('');
-                s.value = prev;
+            selects.forEach(s => {
+                if(!s) return;
+                const prev = s.value;
+                if(s.id === 'level-peptide-filter') {
+                    const glpOnly = sorted.filter(n => HALF_LIVES[n.toLowerCase()]);
+                    s.innerHTML = glpOnly.map(n => `<option value="${n}">${n}</option>`).join('');
+                } else {
+                    s.innerHTML = '<option value="">Select Peptide</option>' + sorted.map(n => `<option value="${n}">${n}</option>`).join('');
+                }
+                s.value = prev || (s.options[0] ? s.options[0].value : "");
             });
-
-            // Filtered list for Level Chart (only Tirz/Reta)
-            if(levelFilter) {
-                const prev = levelFilter.value;
-                const chartNames = sortedNames.filter(n => ["tirzepatide", "retatrutide"].includes(n.toLowerCase()));
-                levelFilter.innerHTML = chartNames.length ? chartNames.map(n => `<option value="${n}">${n}</option>`).join('') : '<option value="">No GLP-1 found</option>';
-                levelFilter.value = prev || (chartNames.length ? chartNames[0] : "");
-            }
-        }
-
-        function handlePeptideNameInput(val) {
-            const normalized = val.trim().toLowerCase();
-            const hlInput = document.getElementById('new-peptide-hl');
-            const unitSelect = document.getElementById('new-peptide-hl-unit');
-            if (GLP_DEFAULTS[normalized]) {
-                hlInput.value = GLP_DEFAULTS[normalized].hl;
-                unitSelect.value = GLP_DEFAULTS[normalized].unit;
-            }
-        }
-
-        async function loadPresets() {
-            if(!APP_URL) return; const res = await fetch(`${APP_URL}?action=getPresets`).then(r => r.json());
-            if(res.success) {
-                presets = res.presets; const container = document.getElementById('quick-log-container'); container.innerHTML = '';
-                res.presets.forEach(p => {
-                    const btn = document.createElement('button');
-                    btn.className = "glass-card p-4 rounded-2xl text-left border border-slate-700 active:scale-95 transition-all";
-                    btn.innerHTML = `<p class="font-bold text-sm text-white">${p.label}</p><p class="text-[10px] text-indigo-400 font-bold">${p.value} ${p.unit}</p>`;
-                    btn.onclick = () => openSiteModal(p); container.appendChild(btn);
-                });
-            }
         }
 
         function updateLevelChart() {
             const selected = document.getElementById('level-peptide-filter').value;
-            if(!selected) return;
+            if(!selected || !HALF_LIVES[selected.toLowerCase()]) return;
             
-            const pepInfo = peptideLibrary.find(p => p.name.toLowerCase() === selected.toLowerCase());
-            let hlHours = 0;
-
-            if (pepInfo && pepInfo.halfLife) {
-                hlHours = pepInfo.hlUnit === 'days' ? pepInfo.halfLife * 24 : pepInfo.halfLife;
-            } else if (GLP_DEFAULTS[selected.toLowerCase()]) {
-                const def = GLP_DEFAULTS[selected.toLowerCase()];
-                hlHours = def.unit === 'days' ? def.hl * 24 : def.hl;
-            } else {
-                return;
-            }
-            
+            const hlHours = HALF_LIVES[selected.toLowerCase()];
             const k = Math.log(2) / hlHours;
             const now = new Date();
             const labels = [], dataPoints = [];
-            const steps = 84; // 7 days chart, every 2 hours
             
-            for (let i = 0; i <= steps; i++) {
-                const t = new Date(now.getTime() - ((steps - i) * 2 * 60 * 60 * 1000));
+            // Calcul sur 14 jours (7 passés, 7 futurs)
+            for (let i = -168; i <= 168; i += 4) { 
+                const t = new Date(now.getTime() + (i * 60 * 60 * 1000));
                 let total = 0;
                 history.filter(h => h.peptide.toLowerCase() === selected.toLowerCase()).forEach(log => {
                     const logDate = new Date(log.date);
@@ -304,19 +205,32 @@
                         total += doseVal * Math.pow(Math.E, -k * diffHours);
                     }
                 });
-                labels.push(t.toLocaleDateString('en-US', {weekday:'short', hour:'numeric'}));
+                labels.push(t);
                 dataPoints.push(total);
             }
 
-            const currentLevel = dataPoints[dataPoints.length - 1];
-            const peakLevel = Math.max(...dataPoints);
-            document.getElementById('stat-current-level').innerText = currentLevel.toFixed(2);
-            document.getElementById('stat-peak-level').innerText = peakLevel.toFixed(2);
-            const logEntry = history.find(h => h.peptide.toLowerCase() === selected.toLowerCase());
-            document.getElementById('stat-current-unit').innerText = logEntry ? logEntry.dosage.split(' ')[1] : 'mcg';
-
             if(chart) chart.destroy();
             const ctx = document.getElementById('levelChart').getContext('2d');
+            
+            // Plugin pour la ligne "Maintenant"
+            const verticalLinePlugin = {
+                id: 'verticalLine',
+                afterDraw: chart => {
+                    if (chart.tooltip?._active?.length) return;
+                    const ctx = chart.ctx;
+                    const x = chart.scales.x.getPixelForValue(now);
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.setLineDash([5, 5]);
+                    ctx.moveTo(x, chart.chartArea.top);
+                    ctx.lineTo(x, chart.chartArea.bottom);
+                    ctx.lineWidth = 1;
+                    ctx.strokeStyle = '#94a3b8';
+                    ctx.stroke();
+                    ctx.restore();
+                }
+            };
+
             chart = new Chart(ctx, {
                 type: 'line',
                 data: {
@@ -326,71 +240,101 @@
                         borderColor: '#6366f1',
                         borderWidth: 3,
                         backgroundColor: 'rgba(99, 102, 241, 0.1)',
-                        fill: true, tension: 0.4, pointRadius: 0
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 0
                     }]
                 },
-                options: { 
+                options: {
                     responsive: true, maintainAspectRatio: false,
-                    layout: { padding: { left: 0, right: 10, top: 10, bottom: 0 } },
-                    scales: { 
-                        x: { display: false }, 
-                        y: { 
-                            beginAtZero: true,
-                            ticks: { color: '#64748b', font: { size: 9 }, maxTicksLimit: 5 }, 
-                            grid: { color: 'rgba(255,255,255,0.03)', drawBorder: false } 
-                        } 
-                    }, 
-                    plugins: { legend: { display: false }, tooltip: { enabled: true, mode: 'index', intersect: false } } 
-                }
+                    layout: { padding: 10 },
+                    scales: {
+                        x: { type: 'time', display: false, time: { unit: 'day' } },
+                        y: { beginAtZero: true, ticks: { color: '#64748b', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.03)' } }
+                    },
+                    plugins: { legend: { display: false } }
+                },
+                plugins: [verticalLinePlugin]
             });
+
+            const current = dataPoints[Math.floor(dataPoints.length / 2)];
+            document.getElementById('stat-current-level').innerText = current.toFixed(2);
+            document.getElementById('stat-peak-level').innerText = Math.max(...dataPoints).toFixed(2);
+        }
+
+        // --- AUTRES FONCTIONS UI ---
+        function renderQuickLogs() {
+            const container = document.getElementById('quick-log-container');
+            container.innerHTML = presets.map(p => `
+                <button onclick="openSiteModal('${p.label}')" class="glass-card p-4 rounded-2xl text-left border border-slate-700 active:scale-95 transition">
+                    <p class="font-bold text-sm text-white">${p.label}</p>
+                    <p class="text-[10px] text-indigo-400 font-bold">${p.value} ${p.unit}</p>
+                </button>
+            `).join('');
+        }
+
+        function renderPeptideList() {
+            document.getElementById('peptide-list').innerHTML = peptideLibrary.map(p => `
+                <div class="glass-card px-3 py-1 rounded-full text-[10px] flex items-center gap-2 text-white border-slate-700">
+                    <span>${p.name}</span><button onclick="deletePeptide(${p.row})" class="text-slate-500">✕</button>
+                </div>
+            `).join('');
+        }
+
+        function renderPresetsList() {
+            document.getElementById('presets-list').innerHTML = presets.map(p => `
+                <div class="flex justify-between items-center glass-card p-4 rounded-2xl">
+                    <div><p class="text-sm font-bold text-white">${p.label}</p><p class="text-[10px] text-slate-500">${p.peptide}</p></div>
+                    <button onclick="deletePreset(${p.row})" class="text-red-500">✕</button>
+                </div>
+            `).join('');
         }
 
         async function loadHistory() {
-            if(!APP_URL) return; const res = await fetch(`${APP_URL}?action=getHistory`).then(r => r.json());
-            if(res.success) { history = res.history; renderHistory(); calculateSuggestion(); if(document.getElementById('tab-levels').classList.contains('active')) updateLevelChart(); }
+            const res = await fetch(`${APP_URL}?action=getHistory`).then(r => r.json());
+            history = res.history || [];
+            document.getElementById('history-list').innerHTML = history.map(h => `
+                <div class="glass-card p-4 rounded-2xl flex justify-between items-center">
+                    <div><p class="font-bold text-sm text-white">${h.peptide} <span class="text-indigo-400 ml-2">${h.dosage}</span></p>
+                    <p class="text-[10px] text-slate-500 uppercase font-bold">${h.site} • ${new Date(h.date).toLocaleDateString()}</p></div>
+                    <button onclick="deleteLog(${h.row})" class="text-slate-600">✕</button>
+                </div>
+            `).join('');
         }
 
-        function renderHistory() {
-            const filter = document.getElementById('history-filter').value.toLowerCase();
-            const container = document.getElementById('history-list'); container.innerHTML = '';
-            history.filter(h => h.peptide.toLowerCase().includes(filter) || h.site.toLowerCase().includes(filter))
-            .forEach(h => {
-                const date = new Date(h.date).toLocaleDateString('en-US', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'});
-                const card = document.createElement('div');
-                card.className = "glass-card p-4 rounded-2xl flex justify-between items-center animate-fade-in";
-                card.innerHTML = `<div><p class="font-bold text-sm text-white">${h.peptide} <span class="text-indigo-400 ml-2">${h.dosage}</span></p><p class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">${h.site} • ${date}</p></div><button onclick="deleteLog(${h.row})" class="text-slate-600 hover:text-red-500 transition">✕</button>`;
-                container.appendChild(card);
-            });
-        }
-
-        async function deleteLog(row) { if(!confirm("Delete this entry?")) return; const res = await api({action:'deleteLog', row:row}); if(res.success) loadHistory(); }
-
-        function calculateSuggestion() {
-            if (!preferredSites.length) { document.getElementById('suggestion-box').classList.add('hidden'); return; }
-            let bestSite = preferredSites[0]; const siteUsage = {}; preferredSites.forEach(s => siteUsage[s] = new Date(0));
-            history.forEach(h => { if (siteUsage.hasOwnProperty(h.site)) { const d = new Date(h.date); if (d > siteUsage[h.site]) siteUsage[h.site] = d; } });
-            let minDate = new Date(); for (const [site, lastUsed] of Object.entries(siteUsage)) { if (lastUsed < minDate) { minDate = lastUsed; bestSite = site; } }
-            document.getElementById('suggestion-text').textContent = bestSite; document.getElementById('suggestion-box').classList.remove('hidden');
-        }
-
-        function useSuggestion() { document.getElementById('log-site').value = document.getElementById('suggestion-text').textContent; }
-        function initSyringe() { const container = document.getElementById('syringe-marks'); if(!container) return; container.innerHTML = ''; for(let i=0; i<=10; i++) { const m = document.createElement('div'); m.className = 'mark major'; m.style.bottom = `${i*10}%`; container.appendChild(m); } }
-        function runCalc() { const v = document.getElementById('calc-vial').value, w = document.getElementById('calc-water').value, d = document.getElementById('calc-dose').value; if(v && w && d) { const units = (d / (v * 1000 / w)) * 100; document.getElementById('calc-result').textContent = Math.round(units); document.getElementById('visual-liquid').style.height = Math.min(units, 100) + '%'; document.getElementById('visual-plunger').style.bottom = Math.min(units, 100) + '%'; } }
-        function closeModal() { document.getElementById('site-modal').classList.add('hidden'); }
-        function openSiteModal(p) { pendingQuickLog = p; const container = document.getElementById('modal-sites'); container.innerHTML = ALL_SITES.map(s => `<button onclick="finalizeQuickLog('${s}')" class="bg-slate-800/80 p-3 rounded-xl text-xs font-bold text-white border border-slate-700 active:bg-indigo-600 transition">${s}</button>`).join(''); document.getElementById('site-modal').classList.remove('hidden'); }
-        async function finalizeQuickLog(site) { document.getElementById('site-modal').classList.add('hidden'); const data = { peptide: pendingQuickLog.peptide, dosage: `${pendingQuickLog.value} ${pendingQuickLog.unit}`, site: site, timestamp: new Date().toISOString() }; const res = await api(data); if(res.success) { alert("Log saved!"); loadHistory(); } }
-
-        if(!APP_URL) document.getElementById('setup-screen').classList.remove('hidden');
-        else {
-            document.getElementById('app-container').classList.remove('hidden');
-            const s1 = document.getElementById('log-site'); s1.innerHTML = ALL_SITES.map(s => `<option value="${s}">${s}</option>`).join('');
+        // --- INITIALISATION ---
+        window.onload = () => {
+            if(!APP_URL) {
+                const url = prompt("Enter Google Script URL:");
+                if(url) { localStorage.setItem('pep_url', url); location.reload(); }
+            }
+            document.getElementById('log-site').innerHTML = ALL_SITES.map(s => `<option value="${s}">${s}</option>`).join('');
             document.getElementById('log-time').value = new Date(new Date() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0,16);
-            initSyringe();
-            document.getElementById('log-form').onsubmit = async (e) => { e.preventDefault(); const data = { peptide: document.getElementById('log-peptide').value, dosage: document.getElementById('log-dosage').value + ' ' + document.getElementById('log-unit').value, site: document.getElementById('log-site').value, timestamp: document.getElementById('log-time').value, notes: document.getElementById('log-notes').value }; const res = await api(data); if(res.success) { alert("Log saved!"); loadHistory(); e.target.reset(); } };
-            document.getElementById('config-form').onsubmit = async (e) => { e.preventDefault(); const data = { action: 'saveConfig', label: document.getElementById('conf-label').value, peptide: document.getElementById('conf-peptide-select').value, value: document.getElementById('conf-val').value, unit: document.getElementById('conf-unit').value }; const res = await api(data); if(res.success) { alert("Preset saved!"); loadPresets(); e.target.reset(); } };
-            document.getElementById('peptide-add-form').onsubmit = async (e) => { e.preventDefault(); const name = document.getElementById('new-peptide-name').value.trim(); const hl = document.getElementById('new-peptide-hl').value; const unit = document.getElementById('new-peptide-hl-unit').value; if(!name || !hl) return; const res = await api({ action: 'savePeptide', name, halfLife: hl, hlUnit: unit }); if(res.success) { e.target.reset(); loadPeptideLibrary(); } };
-            switchView('log');
-        }
+            loadAllData();
+            
+            // Forms
+            document.getElementById('log-form').onsubmit = async (e) => {
+                e.preventDefault();
+                const data = { peptide: document.getElementById('log-peptide').value, dosage: document.getElementById('log-dosage').value + ' ' + document.getElementById('log-unit').value, site: document.getElementById('log-site').value, timestamp: document.getElementById('log-time').value };
+                const res = await api(data);
+                if(res.success) { alert("Logged!"); loadAllData(); }
+            };
+            
+            document.getElementById('peptide-add-form').onsubmit = async (e) => {
+                e.preventDefault();
+                const name = document.getElementById('new-peptide-name').value.trim();
+                if(name) { await api({ action: 'savePeptide', name }); loadAllData(); e.target.reset(); }
+            };
+        };
+
+        let pendingPreset = null;
+        function openSiteModal(label) { pendingPreset = presets.find(p => p.label === label); document.getElementById('modal-sites').innerHTML = ALL_SITES.map(s => `<button onclick="finalizeQuickLog('${s}')" class="bg-slate-800 p-3 rounded-xl text-xs font-bold text-white border border-slate-700">${s}</button>`).join(''); document.getElementById('site-modal').classList.remove('hidden'); }
+        function closeModal() { document.getElementById('site-modal').classList.add('hidden'); }
+        async function finalizeQuickLog(site) { closeModal(); const data = { peptide: pendingPreset.peptide, dosage: `${pendingPreset.value} ${pendingPreset.unit}`, site: site, timestamp: new Date().toISOString() }; await api(data); loadAllData(); }
+        async function deleteLog(row) { if(confirm("Delete?")) { await api({action:'deleteLog', row}); loadHistory(); } }
+        async function deletePreset(row) { if(confirm("Delete?")) { await api({action:'deleteConfig', row}); loadAllData(); } }
+        async function deletePeptide(row) { if(confirm("Delete?")) { await api({action:'deletePeptide', row}); loadAllData(); } }
+        function switchView(v) { switchView(v); } // Redundant but safe for direct calls
     </script>
 </body>
 </html>
