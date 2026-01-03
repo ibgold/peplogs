@@ -7,6 +7,7 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-adapter-date-fns/2.0.0/chartjs-adapter-date-fns.bundle.min.js"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -27,14 +28,19 @@
         .input-field { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(148, 163, 184, 0.2); color: white; border-radius: 1rem; padding: 0.75rem 1rem; width: 100%; font-size: 16px; transition: all 0.2s; }
         .input-field:focus { border-color: #6366f1; outline: none; background: rgba(15, 23, 42, 0.9); }
         .btn-primary { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3); }
-        .nav-pill { color: #94a3b8; transition: all 0.3s; }
+        .nav-pill { color: #94a3b8; transition: all 0.3s; display: flex; align-items: center; justify-content: center; }
         .nav-pill.active { background: #6366f1; color: white; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25); }
+        
         .syringe-container { position: relative; width: 60px; height: 220px; margin: 0 auto; background: rgba(255,255,255,0.05); border-radius: 8px; border: 2px solid #475569; overflow: hidden; }
         .syringe-marks { position: absolute; top: 0; right: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none; }
         .mark { position: absolute; left: 0; width: 40%; height: 1px; background: rgba(255,255,255,0.3); }
         .mark.major { width: 100%; background: rgba(255,255,255,0.6); }
         .liquid { position: absolute; bottom: 0; left: 0; width: 100%; background: linear-gradient(to top, #ef4444, #f87171); transition: height 0.5s; opacity: 0.8; }
         .plunger { position: absolute; bottom: 0; left: 0; width: 100%; height: 8px; background: #334155; z-index: 2; transition: bottom 0.5s; border-top: 2px solid #cbd5e1; }
+        
+        /* Cacher la scrollbar sur le menu mobile tout en permettant le scroll si nécessaire */
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body class="flex flex-col items-center pb-10">
@@ -54,25 +60,26 @@
         </header>
 
         <nav class="px-4 mb-4">
-            <div class="flex bg-slate-800/50 p-1 rounded-2xl border border-slate-700/50 backdrop-blur-md overflow-x-auto whitespace-nowrap">
-                <button onclick="switchView('log')" id="tab-log" class="nav-pill active px-4 py-2.5 rounded-xl text-xs font-medium">Log</button>
-                <button onclick="switchView('levels')" id="tab-levels" class="nav-pill px-4 py-2.5 rounded-xl text-xs font-medium">Levels</button>
-                <button onclick="switchView('history')" id="tab-history" class="nav-pill px-4 py-2.5 rounded-xl text-xs font-medium">History</button>
-                <button onclick="switchView('calculator')" id="tab-calculator" class="nav-pill px-4 py-2.5 rounded-xl text-xs font-medium">Calc</button>
-                <button onclick="switchView('config')" id="tab-config" class="nav-pill px-4 py-2.5 rounded-xl text-xs font-medium">Config</button>
+            <!-- Menu réaligné avec flex-1 pour une distribution égale -->
+            <div class="flex bg-slate-800/50 p-1 rounded-2xl border border-slate-700/50 backdrop-blur-md overflow-x-auto scrollbar-hide">
+                <button onclick="switchView('log')" id="tab-log" class="nav-pill active flex-1 py-2.5 rounded-xl text-[11px] font-bold min-w-[60px]">Log</button>
+                <button onclick="switchView('levels')" id="tab-levels" class="nav-pill flex-1 py-2.5 rounded-xl text-[11px] font-bold min-w-[60px]">Levels</button>
+                <button onclick="switchView('history')" id="tab-history" class="nav-pill flex-1 py-2.5 rounded-xl text-[11px] font-bold min-w-[60px]">History</button>
+                <button onclick="switchView('calculator')" id="tab-calculator" class="nav-pill flex-1 py-2.5 rounded-xl text-[11px] font-bold min-w-[60px]">Calc</button>
+                <button onclick="switchView('config')" id="tab-config" class="nav-pill flex-1 py-2.5 rounded-xl text-[11px] font-bold min-w-[60px]">Config</button>
             </div>
         </nav>
 
         <main class="px-4 space-y-6">
             
-            <!-- VIEW: LOG -->
             <div id="view-log" class="space-y-6 animate-slide-up">
                 <div id="suggestion-box" class="glass-card p-4 rounded-2xl border-l-4 border-l-indigo-500 flex justify-between items-center hidden">
                     <div><p class="text-[10px] text-indigo-400 font-bold uppercase tracking-wider">Suggested Site</p><p id="suggestion-text" class="text-lg font-bold">--</p></div>
                     <button onclick="useSuggestion()" class="btn-primary px-4 py-2 rounded-lg text-xs font-bold">Use</button>
                 </div>
                 <div id="quick-log-container" class="grid grid-cols-2 gap-3"></div>
-                <form id="log-form" class="glass-card p-6 rounded-3xl space-y-4">
+                <form id="log-form" class="glass-card p-6 rounded-3xl space-y-4 text-white">
+                    <h2 class="text-xs font-bold text-indigo-300 uppercase tracking-wider mb-2">Manual Entry</h2>
                     <select id="log-peptide" class="input-field" required></select>
                     <div class="flex gap-2"><input type="number" id="log-dosage" placeholder="Dose" step="any" class="input-field"><select id="log-unit" class="bg-slate-700 text-white rounded-xl px-3 font-bold"><option>mcg</option><option>mg</option></select></div>
                     <select id="log-site" class="input-field" required></select>
@@ -81,20 +88,20 @@
                 </form>
             </div>
 
-            <!-- VIEW: LEVELS -->
             <div id="view-levels" class="hidden space-y-6 animate-slide-up">
                 <div class="glass-card p-6 rounded-3xl">
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-xs font-bold text-indigo-300 uppercase tracking-wider">14-Day Projection</h2>
-                        <select id="level-peptide-filter" class="bg-slate-800 text-xs border border-slate-700 rounded-lg px-2 py-1" onchange="updateLevelChart()"></select>
+                        <select id="level-peptide-filter" class="bg-slate-800 text-xs border border-slate-700 rounded-lg px-2 py-1 text-white" onchange="updateLevelChart()"></select>
                     </div>
+                    <!-- Ajout de padding-bottom pour laisser de la place à l'axe X -->
                     <div class="relative h-64 w-full"><canvas id="levelChart"></canvas></div>
                     <div class="grid grid-cols-2 gap-4 mt-8">
-                        <div class="bg-slate-800/50 p-4 rounded-2xl border border-slate-700/50 text-center">
+                        <div class="bg-slate-800/50 p-4 rounded-2xl border border-slate-700/50 text-center text-white">
                             <p class="text-[10px] text-slate-500 uppercase font-bold">Current Level</p>
                             <p id="stat-current-level" class="text-2xl font-black text-indigo-400">0.00</p>
                         </div>
-                        <div class="bg-slate-800/50 p-4 rounded-2xl border border-slate-700/50 text-center">
+                        <div class="bg-slate-800/50 p-4 rounded-2xl border border-slate-700/50 text-center text-white">
                             <p class="text-[10px] text-slate-500 uppercase font-bold">14d Peak</p>
                             <p id="stat-peak-level" class="text-2xl font-black text-white">0.00</p>
                         </div>
@@ -102,17 +109,15 @@
                 </div>
             </div>
 
-            <!-- VIEW: HISTORY -->
             <div id="view-history" class="hidden space-y-4 animate-slide-up">
                 <div id="history-list" class="space-y-3 pb-20"></div>
             </div>
 
-            <!-- VIEW: CALCULATOR -->
             <div id="view-calculator" class="hidden animate-slide-up">
                 <div class="glass-card p-6 rounded-3xl flex flex-col items-center">
                     <div class="syringe-container mb-6"><div class="syringe-marks" id="syringe-marks"></div><div id="visual-liquid" class="liquid"></div><div id="visual-plunger" class="plunger"></div></div>
-                    <div class="text-center"><p class="text-indigo-300 text-xs font-bold uppercase tracking-widest mb-1">Draw to IU</p><div class="text-6xl font-black text-white flex items-end justify-center gap-2"><span id="calc-result">0</span><span class="text-2xl text-slate-500 mb-2">IU</span></div></div>
-                    <div class="w-full space-y-4 mt-8">
+                    <div class="text-center text-white"><p class="text-indigo-300 text-xs font-bold uppercase tracking-widest mb-1">Draw to IU</p><div class="text-6xl font-black text-white flex items-end justify-center gap-2"><span id="calc-result">0</span><span class="text-2xl text-slate-500 mb-2">IU</span></div></div>
+                    <div class="w-full space-y-4 mt-8 text-white">
                         <input type="number" id="calc-vial" placeholder="Vial Mass (mg)" step="any" class="input-field" oninput="runCalc()">
                         <input type="number" id="calc-water" placeholder="Water (mL)" step="any" class="input-field" oninput="runCalc()">
                         <input type="number" id="calc-dose" placeholder="Dose (mcg)" step="any" class="input-field" oninput="runCalc()">
@@ -120,15 +125,14 @@
                 </div>
             </div>
 
-            <!-- VIEW: CONFIG -->
             <div id="view-config" class="hidden space-y-6 animate-slide-up">
-                <section class="glass-card p-6 rounded-3xl"><h2 class="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-4">Preferred Sites</h2><div id="preferred-sites-grid" class="grid grid-cols-2 gap-2"></div></section>
-                <section class="glass-card p-6 rounded-3xl">
+                <section class="glass-card p-6 rounded-3xl"><h2 class="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-4">Preferred Sites</h2><div id="preferred-sites-grid" class="grid grid-cols-2 gap-2 text-white"></div></section>
+                <section class="glass-card p-6 rounded-3xl text-white">
                     <h2 class="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-4">Library</h2>
                     <form id="peptide-add-form" class="flex gap-2 mb-4"><input type="text" id="new-peptide-name" placeholder="Peptide Name" class="input-field flex-1"><button type="submit" class="btn-primary px-6 rounded-xl font-bold">Add</button></form>
                     <div id="peptide-list" class="flex flex-wrap gap-2"></div>
                 </section>
-                <section class="glass-card p-6 rounded-3xl">
+                <section class="glass-card p-6 rounded-3xl text-white">
                     <h2 class="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-4">Quick Logs</h2>
                     <form id="config-form" class="space-y-4">
                         <input type="text" id="conf-label" placeholder="Label" class="input-field" required>
@@ -137,14 +141,14 @@
                         <button type="submit" class="btn-primary w-full py-3 rounded-xl font-bold">Save Preset</button>
                     </form>
                 </section>
-                <div id="presets-list" class="space-y-2"></div>
+                <div id="presets-list" class="space-y-2 text-white"></div>
                 <button onclick="resetApp()" class="w-full py-4 text-red-400 text-xs font-bold border border-red-900/30 rounded-2xl">Reset URL</button>
             </div>
         </main>
     </div>
 
-    <div id="site-modal" class="fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-sm hidden flex items-center justify-center p-6 text-white">
-        <div class="glass-card w-full max-w-sm p-6 rounded-3xl space-y-4 text-center">
+    <div id="site-modal" class="fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-sm hidden flex items-center justify-center p-6 text-white text-center">
+        <div class="glass-card w-full max-w-sm p-6 rounded-3xl space-y-4">
             <h3 class="font-bold">Select Site</h3>
             <div id="modal-sites" class="grid grid-cols-2 gap-2"></div>
             <button onclick="closeModal()" class="w-full py-2 text-slate-500">Cancel</button>
@@ -220,6 +224,7 @@
             const now = new Date();
             const labels = [], dataPoints = [];
             
+            // Calcul sur 14 jours (7 passés, 7 futurs)
             for (let i = -168; i <= 168; i += 4) { 
                 const t = new Date(now.getTime() + (i * 60 * 60 * 1000));
                 let total = 0;
@@ -232,12 +237,13 @@
                         total += doseVal * Math.pow(Math.E, -k * diffHours);
                     }
                 });
-                labels.push(t.toLocaleDateString('en-US', {weekday:'short', hour:'numeric'}));
+                labels.push(t);
                 dataPoints.push(total);
             }
 
             if(chart) chart.destroy();
             const ctx = document.getElementById('levelChart').getContext('2d');
+            
             chart = new Chart(ctx, {
                 type: 'line',
                 data: {
@@ -247,24 +253,44 @@
                         borderColor: '#6366f1',
                         borderWidth: 3,
                         backgroundColor: 'rgba(99, 102, 241, 0.1)',
-                        fill: true, tension: 0.4, pointRadius: 0
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 0
                     }]
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false,
                     scales: {
-                        x: { display: false },
-                        y: { beginAtZero: true, ticks: { color: '#64748b', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.03)' } }
+                        x: { 
+                            type: 'time', 
+                            display: true, // Axe X désormais affiché
+                            time: { unit: 'day', displayFormats: { day: 'MMM d' } },
+                            ticks: { color: '#64748b', font: { size: 9 } },
+                            grid: { color: 'rgba(255,255,255,0.03)', drawBorder: false }
+                        },
+                        y: { 
+                            beginAtZero: true, 
+                            ticks: { color: '#64748b', font: { size: 10 } }, 
+                            grid: { color: 'rgba(255,255,255,0.03)', drawBorder: false } 
+                        }
                     },
-                    plugins: { legend: { display: false } }
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: { enabled: true }
+                    }
                 }
             });
-            document.getElementById('stat-current-level').innerText = dataPoints[42].toFixed(2);
+            
+            // Trouver l'index le plus proche du moment présent
+            const nowIdx = labels.findIndex(l => l >= now);
+            const current = dataPoints[nowIdx] || 0;
+            document.getElementById('stat-current-level').innerText = current.toFixed(2);
             document.getElementById('stat-peak-level').innerText = Math.max(...dataPoints).toFixed(2);
         }
 
         function initSyringe() {
             const container = document.getElementById('syringe-marks');
+            if(!container) return;
             container.innerHTML = '';
             for(let i=0; i<=10; i++) {
                 const m = document.createElement('div');
@@ -340,9 +366,21 @@
             }
         };
 
-        document.getElementById('log-form').onsubmit = async (e) => { e.preventDefault(); const data = { peptide: document.getElementById('log-peptide').value, dosage: document.getElementById('log-dosage').value + ' ' + document.getElementById('log-unit').value, site: document.getElementById('log-site').value, timestamp: document.getElementById('log-time').value }; await api(data); loadAllData(); e.target.reset(); };
-        document.getElementById('peptide-add-form').onsubmit = async (e) => { e.preventDefault(); const name = document.getElementById('new-peptide-name').value.trim(); if(name) { await api({ action: 'savePeptide', name }); loadAllData(); e.target.reset(); } };
-        document.getElementById('config-form').onsubmit = async (e) => { e.preventDefault(); const data = { action: 'saveConfig', label: document.getElementById('conf-label').value, peptide: document.getElementById('conf-peptide-select').value, value: document.getElementById('conf-val').value, unit: document.getElementById('conf-unit').value }; await api(data); loadAllData(); e.target.reset(); };
+        document.getElementById('log-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const data = { peptide: document.getElementById('log-peptide').value, dosage: document.getElementById('log-dosage').value + ' ' + document.getElementById('log-unit').value, site: document.getElementById('log-site').value, timestamp: document.getElementById('log-time').value };
+            await api(data); loadAllData(); e.target.reset();
+        };
+        document.getElementById('peptide-add-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('new-peptide-name').value.trim();
+            if(name) { await api({ action: 'savePeptide', name }); loadAllData(); e.target.reset(); }
+        };
+        document.getElementById('config-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const data = { action: 'saveConfig', label: document.getElementById('conf-label').value, peptide: document.getElementById('conf-peptide-select').value, value: document.getElementById('conf-val').value, unit: document.getElementById('conf-unit').value };
+            await api(data); loadAllData(); e.target.reset();
+        };
     </script>
 </body>
 </html>
