@@ -14,15 +14,19 @@
                 extend: {
                     fontFamily: { sans: ['Outfit', 'sans-serif'] },
                     colors: { background: '#0f172a', surface: '#1e293b', primary: '#6366f1' },
-                    animation: { 'fade-in': 'fadeIn 0.3s ease-out', 'slide-up': 'slideUp 0.4s ease-out' },
-                    keyframes: { fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } }, slideUp: { '0%': { transform: 'translateY(10px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } } }
+                    animation: { 'fade-in': 'fadeIn 0.3s ease-out', 'slide-up': 'slideUp 0.4s ease-out', 'bounce-in': 'bounceIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55)' },
+                    keyframes: { 
+                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } }, 
+                        slideUp: { '0%': { transform: 'translateY(10px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } },
+                        bounceIn: { '0%': { transform: 'scale(0.8)', opacity: '0' }, '100%': { transform: 'scale(1)', opacity: '1' } }
+                    }
                 }
             }
         }
     </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Outfit', sans-serif; background-color: #0f172a; background-image: radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%); color: #f8fafc; min-height: 100vh; }
+        body { font-family: 'Outfit', sans-serif; background-color: #0f172a; background-image: radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%); color: #f8fafc; min-height: 100vh; overflow-x: hidden; }
         .glass-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); }
         .input-field { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(148, 163, 184, 0.2); color: white; border-radius: 1rem; padding: 0.75rem 1rem; width: 100%; font-size: 16px; transition: all 0.2s; }
         .input-field:focus { border-color: #6366f1; outline: none; background: rgba(15, 23, 42, 0.9); }
@@ -30,22 +34,32 @@
         .nav-pill { color: #94a3b8; transition: all 0.3s; display: flex; align-items: center; justify-content: center; }
         .nav-pill.active { background: #6366f1 !important; color: white !important; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25); }
         
-        .syringe-container { position: relative; width: 60px; height: 250px; margin: 0 auto; background: rgba(255,255,255,0.05); border-radius: 8px; border: 2px solid #475569; overflow: hidden; }
+        /* Syringe */
+        .syringe-container { position: relative; width: 60px; height: 220px; margin: 0 auto; background: rgba(255,255,255,0.05); border-radius: 8px; border: 2px solid #475569; overflow: hidden; }
         .syringe-marks { position: absolute; top: 0; right: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none; }
         .mark { position: absolute; left: 0; width: 40%; height: 1px; background: rgba(255,255,255,0.3); }
         .mark.major { width: 100%; background: rgba(255,255,255,0.6); }
         .liquid { position: absolute; bottom: 0; left: 0; width: 100%; background: linear-gradient(to top, #ef4444, #f87171); transition: height 0.5s; opacity: 0.8; }
         .plunger { position: absolute; bottom: 0; left: 0; width: 100%; height: 8px; background: #334155; z-index: 2; transition: bottom 0.5s; border-top: 2px solid #cbd5e1; }
         
+        /* Toast Notification */
+        #toast-container { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%); z-index: 100; width: 90%; max-width: 400px; pointer-events: none; }
+        .toast { background: rgba(30, 41, 59, 0.95); backdrop-filter: blur(8px); border: 1px solid rgba(99, 102, 241, 0.3); color: white; padding: 1rem 1.25rem; border-radius: 1rem; margin-top: 0.5rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5); pointer-events: auto; animation: bounce-in 0.4s ease-out; }
+        .toast.error { border-color: #ef4444; }
+        
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="flex flex-col items-center pb-10">
+<body class="flex flex-col items-center pb-24">
+
+    <!-- Toast Notifications Area -->
+    <div id="toast-container"></div>
 
     <div id="setup-screen" class="fixed inset-0 z-50 bg-slate-900 flex items-center justify-center p-6 hidden">
-        <div class="glass-card w-full max-w-md p-8 rounded-3xl text-center space-y-6">
+        <div class="glass-card w-full max-w-md p-8 rounded-3xl text-center space-y-6 text-white">
             <h2 class="text-2xl font-bold">Connect Database</h2>
+            <p class="text-slate-400">Paste your Google Apps Script URL to start</p>
             <input type="url" id="setup-url" placeholder="https://script.google.com/..." class="input-field text-center">
             <button onclick="saveUrl()" class="btn-primary w-full py-4 rounded-2xl font-bold">Connect</button>
         </div>
@@ -54,21 +68,25 @@
     <div id="app-container" class="w-full max-w-lg hidden animate-fade-in px-4">
         <header class="py-6 flex justify-between items-center">
             <h1 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-white">Peptide Log</h1>
-            <div id="status-label" class="text-xs text-slate-500">Connected</div>
+            <div id="status-label" class="text-[10px] font-bold uppercase tracking-widest flex items-center gap-2">
+                <span id="status-dot" class="w-2 h-2 rounded-full bg-slate-500 animate-pulse"></span>
+                <span id="status-text" class="text-slate-500">Checking...</span>
+            </div>
         </header>
 
-        <nav class="mb-4">
-            <div class="flex bg-slate-800/50 p-1 rounded-2xl border border-slate-700/50 backdrop-blur-md w-full justify-between gap-1 shadow-lg">
-                <button onclick="switchView('log')" id="tab-log" class="nav-pill active flex-1 py-2.5 rounded-xl text-[10px] font-bold">Log</button>
-                <button onclick="switchView('levels')" id="tab-levels" class="nav-pill flex-1 py-2.5 rounded-xl text-[10px] font-bold">Levels</button>
-                <button onclick="switchView('history')" id="tab-history" class="nav-pill flex-1 py-2.5 rounded-xl text-[10px] font-bold">History</button>
-                <button onclick="switchView('calculator')" id="tab-calculator" class="nav-pill flex-1 py-2.5 rounded-xl text-[10px] font-bold">Calc</button>
-                <button onclick="switchView('config')" id="tab-config" class="nav-pill flex-1 py-2.5 rounded-xl text-[10px] font-bold">Config</button>
+        <nav class="mb-4 sticky top-4 z-40">
+            <div class="flex bg-slate-800/60 p-1.5 rounded-2xl border border-slate-700/50 backdrop-blur-lg w-full justify-between gap-1 shadow-2xl">
+                <button onclick="switchView('log')" id="tab-log" class="nav-pill active flex-1 py-2.5 rounded-xl text-[10px] font-bold uppercase">Log</button>
+                <button onclick="switchView('levels')" id="tab-levels" class="nav-pill flex-1 py-2.5 rounded-xl text-[10px] font-bold uppercase">Levels</button>
+                <button onclick="switchView('history')" id="tab-history" class="nav-pill flex-1 py-2.5 rounded-xl text-[10px] font-bold uppercase">History</button>
+                <button onclick="switchView('calculator')" id="tab-calculator" class="nav-pill flex-1 py-2.5 rounded-xl text-[10px] font-bold uppercase">Calc</button>
+                <button onclick="switchView('config')" id="tab-config" class="nav-pill flex-1 py-2.5 rounded-xl text-[10px] font-bold uppercase">Config</button>
             </div>
         </nav>
 
         <main class="space-y-6">
             
+            <!-- VIEW: LOG -->
             <div id="view-log" class="space-y-6 animate-slide-up">
                 <div id="suggestion-box" class="glass-card p-4 rounded-2xl border-l-4 border-l-indigo-500 flex justify-between items-center hidden">
                     <div><p class="text-[10px] text-indigo-400 font-bold uppercase tracking-wider">Suggested Site</p><p id="suggestion-text" class="text-lg font-bold text-white">--</p></div>
@@ -76,6 +94,7 @@
                 </div>
                 <div id="quick-log-container" class="grid grid-cols-2 gap-3"></div>
                 <form id="log-form" class="glass-card p-6 rounded-3xl space-y-4 text-white shadow-xl">
+                    <h2 class="text-xs font-bold text-indigo-300 uppercase tracking-wider mb-2 text-center">Manual Entry</h2>
                     <select id="log-peptide" class="input-field" required></select>
                     <div class="flex gap-2"><input type="number" id="log-dosage" placeholder="Dose" step="any" class="input-field"><select id="log-unit" class="bg-slate-700 text-white rounded-xl px-3 font-bold"><option>mcg</option><option>mg</option></select></div>
                     <select id="log-site" class="input-field" required></select>
@@ -84,10 +103,11 @@
                 </form>
             </div>
 
+            <!-- VIEW: LEVELS -->
             <div id="view-levels" class="hidden space-y-6 animate-slide-up">
                 <div class="glass-card p-6 rounded-3xl shadow-xl">
                     <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-xs font-bold text-indigo-300 uppercase tracking-wider">System Projection (14d)</h2>
+                        <h2 class="text-xs font-bold text-indigo-300 uppercase tracking-wider">Accumulation (mg)</h2>
                         <select id="level-peptide-filter" class="bg-slate-800 text-xs border border-slate-700 rounded-lg px-2 py-1 text-white outline-none" onchange="updateLevelChart()"></select>
                     </div>
                     <div class="relative h-64 w-full px-2">
@@ -97,19 +117,26 @@
                         <div class="bg-slate-800/50 p-4 rounded-2xl border border-slate-700/50 text-center text-white">
                             <p class="text-[10px] text-slate-500 uppercase font-bold">Current Level</p>
                             <p id="stat-current-level" class="text-2xl font-black text-indigo-400 mt-1">0.00</p>
+                            <p class="text-[8px] text-slate-500 mt-1 uppercase">Milligrams (mg)</p>
                         </div>
                         <div class="bg-slate-800/50 p-4 rounded-2xl border border-slate-700/50 text-center text-white">
                             <p class="text-[10px] text-slate-500 uppercase font-bold">14d Peak</p>
                             <p id="stat-peak-level" class="text-2xl font-black text-white mt-1">0.00</p>
+                            <p class="text-[8px] text-slate-500 mt-1 uppercase">Milligrams (mg)</p>
                         </div>
                     </div>
                 </div>
             </div>
 
+            <!-- VIEW: HISTORY -->
             <div id="view-history" class="hidden space-y-4 animate-slide-up">
+                <div class="glass-card p-2 rounded-2xl mb-4">
+                    <input type="text" id="history-filter" placeholder="Search by peptide or site..." class="input-field border-none bg-transparent" oninput="renderHistory()">
+                </div>
                 <div id="history-list" class="space-y-3 pb-20"></div>
             </div>
 
+            <!-- VIEW: CALCULATOR -->
             <div id="view-calculator" class="hidden animate-slide-up">
                 <div class="glass-card p-6 rounded-3xl flex flex-col items-center shadow-xl">
                     <div class="syringe-container mb-6">
@@ -118,7 +145,7 @@
                         <div id="visual-plunger" class="plunger"></div>
                     </div>
                     <div class="text-center text-white">
-                        <p class="text-indigo-300 text-xs font-bold uppercase tracking-widest mb-1">Draw to mark (U-100)</p>
+                        <p class="text-indigo-300 text-xs font-bold uppercase tracking-widest mb-1">Draw to IU (U-100)</p>
                         <div class="text-6xl font-black text-white flex items-end justify-center gap-2">
                             <span id="calc-result">0</span><span class="text-2xl text-slate-500 mb-2">IU</span>
                         </div>
@@ -131,30 +158,23 @@
                 </div>
             </div>
 
-            <div id="view-config" class="hidden space-y-6 animate-slide-up text-white">
+            <!-- VIEW: CONFIG -->
+            <div id="view-config" class="hidden space-y-6 animate-slide-up text-white pb-10">
                 <section class="glass-card p-6 rounded-3xl"><h2 class="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-4">Preferred Sites</h2><div id="preferred-sites-grid" class="grid grid-cols-2 gap-2"></div></section>
-                <section class="glass-card p-6 rounded-3xl"><h2 class="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-4">Library</h2><form id="peptide-add-form" class="flex gap-2 mb-4"><input type="text" id="new-peptide-name" placeholder="Name" class="input-field flex-1"><button type="submit" class="btn-primary px-6 rounded-xl font-bold">Add</button></form><div id="peptide-list" class="flex flex-wrap gap-2"></div></section>
+                <section class="glass-card p-6 rounded-3xl"><h2 class="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-4">Library</h2><form id="peptide-add-form" class="flex gap-2 mb-4"><input type="text" id="new-peptide-name" placeholder="Name" class="input-field flex-1"><button type="submit" class="btn-primary px-6 rounded-xl font-bold text-xs uppercase">Add</button></form><div id="peptide-list" class="flex flex-wrap gap-2"></div></section>
                 <section class="glass-card p-6 rounded-3xl">
-                    <h2 class="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-4">Quick Logs</h2>
+                    <h2 class="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-4 text-center">Add Quick Log</h2>
                     <form id="config-form" class="space-y-4">
-                        <input type="text" id="conf-label" placeholder="Label" class="input-field" required>
+                        <input type="text" id="conf-label" placeholder="Label (e.g. Morning BPC)" class="input-field" required>
                         <select id="conf-peptide-select" class="input-field" required></select>
                         <div class="flex gap-2"><input type="number" id="conf-val" placeholder="Dose" step="any" class="input-field flex-1" required><select id="conf-unit" class="bg-slate-700 text-white rounded-xl px-3 font-bold"><option>mcg</option><option>mg</option></select></div>
-                        <button type="submit" class="btn-primary w-full py-3 rounded-xl font-bold">Save Preset</button>
+                        <button type="submit" class="btn-primary w-full py-3 rounded-xl font-bold uppercase text-sm tracking-widest">Save Preset</button>
                     </form>
                 </section>
                 <div id="presets-list" class="space-y-2"></div>
-                <button onclick="resetApp()" class="w-full py-4 text-red-400 text-xs font-bold border border-red-900/30 rounded-2xl">Reset URL</button>
+                <button onclick="resetApp()" class="w-full py-4 text-red-400 text-xs font-bold border border-red-900/30 rounded-2xl mt-4 bg-red-900/10">Disconnect database</button>
             </div>
         </main>
-    </div>
-
-    <div id="site-modal" class="fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-sm hidden flex items-center justify-center p-6 text-white text-center">
-        <div class="glass-card w-full max-w-sm p-6 rounded-3xl space-y-4">
-            <h3 class="font-bold">Select Site</h3>
-            <div id="modal-sites" class="grid grid-cols-2 gap-2 max-h-[50vh] overflow-y-auto pr-1"></div>
-            <button onclick="closeModal()" class="w-full py-3 text-slate-500 font-bold border-t border-slate-700 mt-2">Cancel</button>
-        </div>
     </div>
 
     <script>
@@ -164,8 +184,44 @@
         const HALF_LIVES = { "tirzepatide": 120, "retatrutide": 144 };
         let preferredSites = JSON.parse(localStorage.getItem('pref_sites')) || ["Right Abdomen (Lower)", "Left Abdomen (Lower)"];
 
-        async function api(data) { try { const res = await fetch(APP_URL, { method: 'POST', body: JSON.stringify(data) }); return await res.json(); } catch(e) { return {success:false}; } }
+        // --- UTILS ---
+        function showToast(msg, type = 'success', duration = 3000, action = null) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `<span>${msg}</span>`;
+            
+            if(action) {
+                const btn = document.createElement('button');
+                btn.className = "ml-4 text-indigo-400 font-bold uppercase text-[10px] tracking-widest";
+                btn.innerText = action.label;
+                btn.onclick = (e) => { e.stopPropagation(); action.callback(); toast.remove(); };
+                toast.appendChild(btn);
+            }
+            
+            container.appendChild(toast);
+            setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateY(20px) translateX(-50%)'; setTimeout(() => toast.remove(), 400); }, duration);
+        }
 
+        async function checkStatus() {
+            if(!APP_URL) return;
+            const dot = document.getElementById('status-dot');
+            const txt = document.getElementById('status-text');
+            try {
+                const res = await fetch(`${APP_URL}?action=ping`).then(r => r.json());
+                if(res.success) {
+                    dot.className = "w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]";
+                    txt.innerText = "Connected"; txt.className = "text-green-500";
+                }
+            } catch(e) {
+                dot.className = "w-2 h-2 rounded-full bg-red-500 animate-pulse";
+                txt.innerText = "Disconnected"; txt.className = "text-red-500";
+            }
+        }
+
+        async function api(data) { try { const res = await fetch(APP_URL, { method: 'POST', body: JSON.stringify(data) }); return await res.json(); } catch(e) { showToast("Connection Error", "error"); return {success:false}; } }
+
+        // --- NAVIGATION ---
         function switchView(view) {
             document.querySelectorAll('main > div').forEach(d => d.classList.add('hidden'));
             document.getElementById('view-' + view).classList.remove('hidden');
@@ -244,7 +300,7 @@
                 });
                 const label = i === 0 ? "Today" : t.toLocaleDateString('en-US', {weekday: 'short', day: 'numeric'});
                 labels.push(label);
-                dataPoints.push(total);
+                dataPoints.push(total / 1000); // CONVERSION EN MG POUR LE GRAPH
             }
 
             if(chart) chart.destroy();
@@ -263,16 +319,8 @@
                 options: {
                     responsive: true, maintainAspectRatio: false,
                     scales: {
-                        x: { 
-                            display: true, 
-                            ticks: { color: '#64748b', font: { size: 9 }, autoSkip: true, maxTicksLimit: 7 },
-                            grid: { display: false }
-                        },
-                        y: { 
-                            beginAtZero: true, 
-                            ticks: { color: '#64748b', font: { size: 10 } }, 
-                            grid: { color: 'rgba(255,255,255,0.03)', drawBorder: false } 
-                        }
+                        x: { display: true, ticks: { color: '#64748b', font: { size: 9 }, autoSkip: true, maxTicksLimit: 7 }, grid: { display: false } },
+                        y: { beginAtZero: true, ticks: { color: '#64748b', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.03)', drawBorder: false } }
                     },
                     plugins: { legend: { display: false }, tooltip: { enabled: true, mode: 'index', intersect: false } }
                 }
@@ -298,12 +346,11 @@
             const w = parseFloat(document.getElementById('calc-water').value);
             const d = parseFloat(document.getElementById('calc-dose').value);
             if(v && w && d) {
-                // GPT Fix: Correct IU Calculation
-                const conc = (v * 1000) / w;      // mcg/mL
-                const volMl = d / conc;           // mL
-                const iu = volMl * 100;           // IU (sur seringue U-100)
-                
-                document.getElementById('calc-result').textContent = iu.toFixed(1);
+                // FIXED FORMULA ML -> IU
+                const conc = (v * 1000) / w; 
+                const volMl = d / conc; 
+                const iu = volMl * 100; 
+                document.getElementById('calc-result').textContent = iu.toFixed(iu >= 10 ? 1 : 2);
                 document.getElementById('visual-liquid').style.height = Math.min(iu, 100) + '%';
                 document.getElementById('visual-plunger').style.bottom = Math.min(iu, 100) + '%';
             }
@@ -339,20 +386,66 @@
         }
 
         function useSuggestion() { document.getElementById('log-site').value = document.getElementById('suggestion-text').textContent; }
-        function renderQuickLogs() { document.getElementById('quick-log-container').innerHTML = presets.map(p => `<button onclick="openSiteModal('${p.label}')" class="glass-card p-4 rounded-2xl text-left border border-slate-700 active:scale-95 transition text-white"><p class="font-bold text-sm">${p.label}</p><p class="text-[10px] text-indigo-400 font-bold">${p.value} ${p.unit}</p></button>`).join(''); }
+        
+        function renderQuickLogs() { 
+            document.getElementById('quick-log-container').innerHTML = presets.map(p => `
+                <button onclick="openSiteModal('${p.label}')" class="glass-card p-4 rounded-2xl text-left border border-slate-700 active:scale-95 transition text-white">
+                    <p class="font-black text-xs uppercase tracking-wider text-indigo-300 mb-1">${p.label}</p>
+                    <p class="font-bold text-sm">${p.peptide}</p>
+                    <p class="text-[10px] opacity-70">${p.value} ${p.unit}</p>
+                </button>
+            `).join(''); 
+        }
+
         function renderPeptideList() { document.getElementById('peptide-list').innerHTML = peptideLibrary.map(p => `<div class="glass-card px-3 py-1 rounded-full text-[10px] flex items-center gap-2 text-white border-slate-700"><span>${p.name}</span><button onclick="deletePeptide(${p.row})" class="text-slate-500">✕</button></div>`).join(''); }
         function renderPresetsList() { document.getElementById('presets-list').innerHTML = presets.map(p => `<div class="flex justify-between items-center glass-card p-4 rounded-2xl text-white mb-2"><div><p class="text-sm font-bold">${p.label}</p><p class="text-[10px] text-slate-500">${p.peptide}</p></div><button onclick="deletePreset(${p.row})" class="text-red-500 font-bold p-2">✕</button></div>`).join(''); }
-        function renderHistory() { document.getElementById('history-list').innerHTML = history.map(h => `<div class="glass-card p-4 rounded-2xl flex justify-between items-center text-white shadow-sm"><div><p class="font-bold text-sm">${h.peptide} <span class="text-indigo-400 ml-2">${h.dosage}</span></p><p class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">${h.site} • ${new Date(h.date).toLocaleDateString()}</p></div><button onclick="deleteLog(${h.row})" class="text-slate-600">✕</button></div>`).join(''); }
+        
+        function renderHistory() { 
+            const filter = document.getElementById('history-filter').value.toLowerCase();
+            const container = document.getElementById('history-list');
+            const filtered = history.filter(h => h.peptide.toLowerCase().includes(filter) || h.site.toLowerCase().includes(filter));
+            
+            container.innerHTML = filtered.map(h => `
+                <div class="glass-card p-4 rounded-2xl flex justify-between items-center text-white shadow-sm" id="history-row-${h.row}">
+                    <div><p class="font-bold text-sm">${h.peptide} <span class="text-indigo-400 ml-2 font-mono">${h.dosage}</span></p><p class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">${h.site} • ${new Date(h.date).toLocaleDateString()}</p></div>
+                    <button onclick="deleteWithUndo(${h.row})" class="text-slate-600 hover:text-red-500 transition-colors p-2">✕</button>
+                </div>
+            `).join(''); 
+        }
+
+        function deleteWithUndo(row) {
+            const rowEl = document.getElementById(`history-row-${row}`);
+            rowEl.style.opacity = '0.3';
+            rowEl.style.pointerEvents = 'none';
+            
+            let cancelled = false;
+            showToast("Log will be deleted...", "error", 3500, {
+                label: "Undo",
+                callback: () => { 
+                    cancelled = true; 
+                    rowEl.style.opacity = '1'; 
+                    rowEl.style.pointerEvents = 'auto';
+                    showToast("Deletion cancelled");
+                }
+            });
+            
+            setTimeout(async () => {
+                if(!cancelled) {
+                    const res = await api({ action: 'deleteLog', row: row });
+                    if(res.success) loadAllData();
+                }
+            }, 3000);
+        }
 
         function saveUrl() { const url = document.getElementById('setup-url').value.trim(); if(url) { localStorage.setItem('pep_url', url); location.reload(); } }
-        function resetApp() { if(confirm("Reset?")) { localStorage.clear(); location.reload(); } }
+        function resetApp() { if(confirm("Disconnect database? Local settings will be kept.")) { localStorage.removeItem('pep_url'); location.reload(); } }
+        
         let pendingPreset = null;
         function openSiteModal(label) { pendingPreset = presets.find(p => p.label === label); document.getElementById('modal-sites').innerHTML = ALL_SITES.map(s => `<button onclick="finalizeQuickLog('${s}')" class="bg-slate-800 p-3 rounded-xl text-[10px] font-bold text-white border border-slate-700 active:bg-indigo-600 transition">${s}</button>`).join(''); document.getElementById('site-modal').classList.remove('hidden'); }
         function closeModal() { document.getElementById('site-modal').classList.add('hidden'); }
-        async function finalizeQuickLog(site) { closeModal(); const data = { peptide: pendingPreset.peptide, dosage: `${pendingPreset.value} ${pendingPreset.unit}`, site: site, timestamp: new Date().toISOString() }; await api(data); loadAllData(); }
-        async function deleteLog(row) { if(confirm("Delete?")) { await api({action:'deleteLog', row}); loadAllData(); } }
-        async function deletePreset(row) { if(confirm("Delete?")) { await api({action:'deleteConfig', row}); loadAllData(); } }
-        async function deletePeptide(row) { if(confirm("Delete?")) { await api({action:'deletePeptide', row}); loadAllData(); } }
+        async function finalizeQuickLog(site) { closeModal(); const data = { peptide: pendingPreset.peptide, dosage: `${pendingPreset.value} ${pendingPreset.unit}`, site: site, timestamp: new Date().toISOString() }; const res = await api(data); if(res.success) { showToast(`Logged: ${pendingPreset.peptide}`); loadAllData(); } }
+        async function deletePreset(row) { const res = await api({action:'deleteConfig', row}); if(res.success) { showToast("Preset removed"); loadAllData(); } }
+        async function deletePeptide(row) { const res = await api({action:'deletePeptide', row}); if(res.success) { showToast("Library item removed"); loadAllData(); } }
 
         window.onload = () => {
             if(!APP_URL) document.getElementById('setup-screen').classList.remove('hidden');
@@ -360,24 +453,29 @@
                 document.getElementById('app-container').classList.remove('hidden');
                 document.getElementById('log-site').innerHTML = ALL_SITES.map(s => `<option value="${s}">${s}</option>`).join('');
                 document.getElementById('log-time').value = new Date(new Date() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0,16);
+                checkStatus();
                 loadAllData();
+                // Status check every 30s
+                setInterval(checkStatus, 30000);
             }
         };
 
         document.getElementById('log-form').onsubmit = async (e) => {
             e.preventDefault();
             const data = { peptide: document.getElementById('log-peptide').value, dosage: document.getElementById('log-dosage').value + ' ' + document.getElementById('log-unit').value, site: document.getElementById('log-site').value, timestamp: document.getElementById('log-time').value };
-            await api(data); loadAllData(); e.target.reset();
+            const res = await api(data);
+            if(res.success) { showToast("Injection Logged!"); loadAllData(); e.target.reset(); document.getElementById('log-time').value = new Date(new Date() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0,16); }
         };
         document.getElementById('peptide-add-form').onsubmit = async (e) => {
             e.preventDefault();
             const name = document.getElementById('new-peptide-name').value.trim();
-            if(name) { await api({ action: 'savePeptide', name }); loadAllData(); e.target.reset(); }
+            if(name) { const res = await api({ action: 'savePeptide', name }); if(res.success) { showToast("Added to library"); loadAllData(); e.target.reset(); } }
         };
         document.getElementById('config-form').onsubmit = async (e) => {
             e.preventDefault();
             const data = { action: 'saveConfig', label: document.getElementById('conf-label').value, peptide: document.getElementById('conf-peptide-select').value, value: document.getElementById('conf-val').value, unit: document.getElementById('conf-unit').value };
-            await api(data); loadAllData(); e.target.reset();
+            const res = await api(data);
+            if(res.success) { showToast("Quick Log Saved"); loadAllData(); e.target.reset(); }
         };
     </script>
 </body>
