@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr" class="dark">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -37,7 +37,6 @@
         .nav-pill { color: #94a3b8; transition: all 0.3s; display: flex; align-items: center; justify-content: center; text-align: center; border-radius: 0.75rem; font-size: 10px; font-weight: 700; text-transform: uppercase; border: 1px solid transparent; }
         .nav-pill.active { background: #6366f1 !important; color: white !important; border-color: rgba(255,255,255,0.1); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25); }
         
-        /* Body Map Styles */
         .body-zone { fill: rgba(148, 163, 184, 0.1); stroke: rgba(255,255,255,0.2); stroke-width: 1; transition: all 0.2s; cursor: pointer; }
         .body-zone:hover { fill: rgba(99, 102, 241, 0.3); }
         .body-zone.selected { fill: #6366f1; stroke: white; }
@@ -59,29 +58,34 @@
     <!-- DB Setup -->
     <div id="setup-screen" class="fixed inset-0 z-50 bg-slate-900 flex items-center justify-center p-6 hidden">
         <div class="glass-card w-full max-w-md p-8 rounded-3xl text-center space-y-6 text-white">
-            <h2 class="text-2xl font-bold">Connexion Database</h2>
+            <h2 class="text-2xl font-bold" data-t="setup_title">Database Connection</h2>
             <input type="url" id="setup-url" placeholder="https://script.google.com/..." class="input-field text-center">
-            <button onclick="saveUrl()" class="btn-primary w-full py-4 rounded-2xl font-bold">Se connecter</button>
+            <button onclick="saveUrl()" class="btn-primary w-full py-4 rounded-2xl font-bold" data-t="setup_connect">Connect</button>
         </div>
     </div>
 
     <!-- Main App -->
     <div id="app-container" class="w-full max-w-lg hidden animate-fade-in">
         <header class="py-6 flex justify-between items-center text-white">
-            <h1 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-white">Peptide Log</h1>
-            <div id="status-label" class="text-[10px] font-bold uppercase tracking-widest flex items-center gap-2">
-                <span id="status-dot" class="w-2 h-2 rounded-full bg-slate-500 animate-pulse"></span>
-                <span id="status-text" class="text-slate-500">Vérification...</span>
+            <div>
+                <h1 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-white">Peptide Log</h1>
+                <div id="status-label" class="text-[10px] font-bold uppercase tracking-widest flex items-center gap-2">
+                    <span id="status-dot" class="w-2 h-2 rounded-full bg-slate-500 animate-pulse"></span>
+                    <span id="status-text" class="text-slate-500" data-t="status_checking">Checking...</span>
+                </div>
             </div>
+            <button onclick="toggleLanguage()" id="lang-toggle" class="bg-slate-800/50 border border-slate-700 px-3 py-1.5 rounded-xl text-xs font-black text-indigo-300 hover:bg-slate-700 transition-colors uppercase tracking-widest">
+                EN
+            </button>
         </header>
 
         <nav class="mb-6 sticky top-4 z-40">
             <div class="flex bg-slate-800/80 p-1.5 rounded-2xl border border-slate-700/50 backdrop-blur-xl w-full shadow-2xl items-stretch">
-                <button onclick="switchView('log')" id="tab-log" class="nav-pill active flex-1 py-3 px-1 text-[9px]">Journal</button>
-                <button onclick="switchView('levels')" id="tab-levels" class="nav-pill flex-1 py-3 px-1 text-[9px]">Niveaux</button>
-                <button onclick="switchView('history')" id="tab-history" class="nav-pill flex-1 py-3 px-1 text-[9px]">Hist.</button>
-                <button onclick="switchView('calculator')" id="tab-calculator" class="nav-pill flex-1 py-3 px-1 text-[9px]">Calc</button>
-                <button onclick="switchView('config')" id="tab-config" class="nav-pill flex-1 py-3 px-1 text-[9px]">Config</button>
+                <button onclick="switchView('log')" id="tab-log" class="nav-pill active flex-1 py-3 px-1 text-[9px]" data-t="tab_log">Log</button>
+                <button onclick="switchView('levels')" id="tab-levels" class="nav-pill flex-1 py-3 px-1 text-[9px]" data-t="tab_levels">Levels</button>
+                <button onclick="switchView('history')" id="tab-history" class="nav-pill flex-1 py-3 px-1 text-[9px]" data-t="tab_history">History</button>
+                <button onclick="switchView('calculator')" id="tab-calculator" class="nav-pill flex-1 py-3 px-1 text-[9px]" data-t="tab_calc">Calc</button>
+                <button onclick="switchView('config')" id="tab-config" class="nav-pill flex-1 py-3 px-1 text-[9px]" data-t="tab_config">Config</button>
             </div>
         </nav>
 
@@ -91,7 +95,7 @@
             <div id="view-log" class="space-y-6 animate-slide-up">
                 <div id="suggestion-box" class="glass-card p-4 rounded-2xl border-l-4 border-l-indigo-500 flex justify-between items-center hidden" onclick="useSuggestion()">
                     <div>
-                        <p class="text-[10px] text-indigo-400 font-bold uppercase tracking-wider">Site Suggéré (Rotation)</p>
+                        <p class="text-[10px] text-indigo-400 font-bold uppercase tracking-wider" data-t="suggested_site_label">Suggested Site (Rotation)</p>
                         <p id="suggestion-text" class="text-lg font-bold text-white">--</p>
                     </div>
                     <div class="bg-indigo-500/20 p-2 rounded-lg text-indigo-300">
@@ -104,7 +108,7 @@
                 <div id="quick-log-container" class="grid grid-cols-2 gap-3"></div>
 
                 <form id="log-form" class="glass-card p-6 rounded-3xl space-y-4 text-white shadow-xl">
-                    <h2 class="text-xs font-bold text-indigo-300 uppercase tracking-wider text-center">Entrée Manuelle</h2>
+                    <h2 class="text-xs font-bold text-indigo-300 uppercase tracking-wider text-center" data-t="manual_entry">Manual Entry</h2>
                     <select id="log-peptide" class="input-field" required></select>
                     <div class="flex gap-2">
                         <input type="number" id="log-dosage" placeholder="Dose" step="any" class="input-field">
@@ -115,7 +119,7 @@
                     </div>
                     <div class="relative group">
                         <button type="button" onclick="openFullSiteModal('manual')" id="log-site-display" class="input-field text-left flex justify-between items-center bg-slate-800/40">
-                            <span id="log-site-label">Sélectionner le site...</span>
+                            <span id="log-site-label" data-t="select_site">Select site...</span>
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                             </svg>
@@ -123,7 +127,7 @@
                         <input type="hidden" id="log-site" required>
                     </div>
                     <input type="datetime-local" id="log-time" class="input-field" style="color-scheme: dark;">
-                    <button type="submit" class="btn-primary w-full py-4 rounded-2xl font-bold text-lg">Loger l'injection</button>
+                    <button type="submit" class="btn-primary w-full py-4 rounded-2xl font-bold text-lg" data-t="log_btn">Log Injection</button>
                 </form>
             </div>
 
@@ -131,7 +135,7 @@
             <div id="view-levels" class="hidden space-y-6 animate-slide-up">
                 <div class="glass-card p-6 rounded-3xl shadow-xl text-white">
                     <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-xs font-bold text-indigo-300 uppercase tracking-wider text-center flex-1">Graphique d'Accumulation (mg)</h2>
+                        <h2 class="text-xs font-bold text-indigo-300 uppercase tracking-wider text-center flex-1" data-t="graph_title">Accumulation Graph (mg)</h2>
                         <select id="level-peptide-filter" class="bg-slate-800 text-xs border border-slate-700 rounded-lg px-2 py-1 text-white outline-none" onchange="updateLevelChart()"></select>
                     </div>
                     <div class="relative h-64 w-full">
@@ -139,19 +143,19 @@
                     </div>
                     
                     <div class="flex flex-col items-center mt-4 space-y-2">
-                        <button onclick="resetToToday()" class="text-[10px] text-indigo-400 font-bold uppercase tracking-widest border border-indigo-500/30 px-4 py-2 rounded-full hover:bg-indigo-500/10 transition-colors">
-                            Retour à Aujourd'hui
+                        <button onclick="resetToToday()" class="text-[10px] text-indigo-400 font-bold uppercase tracking-widest border border-indigo-500/30 px-4 py-2 rounded-full hover:bg-indigo-500/10 transition-colors" data-t="reset_today">
+                            Reset to Today
                         </button>
                     </div>
 
                     <div class="grid grid-cols-2 gap-4 mt-8">
                         <div class="bg-slate-800/50 p-4 rounded-2xl border border-slate-700/50 text-center">
-                            <p class="text-[10px] text-slate-500 uppercase font-bold">Niveau Actuel</p>
+                            <p class="text-[10px] text-slate-500 uppercase font-bold" data-t="stat_current">Current Level</p>
                             <p id="stat-current-level" class="text-2xl font-black text-indigo-400 mt-1 leading-none">0.00</p>
-                            <p class="text-[8px] text-slate-500 mt-2 uppercase font-bold tracking-tighter">Milligrammes (mg)</p>
+                            <p class="text-[8px] text-slate-500 mt-2 uppercase font-bold tracking-tighter" data-t="mg_unit">Milligrams (mg)</p>
                         </div>
                         <div class="bg-slate-800/50 p-4 rounded-2xl border border-slate-700/50 text-center">
-                            <p class="text-[10px] text-slate-500 uppercase font-bold">Pic (14j)</p>
+                            <p class="text-[10px] text-slate-500 uppercase font-bold" data-t="stat_peak">Peak (14d)</p>
                             <p id="stat-peak-level" class="text-2xl font-black text-white mt-1 leading-none">0.00</p>
                             <p id="stat-peak-date" class="text-[8px] text-indigo-300 mt-2 uppercase font-bold tracking-tighter">--</p>
                         </div>
@@ -162,7 +166,7 @@
             <!-- VIEW: HISTORY -->
             <div id="view-history" class="hidden space-y-4 animate-slide-up">
                 <div class="glass-card p-2 rounded-2xl mb-4">
-                    <input type="text" id="history-filter" placeholder="Filtrer..." class="input-field border-none bg-transparent" oninput="renderHistory()">
+                    <input type="text" id="history-filter" placeholder="Filter..." class="input-field border-none bg-transparent" oninput="renderHistory()">
                 </div>
                 <div id="history-list" class="space-y-3 pb-20"></div>
             </div>
@@ -175,15 +179,15 @@
                         <div id="visual-plunger" class="plunger"></div>
                     </div>
                     <div class="text-center text-white">
-                        <p class="text-indigo-300 text-xs font-bold uppercase tracking-widest mb-1">Volume à tirer (U-100)</p>
+                        <p class="text-indigo-300 text-xs font-bold uppercase tracking-widest mb-1" data-t="draw_volume">Volume to draw (U-100)</p>
                         <div class="text-6xl font-black text-white flex items-end justify-center gap-2">
                             <span id="calc-result">0</span><span class="text-2xl text-slate-500 mb-2">IU</span>
                         </div>
                     </div>
                     <div class="w-full space-y-4 mt-8 text-white">
-                        <input type="number" id="calc-vial" placeholder="Masse fiole (mg)" step="any" class="input-field" oninput="runCalc()">
-                        <input type="number" id="calc-water" placeholder="Eau (mL)" step="any" class="input-field" oninput="runCalc()">
-                        <input type="number" id="calc-dose" placeholder="Dose cible (mcg)" step="any" class="input-field" oninput="runCalc()">
+                        <input type="number" id="calc-vial" placeholder="Vial mass (mg)" step="any" class="input-field" oninput="runCalc()">
+                        <input type="number" id="calc-water" placeholder="Water (mL)" step="any" class="input-field" oninput="runCalc()">
+                        <input type="number" id="calc-dose" placeholder="Target dose (mcg)" step="any" class="input-field" oninput="runCalc()">
                     </div>
                 </div>
             </div>
@@ -191,56 +195,49 @@
             <!-- VIEW: CONFIG -->
             <div id="view-config" class="hidden space-y-6 animate-slide-up text-white pb-10">
                 <section class="glass-card p-6 rounded-3xl">
-                    <h2 class="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-4">Sites Favoris</h2>
+                    <h2 class="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-4" data-t="pref_sites">Preferred Sites</h2>
                     <div id="preferred-sites-grid" class="grid grid-cols-2 gap-2"></div>
                 </section>
 
                 <section class="glass-card p-6 rounded-3xl">
-                    <h2 class="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-4 text-center">Bibliothèque Peptides</h2>
+                    <h2 class="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-4 text-center" data-t="library_title">Peptide Library</h2>
                     <form id="peptide-add-form" class="flex flex-col gap-2 mb-4">
-                        <input type="text" id="new-peptide-name" placeholder="Nom (ex: BPC-157)" class="input-field">
+                        <input type="text" id="new-peptide-name" placeholder="Name (e.g. BPC-157)" class="input-field">
                         <div class="flex gap-2">
-                            <input type="number" id="new-peptide-hl" placeholder="Demi-vie" class="input-field flex-1">
+                            <input type="number" id="new-peptide-hl" placeholder="Half-life" class="input-field flex-1">
                             <select id="new-peptide-unit" class="bg-slate-700 rounded-xl px-3 font-bold">
-                                <option value="hours">Heures</option>
-                                <option value="days">Jours</option>
+                                <option value="hours" data-t="unit_hours">Hours</option>
+                                <option value="days" data-t="unit_days">Days</option>
                             </select>
                         </div>
-                        <button type="submit" class="btn-primary py-3 rounded-xl font-bold uppercase text-xs">Ajouter</button>
+                        <button type="submit" class="btn-primary py-3 rounded-xl font-bold uppercase text-xs" data-t="add_btn">Add</button>
                     </form>
                     <div id="peptide-list" class="flex flex-wrap gap-2"></div>
                 </section>
 
                 <div id="presets-list" class="space-y-2"></div>
-                <button onclick="resetApp()" class="w-full py-4 text-red-400 text-xs font-bold border border-red-900/30 rounded-2xl mt-4 bg-red-900/10">Déconnexion Database</button>
+                <button onclick="resetApp()" class="w-full py-4 text-red-400 text-xs font-bold border border-red-900/30 rounded-2xl mt-4 bg-red-900/10" data-t="disconnect_btn">Disconnect Database</button>
             </div>
         </main>
     </div>
 
-    <!-- MODAL: SITE SELECTOR WITH BODY MAP -->
+    <!-- MODAL: SITE SELECTOR -->
     <div id="site-modal" class="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-md hidden flex flex-col items-center justify-center p-4">
-        <div class="w-full max-w-sm flex flex-col items-center gap-6">
-            <h3 class="text-xl font-bold text-white">Zone d'injection</h3>
+        <div class="w-full max-w-sm flex flex-col items-center gap-6 text-white">
+            <h3 class="text-xl font-bold" data-t="modal_site_title">Injection Zone</h3>
             
             <div id="body-map-container" class="w-full h-[400px] flex justify-center">
-                <!-- SVG Simple Body Outline with Clickable zones -->
                 <svg viewBox="0 0 200 450" class="h-full w-auto">
-                    <!-- Head/Neck -->
                     <circle cx="100" cy="35" r="25" class="fill-slate-800" />
-                    <!-- Body Outline -->
                     <path d="M70,70 L130,70 L145,160 L135,260 L65,260 L55,160 Z" class="fill-slate-800" />
-                    <!-- Arms -->
                     <path d="M50,80 L20,180 L35,190 L60,95 Z" class="body-zone" id="zone-Left Deltoid" onclick="selectZone('Left Deltoid')" />
                     <path d="M150,80 L180,180 L165,190 L140,95 Z" class="body-zone" id="zone-Right Deltoid" onclick="selectZone('Right Deltoid')" />
-                    <!-- Abdomen -->
                     <rect x="75" y="160" width="23" height="35" rx="4" class="body-zone" id="zone-Left Abdomen (Upper)" onclick="selectZone('Left Abdomen (Upper)')" />
                     <rect x="102" y="160" width="23" height="35" rx="4" class="body-zone" id="zone-Right Abdomen (Upper)" onclick="selectZone('Right Abdomen (Upper)')" />
                     <rect x="75" y="198" width="23" height="35" rx="4" class="body-zone" id="zone-Left Abdomen (Lower)" onclick="selectZone('Left Abdomen (Lower)')" />
                     <rect x="102" y="198" width="23" height="35" rx="4" class="body-zone" id="zone-Right Abdomen (Lower)" onclick="selectZone('Right Abdomen (Lower)')" />
-                    <!-- Flanks -->
                     <path d="M58,180 L72,180 L72,240 L58,230 Z" class="body-zone" id="zone-Left Flank" onclick="selectZone('Left Flank')" />
                     <path d="M142,180 L128,180 L128,240 L142,230 Z" class="body-zone" id="zone-Right Flank" onclick="selectZone('Right Flank')" />
-                    <!-- Thighs -->
                     <path d="M68,265 L55,420 L88,420 L95,265 Z" class="body-zone" id="zone-Left Thigh" onclick="selectZone('Left Thigh')" />
                     <path d="M132,265 L145,420 L112,420 L105,265 Z" class="body-zone" id="zone-Right Thigh" onclick="selectZone('Right Thigh')" />
                 </svg>
@@ -248,20 +245,132 @@
 
             <div class="w-full space-y-3">
                 <div id="selected-zone-name" class="text-center text-indigo-300 font-black text-lg h-8">--</div>
-                <div class="grid grid-cols-2 gap-2 overflow-y-auto max-h-32 p-2">
-                    <button onclick="selectZone('Right Buttock')" class="bg-slate-800 p-2 rounded-xl text-[10px] font-bold text-white border border-slate-700" id="btn-Right Buttock">Fessier Droit</button>
-                    <button onclick="selectZone('Left Buttock')" class="bg-slate-800 p-2 rounded-xl text-[10px] font-bold text-white border border-slate-700" id="btn-Left Buttock">Fessier Gauche</button>
-                    <button onclick="selectZone('Other')" class="bg-slate-800 p-2 rounded-xl text-[10px] font-bold text-white border border-slate-700" id="btn-Other">Autre / Inconnu</button>
-                </div>
+                <div class="grid grid-cols-2 gap-2 overflow-y-auto max-h-32 p-2" id="site-buttons-container"></div>
                 <div class="flex gap-2">
-                    <button onclick="closeModal()" class="flex-1 py-4 text-slate-500 font-bold bg-slate-800 rounded-2xl">Annuler</button>
-                    <button onclick="confirmZoneSelection()" class="flex-1 py-4 btn-primary text-white font-bold rounded-2xl shadow-lg">Confirmer</button>
+                    <button onclick="closeModal()" class="flex-1 py-4 text-slate-500 font-bold bg-slate-800 rounded-2xl" data-t="cancel">Cancel</button>
+                    <button onclick="confirmZoneSelection()" class="flex-1 py-4 btn-primary text-white font-bold rounded-2xl shadow-lg" data-t="confirm">Confirm</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
+        const translations = {
+            en: {
+                setup_title: "Database Connection",
+                setup_connect: "Connect",
+                status_checking: "Checking...",
+                status_connected: "Connected",
+                status_disconnected: "Disconnected",
+                tab_log: "Log",
+                tab_levels: "Levels",
+                tab_history: "History",
+                tab_calc: "Calc",
+                tab_config: "Config",
+                suggested_site_label: "Suggested Site (Rotation)",
+                manual_entry: "Manual Entry",
+                select_site: "Select site...",
+                log_btn: "Log Injection",
+                graph_title: "Accumulation Graph (mg)",
+                reset_today: "Reset to Today",
+                stat_current: "Current Level",
+                stat_peak: "Peak (14d)",
+                mg_unit: "Milligrams (mg)",
+                draw_volume: "Volume to draw (U-100)",
+                pref_sites: "Preferred Sites",
+                library_title: "Peptide Library",
+                unit_hours: "Hours",
+                unit_days: "Days",
+                add_btn: "Add",
+                disconnect_btn: "Disconnect Database",
+                modal_site_title: "Injection Zone",
+                cancel: "Cancel",
+                confirm: "Confirm",
+                today: "Today",
+                toast_logged: "Logged!",
+                toast_removed: "Removed",
+                toast_error: "Connection Error",
+                toast_hl_missing: "Half-life missing for this peptide",
+                delete_undo: "Will be deleted...",
+                undo: "Undo",
+                confirm_del_preset: "Delete this preset?",
+                confirm_del_library: "Remove from library?",
+                confirm_disconnect: "Disconnect database?",
+                site_names: {
+                    "Right Abdomen (Upper)": "Right Abdomen (Upper)",
+                    "Right Abdomen (Lower)": "Right Abdomen (Lower)",
+                    "Left Abdomen (Upper)": "Left Abdomen (Upper)",
+                    "Left Abdomen (Lower)": "Left Abdomen (Lower)",
+                    "Right Flank": "Right Flank",
+                    "Left Flank": "Left Flank",
+                    "Right Thigh": "Right Thigh",
+                    "Left Thigh": "Left Thigh",
+                    "Right Deltoid": "Right Deltoid",
+                    "Left Deltoid": "Left Deltoid",
+                    "Right Buttock": "Right Buttock",
+                    "Left Buttock": "Left Buttock",
+                    "Other": "Other"
+                }
+            },
+            fr: {
+                setup_title: "Connexion Database",
+                setup_connect: "Se connecter",
+                status_checking: "Vérification...",
+                status_connected: "Connecté",
+                status_disconnected: "Déconnecté",
+                tab_log: "Journal",
+                tab_levels: "Niveaux",
+                tab_history: "Hist.",
+                tab_calc: "Calc",
+                tab_config: "Config",
+                suggested_site_label: "Site Suggéré (Rotation)",
+                manual_entry: "Entrée Manuelle",
+                select_site: "Sélect. site...",
+                log_btn: "Loger l'injection",
+                graph_title: "Graphique d'Accumulation (mg)",
+                reset_today: "Aujourd'hui",
+                stat_current: "Niveau Actuel",
+                stat_peak: "Pic (14j)",
+                mg_unit: "Milligrammes (mg)",
+                draw_volume: "Volume à tirer (U-100)",
+                pref_sites: "Sites Favoris",
+                library_title: "Bibliothèque Peptides",
+                unit_hours: "Heures",
+                unit_days: "Jours",
+                add_btn: "Ajouter",
+                disconnect_btn: "Déconnexion Database",
+                modal_site_title: "Zone d'injection",
+                cancel: "Annuler",
+                confirm: "Confirmer",
+                today: "Aujourd'hui",
+                toast_logged: "Logé !",
+                toast_removed: "Supprimé",
+                toast_error: "Erreur connexion",
+                toast_hl_missing: "Demi-vie manquante",
+                delete_undo: "Sera supprimé...",
+                undo: "Annuler",
+                confirm_del_preset: "Supprimer ce preset ?",
+                confirm_del_library: "Retirer de la bibliothèque ?",
+                confirm_disconnect: "Déconnecter la base ?",
+                site_names: {
+                    "Right Abdomen (Upper)": "Abdomen D (Haut)",
+                    "Right Abdomen (Lower)": "Abdomen D (Bas)",
+                    "Left Abdomen (Upper)": "Abdomen G (Haut)",
+                    "Left Abdomen (Lower)": "Abdomen G (Bas)",
+                    "Right Flank": "Flanc Droit",
+                    "Left Flank": "Flanc Gauche",
+                    "Right Thigh": "Cuisse Droite",
+                    "Left Thigh": "Cuisse Gauche",
+                    "Right Deltoid": "Deltoïde D",
+                    "Left Deltoid": "Deltoïde G",
+                    "Right Buttock": "Fessier D",
+                    "Left Buttock": "Fessier G",
+                    "Other": "Autre"
+                }
+            }
+        };
+
+        let currentLang = localStorage.getItem('pep_lang') || 'en';
         let APP_URL = localStorage.getItem('pep_url');
         let history = [], presets = [], peptideLibrary = [], chart = null;
         let pendingAction = null; 
@@ -271,6 +380,26 @@
         const DEFAULT_HALF_LIVES = { "tirzepatide": 120, "retatrutide": 144 };
         const ALL_SITES = ["Right Abdomen (Upper)", "Right Abdomen (Lower)", "Left Abdomen (Upper)", "Left Abdomen (Lower)", "Right Flank", "Left Flank", "Right Thigh", "Left Thigh", "Right Deltoid", "Left Deltoid", "Right Buttock", "Left Buttock", "Other"];
         let preferredSites = JSON.parse(localStorage.getItem('pref_sites')) || ["Right Abdomen (Lower)", "Left Abdomen (Lower)"];
+
+        function t(key) { return translations[currentLang][key] || key; }
+
+        function updateLanguage() {
+            document.querySelectorAll('[data-t]').forEach(el => {
+                const key = el.getAttribute('data-t');
+                el.innerText = t(key);
+            });
+            document.getElementById('lang-toggle').innerText = currentLang.toUpperCase();
+            
+            // Re-render lists to update translated site names
+            if(APP_URL) renderUI();
+            if(chart) updateLevelChart();
+        }
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'en' ? 'fr' : 'en';
+            localStorage.setItem('pep_lang', currentLang);
+            updateLanguage();
+        }
 
         // UI Helpers
         function showToast(msg, type = 'success', duration = 3000, action = null) {
@@ -294,15 +423,23 @@
             const dot = document.getElementById('status-dot'), txt = document.getElementById('status-text');
             try {
                 const res = await fetch(`${APP_URL}?action=ping`).then(r => r.json());
-                if(res.success) { dot.className = "w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"; txt.innerText = "Connecté"; txt.className = "text-green-500"; }
-            } catch(e) { dot.className = "w-2 h-2 rounded-full bg-red-500 animate-pulse"; txt.innerText = "Déconnecté"; txt.className = "text-red-500"; }
+                if(res.success) { 
+                    dot.className = "w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"; 
+                    txt.innerText = t('status_connected'); 
+                    txt.className = "text-green-500"; 
+                }
+            } catch(e) { 
+                dot.className = "w-2 h-2 rounded-full bg-red-500 animate-pulse"; 
+                txt.innerText = t('status_disconnected'); 
+                txt.className = "text-red-500"; 
+            }
         }
 
         async function api(data) { 
             try { 
                 const res = await fetch(APP_URL, { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'text/plain;charset=utf-8' } }); 
                 return await res.json(); 
-            } catch(e) { showToast("Erreur de connexion", "error"); return {success:false}; } 
+            } catch(e) { showToast(t('toast_error'), "error"); return {success:false}; } 
         }
 
         function switchView(view) {
@@ -310,20 +447,14 @@
             document.getElementById('view-' + view).classList.remove('hidden');
             document.querySelectorAll('.nav-pill').forEach(b => b.classList.remove('active'));
             document.getElementById('tab-' + view).classList.add('active');
-            
-            loadAllData(false).then(() => {
-                if(view === 'levels') setTimeout(updateLevelChart, 50);
-            });
+            loadAllData(false).then(() => { if(view === 'levels') setTimeout(updateLevelChart, 50); });
         }
 
         async function loadAllData(force = true) {
             if(!APP_URL) return;
-            // Debounce/Cache: Only fetch if forced or history is empty
             if(!force && history.length > 0) return;
-
             const dot = document.getElementById('status-dot');
             dot.classList.add('animate-spin');
-
             try {
                 const [r1, r2, r3] = await Promise.all([
                     fetch(`${APP_URL}?action=getPresets`).then(r => r.json()),
@@ -332,7 +463,7 @@
                 ]);
                 presets = r1.presets || []; history = r3.history || []; peptideLibrary = r2.peptides || [];
                 renderUI();
-            } catch(e) { console.error("Erreur de chargement", e); }
+            } catch(e) { console.error(e); }
             finally { dot.classList.remove('animate-spin'); }
         }
 
@@ -342,31 +473,23 @@
             const selects = [document.getElementById('log-peptide'), document.getElementById('level-peptide-filter')];
             const names = new Set([...presets.map(p => p.peptide), ...peptideLibrary.map(p => p.name)]);
             const sorted = Array.from(names).sort();
-            
             selects.forEach(s => {
                 if(!s) return;
                 const prev = s.value;
-                if(s.id === 'level-peptide-filter') {
-                    // Filter peptides that have HL data
-                    s.innerHTML = sorted.map(n => `<option value="${n}">${n}</option>`).join('');
-                } else {
-                    s.innerHTML = '<option value="">Choisir peptide</option>' + sorted.map(n => `<option value="${n}">${n}</option>`).join('');
-                }
+                if(s.id === 'level-peptide-filter') s.innerHTML = sorted.map(n => `<option value="${n}">${n}</option>`).join('');
+                else s.innerHTML = `<option value="">${t('tab_log')} Peptide</option>` + sorted.map(n => `<option value="${n}">${n}</option>`).join('');
                 s.value = prev || (s.options[0] ? s.options[0].value : "");
             });
         }
 
-        // Calculation & Charts
         function getHalfLife(peptideName) {
             const norm = peptideName.toLowerCase();
-            // Try library first
             const inLib = peptideLibrary.find(p => p.name.toLowerCase() === norm);
             if(inLib && inLib.halfLife > 0) {
                 let hours = parseFloat(inLib.halfLife);
                 if(inLib.hlUnit === 'days') hours *= 24;
                 return hours;
             }
-            // Fallback to defaults
             return DEFAULT_HALF_LIVES[norm] || 0;
         }
 
@@ -374,28 +497,18 @@
             const selected = document.getElementById('level-peptide-filter').value;
             const canvas = document.getElementById('levelChart');
             if(!selected || !canvas) return;
-            
             const hlHours = getHalfLife(selected);
-            if(hlHours === 0) {
-                showToast("Demi-vie manquante pour ce peptide", "error");
-                return;
-            }
-
+            if(hlHours === 0) { showToast(t('toast_hl_missing'), "error"); return; }
             const k = Math.log(2) / hlHours;
-            const now = new Date();
-            const nowTime = now.getTime();
+            const now = new Date(), nowTime = now.getTime();
             const pepLogs = history.filter(h => h.peptide.toLowerCase() === selected.toLowerCase());
-            
             if(pepLogs.length === 0) return;
-            
             const firstInjectionDate = new Date(Math.min(...pepLogs.map(l => new Date(l.date).getTime())));
             const labels = [], dataPoints = [], detailedDates = [];
             const startTime = firstInjectionDate.getTime() - (24 * 60 * 60 * 1000); 
-            const endTime = nowTime + (10 * 24 * 60 * 60 * 1000); // 10 days prediction
-            
+            const endTime = nowTime + (10 * 24 * 60 * 60 * 1000); 
             const totalHours = (endTime - startTime) / (1000 * 60 * 60);
             const stepHours = totalHours > 1000 ? 24 : 6; 
-            
             for (let tMs = startTime; tMs <= endTime; tMs += (stepHours * 60 * 60 * 1000)) { 
                 const t = new Date(tMs);
                 let total = 0;
@@ -404,22 +517,18 @@
                     if (logDate <= t) {
                         const diffHours = (t - logDate) / (1000 * 60 * 60);
                         let doseVal = parseFloat(log.dosage);
-                        if (log.dosage.toLowerCase().includes('mcg')) doseVal /= 1000; // Convert to mg for graph
+                        if (log.dosage.toLowerCase().includes('mcg')) doseVal /= 1000;
                         total += doseVal * Math.pow(Math.E, -k * diffHours);
                     }
                 });
-                
                 const isToday = Math.abs(tMs - nowTime) < (stepHours/2 * 60 * 60 * 1000);
-                labels.push(isToday ? "Aujourd'hui" : t.toLocaleDateString('fr-FR', { month: 'short', day: 'numeric' }));
+                labels.push(isToday ? t('today') : t.toLocaleDateString(currentLang === 'fr' ? 'fr-FR' : 'en-US', { month: 'short', day: 'numeric' }));
                 dataPoints.push(total);
                 detailedDates.push(t);
             }
-
             currentChartLabels = labels;
             if(chart) chart.destroy();
-            
-            const ctx = canvas.getContext('2d');
-            chart = new Chart(ctx, {
+            chart = new Chart(canvas.getContext('2d'), {
                 type: 'line',
                 data: { labels: labels, datasets: [{ data: dataPoints, borderColor: '#6366f1', borderWidth: 2, backgroundColor: 'rgba(99, 102, 241, 0.1)', fill: true, tension: 0.3, pointRadius: 0 }] },
                 options: {
@@ -428,94 +537,71 @@
                         x: { ticks: { color: '#64748b', font: { size: 9 }, autoSkip: true, maxTicksLimit: 8 }, grid: { display: false } },
                         y: { beginAtZero: true, ticks: { color: '#64748b', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.03)' } }
                     },
-                    plugins: { 
-                        legend: { display: false }, 
-                        tooltip: { enabled: true, mode: 'index', intersect: false },
-                        zoom: { zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' }, pan: { enabled: true, mode: 'x' } }
-                    }
+                    plugins: { legend: { display: false }, tooltip: { enabled: true, mode: 'index', intersect: false }, zoom: { zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' }, pan: { enabled: true, mode: 'x' } } }
                 }
             });
-
-            const todayIdx = labels.indexOf("Aujourd'hui");
+            const todayIdx = labels.indexOf(t('today'));
             document.getElementById('stat-current-level').innerText = (todayIdx !== -1 ? dataPoints[todayIdx] : 0).toFixed(2);
-            
-            const recentData = dataPoints.slice(Math.max(0, todayIdx - 20));
-            const peakVal = Math.max(...recentData);
-            document.getElementById('stat-peak-level').innerText = peakVal.toFixed(2);
-            document.getElementById('stat-peak-date').innerText = `Dernier Pic: ${peakVal.toFixed(2)} mg`;
-            
+            document.getElementById('stat-peak-level').innerText = Math.max(...dataPoints.slice(Math.max(0, todayIdx - 20))).toFixed(2);
             resetToToday();
         }
 
         function resetToToday() {
             if(!chart) return;
-            const todayIdx = currentChartLabels.indexOf("Aujourd'hui");
+            const todayIdx = currentChartLabels.indexOf(t('today'));
             if(todayIdx === -1) return;
             chart.options.scales.x.min = Math.max(0, todayIdx - 10);
             chart.options.scales.x.max = Math.min(currentChartLabels.length - 1, todayIdx + 15);
             chart.update();
         }
 
-        // Body Map Logic
         function openFullSiteModal(type, extraData = null) {
             pendingAction = { type, extraData };
             selectedSite = "";
             document.getElementById('selected-zone-name').innerText = "--";
-            
-            // Reset colors
             document.querySelectorAll('.body-zone').forEach(z => z.classList.remove('selected', 'suggested'));
-            document.querySelectorAll('#site-modal button[id^="btn-"]').forEach(b => b.classList.remove('bg-indigo-600'));
-
-            // Highlight suggested site
             const suggested = document.getElementById('suggestion-text').textContent;
-            const suggestedEl = document.getElementById(`zone-${suggested}`) || document.getElementById(`btn-${suggested}`);
+            const suggestedEl = document.getElementById(`zone-${suggested}`);
             if(suggestedEl) suggestedEl.classList.add('suggested');
-
+            
+            // Site buttons for zones not on map
+            const container = document.getElementById('site-buttons-container');
+            const extraSites = ["Right Buttock", "Left Buttock", "Other"];
+            container.innerHTML = extraSites.map(s => `
+                <button onclick="selectZone('${s}')" class="bg-slate-800 p-2 rounded-xl text-[10px] font-bold text-white border border-slate-700" id="btn-${s.replace(/ /g, '-')}">${translations[currentLang].site_names[s]}</button>
+            `).join('');
+            
             document.getElementById('site-modal').classList.remove('hidden');
         }
 
         function selectZone(siteId) {
             selectedSite = siteId;
-            document.getElementById('selected-zone-name').innerText = siteId;
-            
-            // Update UI feedback
+            document.getElementById('selected-zone-name').innerText = translations[currentLang].site_names[siteId] || siteId;
             document.querySelectorAll('.body-zone').forEach(z => z.classList.remove('selected'));
-            document.querySelectorAll('#site-modal button[id^="btn-"]').forEach(b => b.classList.remove('bg-indigo-600'));
-            
+            document.querySelectorAll('#site-buttons-container button').forEach(b => b.classList.remove('bg-indigo-600'));
             const zoneEl = document.getElementById(`zone-${siteId}`);
             if(zoneEl) zoneEl.classList.add('selected');
-            const btnEl = document.getElementById(`btn-${siteId}`);
+            const btnEl = document.getElementById(`btn-${siteId.replace(/ /g, '-')}`);
             if(btnEl) btnEl.classList.add('bg-indigo-600');
         }
 
         function confirmZoneSelection() {
-            if(!selectedSite) { showToast("Choisissez une zone", "error"); return; }
-            
+            if(!selectedSite) return;
             if(pendingAction.type === 'manual') {
                 document.getElementById('log-site').value = selectedSite;
-                document.getElementById('log-site-label').innerText = selectedSite;
+                document.getElementById('log-site-label').innerText = translations[currentLang].site_names[selectedSite] || selectedSite;
                 closeModal();
-            } else if(pendingAction.type === 'preset') {
-                finalizeQuickLog(selectedSite, pendingAction.extraData);
-            }
+            } else if(pendingAction.type === 'preset') finalizeQuickLog(selectedSite, pendingAction.extraData);
         }
 
         function closeModal() { document.getElementById('site-modal').classList.add('hidden'); }
 
         async function finalizeQuickLog(site, preset) { 
             closeModal(); 
-            const data = { 
-                action: 'logInjection', 
-                peptide: preset.peptide, 
-                dosage: `${preset.value} ${preset.unit}`, 
-                site: site, 
-                timestampMs: Date.now()
-            }; 
-            const res = await api(data); 
-            if(res.success) { showToast(`Logé: ${preset.peptide}`); loadAllData(true); } 
+            const data = { action: 'logInjection', peptide: preset.peptide, dosage: `${preset.value} ${preset.unit}`, site: site, timestampMs: Date.now() }; 
+            const res = await api(data); if(res.success) { showToast(`${t('toast_logged')} ${preset.peptide}`); loadAllData(true); } 
         }
 
-        // Suggestions logic
         function calculateSuggestion() {
             if (!preferredSites.length) { document.getElementById('suggestion-box').classList.add('hidden'); return; }
             let bestSite = preferredSites[0];
@@ -523,20 +609,24 @@
             history.forEach(h => { if (siteUsage.hasOwnProperty(h.site)) { const d = new Date(h.date); if (d > siteUsage[h.site]) siteUsage[h.site] = d; } });
             let minDate = new Date();
             for (const [site, lastUsed] of Object.entries(siteUsage)) { if (lastUsed < minDate) { minDate = lastUsed; bestSite = site; } }
-            document.getElementById('suggestion-text').textContent = bestSite;
+            document.getElementById('suggestion-text').textContent = translations[currentLang].site_names[bestSite] || bestSite;
             document.getElementById('suggestion-box').classList.remove('hidden');
         }
 
         function useSuggestion() {
-            const site = document.getElementById('suggestion-text').textContent;
-            document.getElementById('log-site').value = site;
-            document.getElementById('log-site-label').innerText = site;
+            // Find the original key for the suggestion text
+            const text = document.getElementById('suggestion-text').textContent;
+            let originalKey = text;
+            for(const [key, val] of Object.entries(translations[currentLang].site_names)) {
+                if(val === text) { originalKey = key; break; }
+            }
+            document.getElementById('log-site').value = originalKey;
+            document.getElementById('log-site-label').innerText = text;
         }
 
-        // Render Lists
         function renderQuickLogs() { 
             const container = document.getElementById('quick-log-container');
-            if(!presets || !presets.length) { container.innerHTML = '<div class="col-span-2 p-8 text-center text-slate-500 text-xs italic">Aucun preset enregistré.</div>'; return; }
+            if(!presets.length) { container.innerHTML = `<div class="col-span-2 p-8 text-center text-slate-500 text-xs italic">...</div>`; return; }
             container.innerHTML = presets.map(p => `
                 <button onclick="openFullSiteModal('preset', ${JSON.stringify(p).replace(/"/g, '&quot;')})" class="glass-card p-4 rounded-2xl text-left border border-slate-700 active:scale-95 transition">
                     <p class="font-black text-[9px] uppercase tracking-wider text-indigo-300 mb-1 opacity-70">${p.label}</p>
@@ -549,7 +639,7 @@
         function renderPeptideList() { 
             document.getElementById('peptide-list').innerHTML = peptideLibrary.map(p => `
                 <div class="glass-card px-3 py-1 rounded-full text-[10px] flex items-center gap-2 border-slate-700">
-                    <span>${p.name} (${p.halfLife}${p.hlUnit === 'days' ? 'j' : 'h'})</span>
+                    <span>${p.name} (${p.halfLife}${p.hlUnit === 'days' ? 'd' : 'h'})</span>
                     <button onclick="deletePeptide(${p.row})" class="text-slate-500">✕</button>
                 </div>
             `).join(''); 
@@ -566,22 +656,24 @@
         
         function renderHistory() { 
             const filter = document.getElementById('history-filter').value.toLowerCase();
-            const container = document.getElementById('history-list');
             const filtered = history.filter(h => h.peptide.toLowerCase().includes(filter) || h.site.toLowerCase().includes(filter));
-            container.innerHTML = filtered.map(h => `
+            document.getElementById('history-list').innerHTML = filtered.map(h => `
                 <div class="glass-card p-4 rounded-2xl flex justify-between items-center shadow-sm" id="history-row-${h.row}">
-                    <div><p class="font-bold text-sm">${h.peptide} <span class="text-indigo-400 ml-2 font-mono">${h.dosage}</span></p><p class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">${h.site} • ${new Date(h.date).toLocaleDateString()}</p></div>
+                    <div>
+                        <p class="font-bold text-sm">${h.peptide} <span class="text-indigo-400 ml-2 font-mono">${h.dosage}</span></p>
+                        <p class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">
+                            ${translations[currentLang].site_names[h.site] || h.site} • ${new Date(h.date).toLocaleDateString(currentLang === 'fr' ? 'fr-FR' : 'en-US')}
+                        </p>
+                    </div>
                     <button onclick="deleteWithUndo(${h.row})" class="text-slate-600 hover:text-red-500 transition-colors p-2">✕</button>
                 </div>
             `).join(''); 
         }
 
         function renderPrefSites() {
-            const container = document.getElementById('preferred-sites-grid');
-            if(!container) return;
-            container.innerHTML = ALL_SITES.map(s => {
+            document.getElementById('preferred-sites-grid').innerHTML = ALL_SITES.map(s => {
                 const isActive = preferredSites.includes(s);
-                return `<button onclick="togglePrefSite('${s}')" class="p-3 text-[10px] rounded-xl border font-bold transition ${isActive ? 'bg-indigo-600 border-indigo-400 text-white' : 'bg-slate-800/50 border-slate-700 text-slate-500'}">${s}</button>`;
+                return `<button onclick="togglePrefSite('${s}')" class="p-3 text-[10px] rounded-xl border font-bold transition ${isActive ? 'bg-indigo-600 border-indigo-400 text-white' : 'bg-slate-800/50 border-slate-700 text-slate-500'}">${translations[currentLang].site_names[s] || s}</button>`;
             }).join('');
         }
 
@@ -596,7 +688,7 @@
             const rowEl = document.getElementById(`history-row-${row}`);
             rowEl.style.opacity = '0.3'; rowEl.style.pointerEvents = 'none';
             let cancelled = false;
-            showToast("Log sera supprimé...", "error", 3500, { label: "Annuler", callback: () => { cancelled = true; rowEl.style.opacity = '1'; rowEl.style.pointerEvents = 'auto'; showToast("Suppression annulée"); } });
+            showToast(t('delete_undo'), "error", 3500, { label: t('undo'), callback: () => { cancelled = true; rowEl.style.opacity = '1'; rowEl.style.pointerEvents = 'auto'; } });
             setTimeout(async () => { if(!cancelled) { const res = await api({ action: 'deleteLog', row: row }); if(res.success) { history = history.filter(h => h.row != row); renderHistory(); } } }, 3000);
         }
 
@@ -611,12 +703,12 @@
         }
 
         function saveUrl() { const url = document.getElementById('setup-url').value.trim(); if(url) { localStorage.setItem('pep_url', url); location.reload(); } }
-        function resetApp() { if(confirm("Déconnecter la base de données ?")) { localStorage.removeItem('pep_url'); location.reload(); } }
-        
-        async function deletePreset(row) { if(!confirm("Supprimer ce preset ?")) return; const res = await api({action:'deleteConfig', row}); if(res.success) { showToast("Preset supprimé"); loadAllData(true); } }
-        async function deletePeptide(row) { if(!confirm("Supprimer de la bibliothèque ?")) return; const res = await api({action:'deletePeptide', row}); if(res.success) { showToast("Supprimé"); loadAllData(true); } }
+        function resetApp() { if(confirm(t('confirm_disconnect'))) { localStorage.removeItem('pep_url'); location.reload(); } }
+        async function deletePreset(row) { if(!confirm(t('confirm_del_preset'))) return; const res = await api({action:'deleteConfig', row}); if(res.success) { showToast(t('toast_removed')); loadAllData(true); } }
+        async function deletePeptide(row) { if(!confirm(t('confirm_del_library'))) return; const res = await api({action:'deletePeptide', row}); if(res.success) { showToast(t('toast_removed')); loadAllData(true); } }
 
         window.onload = () => {
+            updateLanguage();
             if(!APP_URL) document.getElementById('setup-screen').classList.remove('hidden');
             else {
                 document.getElementById('app-container').classList.remove('hidden');
@@ -625,38 +717,21 @@
             }
         };
 
-        // Form Submits
         document.getElementById('log-form').onsubmit = async (e) => {
             e.preventDefault();
-            const logTime = document.getElementById('log-time').value;
             const site = document.getElementById('log-site').value;
-            if(!site) { showToast("Veuillez choisir un site", "error"); return; }
-
-            const data = { 
-                action: 'logInjection', 
-                peptide: document.getElementById('log-peptide').value, 
-                dosage: document.getElementById('log-dosage').value + ' ' + document.getElementById('log-unit').value, 
-                site: site, 
-                timestampMs: new Date(logTime).getTime()
-            };
-            const res = await api(data);
-            if(res.success) { 
-                showToast("Logé !"); 
-                loadAllData(true); 
-                e.target.reset(); 
-                document.getElementById('log-site-label').innerText = "Sélectionner le site...";
-                document.getElementById('log-time').value = new Date(new Date() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0,16); 
-            }
+            if(!site) return;
+            const res = await api({ action: 'logInjection', peptide: document.getElementById('log-peptide').value, dosage: document.getElementById('log-dosage').value + ' ' + document.getElementById('log-unit').value, site: site, timestampMs: new Date(document.getElementById('log-time').value).getTime() });
+            if(res.success) { showToast(t('toast_logged')); loadAllData(true); e.target.reset(); document.getElementById('log-site-label').innerText = t('select_site'); }
         };
         
         document.getElementById('peptide-add-form').onsubmit = async (e) => {
             e.preventDefault();
             const name = document.getElementById('new-peptide-name').value.trim();
             const hl = document.getElementById('new-peptide-hl').value;
-            const unit = document.getElementById('new-peptide-unit').value;
             if(name && hl) { 
-                const res = await api({ action: 'savePeptide', name, halfLife: hl, hlUnit: unit }); 
-                if(res.success) { showToast("Ajouté à la bibliothèque"); loadAllData(true); e.target.reset(); } 
+                const res = await api({ action: 'savePeptide', name, halfLife: hl, hlUnit: document.getElementById('new-peptide-unit').value }); 
+                if(res.success) { showToast(t('toast_logged')); loadAllData(true); e.target.reset(); } 
             }
         };
     </script>
