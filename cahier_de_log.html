@@ -547,7 +547,7 @@
             
             if(!pepLogs.length) { if(chart) chart.destroy(); return; }
 
-            const labels = [], dataPoints = [];
+            const labels = [], dataPoints = [], pointTimestamps = [];
             const firstDate = new Date(Math.min(...pepLogs.map(l => new Date(l.date).getTime())));
             const startTime = firstDate.getTime() - (24 * 3600 * 1000); 
             const endTime = nowTime + (10 * 24 * 3600 * 1000); 
@@ -566,6 +566,7 @@
                 const isToday = Math.abs(tMs - nowTime) < (step/2 * 3600000);
                 labels.push(isToday ? t('today') : new Date(tMs).toLocaleDateString(currentLang === 'fr'?'fr-FR':'en-US', {month:'short',day:'numeric'}));
                 dataPoints.push(total);
+                pointTimestamps.push(tMs);
             }
 
             currentChartLabels = labels;
@@ -583,9 +584,33 @@
                 }
             });
 
+            // Update Statistics
             const tIdx = labels.indexOf(t('today'));
             document.getElementById('stat-current-level').innerText = (tIdx !== -1 ? dataPoints[tIdx] : 0).toFixed(2);
-            document.getElementById('stat-peak-level').innerText = dataPoints.length ? Math.max(...dataPoints.slice(Math.max(0, tIdx-20))).toFixed(2) : "0.00";
+            
+            // Search peak within last 14 days up to now
+            const searchWindowMs = 14 * 24 * 3600 * 1000;
+            let peakVal = 0;
+            let peakTime = 0;
+            
+            for(let i=0; i<dataPoints.length; i++) {
+                if (pointTimestamps[i] >= nowTime - searchWindowMs && pointTimestamps[i] <= nowTime) {
+                    if (dataPoints[i] >= peakVal) {
+                        peakVal = dataPoints[i];
+                        peakTime = pointTimestamps[i];
+                    }
+                }
+            }
+
+            document.getElementById('stat-peak-level').innerText = peakVal.toFixed(2);
+            if (peakTime > 0) {
+                const d = new Date(peakTime);
+                const options = { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric' };
+                document.getElementById('stat-peak-date').innerText = d.toLocaleDateString(currentLang === 'fr' ? 'fr-FR' : 'en-US', options);
+            } else {
+                document.getElementById('stat-peak-date').innerText = "--";
+            }
+            
             resetToToday();
         }
 
