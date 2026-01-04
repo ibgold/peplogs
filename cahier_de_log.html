@@ -584,32 +584,18 @@
                 }
             });
 
-            // Update Statistics
             const tIdx = labels.indexOf(t('today'));
             document.getElementById('stat-current-level').innerText = (tIdx !== -1 ? dataPoints[tIdx] : 0).toFixed(2);
             
-            // Search peak within last 14 days up to now
             const searchWindowMs = 14 * 24 * 3600 * 1000;
-            let peakVal = 0;
-            let peakTime = 0;
-            
+            let peakVal = 0, peakTime = 0;
             for(let i=0; i<dataPoints.length; i++) {
                 if (pointTimestamps[i] >= nowTime - searchWindowMs && pointTimestamps[i] <= nowTime) {
-                    if (dataPoints[i] >= peakVal) {
-                        peakVal = dataPoints[i];
-                        peakTime = pointTimestamps[i];
-                    }
+                    if (dataPoints[i] >= peakVal) { peakVal = dataPoints[i]; peakTime = pointTimestamps[i]; }
                 }
             }
-
             document.getElementById('stat-peak-level').innerText = peakVal.toFixed(2);
-            if (peakTime > 0) {
-                const d = new Date(peakTime);
-                const options = { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric' };
-                document.getElementById('stat-peak-date').innerText = d.toLocaleDateString(currentLang === 'fr' ? 'fr-FR' : 'en-US', options);
-            } else {
-                document.getElementById('stat-peak-date').innerText = "--";
-            }
+            document.getElementById('stat-peak-date').innerText = peakTime > 0 ? new Date(peakTime).toLocaleDateString(currentLang==='fr'?'fr-FR':'en-US', {weekday:'short', month:'short', day:'numeric', hour:'numeric'}) : "--";
             
             resetToToday();
         }
@@ -629,7 +615,6 @@
             document.getElementById('selected-zone-name').innerText = "--";
             document.querySelectorAll('.body-zone').forEach(z => z.classList.remove('selected', 'suggested'));
             const sug = document.getElementById('suggestion-text').textContent;
-            // Reverse translate site name to ID
             let sugId = sug;
             for(const [id, label] of Object.entries(translations[currentLang].site_names)) { if(label === sug) { sugId = id; break; } }
             const sugEl = document.getElementById(`zone-${sugId}`);
@@ -719,13 +704,16 @@
         
         function renderHistory() { 
             const filter = document.getElementById('history-filter').value.toLowerCase();
-            const filtered = history.filter(h => h.peptide.toLowerCase().includes(filter) || h.site.toLowerCase().includes(filter));
+            // SORT: Newest first (Descending)
+            const sortedHistory = [...history].sort((a, b) => new Date(b.date) - new Date(a.date));
+            const filtered = sortedHistory.filter(h => h.peptide.toLowerCase().includes(filter) || h.site.toLowerCase().includes(filter));
+            
             document.getElementById('history-list').innerHTML = filtered.map(h => `
                 <div class="glass-card p-4 rounded-2xl flex justify-between items-center shadow-sm" id="history-row-${h.row}">
                     <div>
                         <p class="font-bold text-sm">${h.peptide} <span class="text-indigo-400 ml-2 font-mono">${h.dosage}</span></p>
                         <p class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">
-                            ${translations[currentLang].site_names[h.site] || h.site} • ${new Date(h.date).toLocaleDateString()}
+                            ${translations[currentLang].site_names[h.site] || h.site} • ${new Date(h.date).toLocaleDateString(currentLang==='fr'?'fr-FR':'en-US', {day:'numeric', month:'short', hour:'numeric', minute:'numeric'})}
                         </p>
                         ${h.notes ? `<p class="text-[10px] italic opacity-60 mt-1">${h.notes}</p>` : ''}
                     </div>
@@ -822,7 +810,6 @@
             if(res.success) { showToast(t('toast_logged')); loadAllData(true); e.target.reset(); }
         };
 
-        // SW Registration
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(err => console.error(err)));
         }
