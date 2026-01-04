@@ -5,6 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Peptide Log Pro</title>
     
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Peptide Log">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3022/3022243.png">
+    <link rel="manifest" href="manifest.json">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
@@ -74,9 +82,16 @@
                     <span id="status-text" class="text-slate-500" data-t="status_checking">Checking...</span>
                 </div>
             </div>
-            <button onclick="toggleLanguage()" id="lang-toggle" class="bg-slate-800/50 border border-slate-700 px-3 py-1.5 rounded-xl text-xs font-black text-indigo-300 hover:bg-slate-700 transition-colors uppercase tracking-widest">
-                EN
-            </button>
+            <div class="flex items-center gap-2">
+                <button id="pwa-install-btn" class="hidden bg-indigo-500/20 border border-indigo-500/50 p-2 rounded-xl text-indigo-300 hover:bg-indigo-500/30 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                </button>
+                <button onclick="toggleLanguage()" id="lang-toggle" class="bg-slate-800/50 border border-slate-700 px-3 py-1.5 rounded-xl text-xs font-black text-indigo-300 hover:bg-slate-700 transition-colors uppercase tracking-widest">
+                    EN
+                </button>
+            </div>
         </header>
 
         <nav class="mb-6 sticky top-4 z-40">
@@ -376,6 +391,7 @@
         let pendingAction = null; 
         let currentChartLabels = [];
         let selectedSite = "";
+        let deferredPrompt = null;
         
         const DEFAULT_HALF_LIVES = { "tirzepatide": 120, "retatrutide": 144 };
         const ALL_SITES = ["Right Abdomen (Upper)", "Right Abdomen (Lower)", "Left Abdomen (Upper)", "Left Abdomen (Lower)", "Right Flank", "Left Flank", "Right Thigh", "Left Thigh", "Right Deltoid", "Left Deltoid", "Right Buttock", "Left Buttock", "Other"];
@@ -389,8 +405,6 @@
                 el.innerText = t(key);
             });
             document.getElementById('lang-toggle').innerText = currentLang.toUpperCase();
-            
-            // Re-render lists to update translated site names
             if(APP_URL) renderUI();
             if(chart) updateLevelChart();
         }
@@ -399,6 +413,42 @@
             currentLang = currentLang === 'en' ? 'fr' : 'en';
             localStorage.setItem('pep_lang', currentLang);
             updateLanguage();
+        }
+
+        // PWA Installation Logic
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            const installBtn = document.getElementById('pwa-install-btn');
+            if (installBtn) installBtn.classList.remove('hidden');
+        });
+
+        window.addEventListener('appinstalled', (evt) => {
+            const installBtn = document.getElementById('pwa-install-btn');
+            if (installBtn) installBtn.classList.add('hidden');
+            deferredPrompt = null;
+        });
+
+        document.getElementById('pwa-install-btn').onclick = async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    console.log('User accepted the install prompt');
+                }
+                deferredPrompt = null;
+            }
+        };
+
+        // Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').then(reg => {
+                    console.log('SW registered:', reg);
+                }).catch(err => {
+                    console.log('SW registration failed:', err);
+                });
+            });
         }
 
         // UI Helpers
@@ -563,14 +613,11 @@
             const suggested = document.getElementById('suggestion-text').textContent;
             const suggestedEl = document.getElementById(`zone-${suggested}`);
             if(suggestedEl) suggestedEl.classList.add('suggested');
-            
-            // Site buttons for zones not on map
             const container = document.getElementById('site-buttons-container');
             const extraSites = ["Right Buttock", "Left Buttock", "Other"];
             container.innerHTML = extraSites.map(s => `
                 <button onclick="selectZone('${s}')" class="bg-slate-800 p-2 rounded-xl text-[10px] font-bold text-white border border-slate-700" id="btn-${s.replace(/ /g, '-')}">${translations[currentLang].site_names[s]}</button>
             `).join('');
-            
             document.getElementById('site-modal').classList.remove('hidden');
         }
 
@@ -614,7 +661,6 @@
         }
 
         function useSuggestion() {
-            // Find the original key for the suggestion text
             const text = document.getElementById('suggestion-text').textContent;
             let originalKey = text;
             for(const [key, val] of Object.entries(translations[currentLang].site_names)) {
