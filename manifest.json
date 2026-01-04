@@ -1,0 +1,17 @@
+{
+"name": "Peptide Log Pro",
+"short_name": "Peptide Log",
+"description": "Log your peptide injections and track accumulation levels.",
+"start_url": "./index.html",
+"display": "standalone",
+"background_color": "#0f172a",
+"theme_color": "#0f172a",
+"icons": [
+{
+"src": "https://www.google.com/search?q=https://cdn-icons-png.flaticon.com/512/3022/3022243.png",
+"sizes": "512x512",
+"type": "image/png",
+"purpose": "any maskable"
+}
+]
+}
