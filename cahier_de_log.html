@@ -478,7 +478,27 @@
             const selects = [document.getElementById('log-peptide'), document.getElementById('level-peptide-filter'), document.getElementById('conf-peptide-select')];
             const names = new Set([...presets.map(p => p.peptide), ...peptideLibrary.map(p => p.name), ...history.map(h => h.peptide)]);
             const sorted = Array.from(names).filter(n => n).sort();
-            selects.forEach(s => { if(!s) return; const prev = s.value; s.innerHTML = (s.id === 'level-peptide-filter' ? '' : `<option value="">Select Peptide</option>`) + sorted.map(n => `<option value="${n}">${n}</option>`).join(''); s.value = prev || (s.options[0] ? s.options[0].value : ""); });
+            
+            selects.forEach(s => { 
+                if(!s) return; 
+                
+                // On récupère la valeur actuelle
+                let targetVal = s.value;
+                
+                // Pour le graphique des niveaux : si aucune valeur n'est sélectionnée (ex: chargement), on prend celle en mémoire
+                if (s.id === 'level-peptide-filter' && !targetVal) {
+                    targetVal = localStorage.getItem('pep_default_level_peptide');
+                }
+
+                s.innerHTML = (s.id === 'level-peptide-filter' ? '' : `<option value="">Select Peptide</option>`) + sorted.map(n => `<option value="${n}">${n}</option>`).join(''); 
+                
+                // On rétablit la sélection si elle existe toujours dans la liste, sinon on prend le premier
+                if (targetVal && Array.from(s.options).some(o => o.value === targetVal)) {
+                    s.value = targetVal;
+                } else {
+                    s.value = s.options[0] ? s.options[0].value : "";
+                }
+            });
         }
 
         function renderDashboard() {
@@ -557,6 +577,12 @@
             const selectedEl = document.getElementById('level-peptide-filter');
             if(!selectedEl) return;
             const selected = selectedEl.value;
+            
+            // SAUVEGARDE AUTOMATIQUE DU CHOIX
+            if (selected) {
+                localStorage.setItem('pep_default_level_peptide', selected);
+            }
+
             const canvas = document.getElementById('levelChart');
             if(!selected || !canvas) return;
             const hlHours = getHalfLife(selected);
