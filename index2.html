@@ -62,7 +62,8 @@
         
         /* Calendar Styles */
         .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
-        .cal-day { aspect-ratio: 1/1; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 10px; font-size: 10px; font-weight: 600; position: relative; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); }
+        .cal-day { aspect-ratio: 1/1; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 10px; font-size: 10px; font-weight: 600; position: relative; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); transition: all 0.2s; cursor: pointer; }
+        .cal-day:hover { background: rgba(99, 102, 241, 0.2); transform: translateY(-2px); }
         .cal-day.today { border-color: #6366f1; background: rgba(99, 102, 241, 0.1); }
         .cal-dot { width: 4px; height: 4px; border-radius: 50%; margin-top: 2px; }
         .cal-dot.past { background: #6366f1; }
@@ -287,6 +288,25 @@
         </div>
     </div>
 
+    <!-- MODAL: DAY DETAILS -->
+    <div id="day-details-modal" class="fixed inset-0 z-[110] bg-slate-900/95 backdrop-blur-md hidden flex flex-col items-center justify-center p-4">
+        <div class="glass-card w-full max-w-sm p-6 rounded-3xl space-y-6 text-white shadow-2xl animate-bounce-in">
+            <div class="text-center">
+                <p id="day-details-date-label" class="text-xs font-bold text-indigo-300 uppercase tracking-widest mb-1">Date</p>
+                <h3 id="day-details-date" class="text-2xl font-black">--</h3>
+            </div>
+            
+            <div id="day-details-content" class="space-y-3 max-h-64 overflow-y-auto px-1">
+                <!-- Content injected via JS -->
+            </div>
+
+            <div class="flex flex-col gap-2">
+                <button id="day-details-log-btn" class="w-full py-4 btn-primary text-white font-bold rounded-2xl shadow-lg" data-t="log_for_this_day">Log for this day</button>
+                <button onclick="closeDayDetails()" class="w-full py-4 text-slate-500 font-bold bg-slate-800 rounded-2xl" data-t="cancel">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const translations = {
             en: {
@@ -298,6 +318,7 @@
                 modal_site_title: "Injection Zone", cancel: "Cancel", confirm: "Confirm", today: "Today", toast_logged: "Logged!", toast_removed: "Removed", toast_error: "Connection Error",
                 toast_hl_missing: "Half-life missing for this peptide", delete_undo: "Will be deleted...", undo: "Undo",
                 confirm_disconnect: "Disconnect database?", confirm_del_preset: "Delete this preset?", confirm_del_library: "Remove from library?",
+                modal_day_details_title: "Day Details", log_for_this_day: "Log for this day", log_this_peptide: "Log this peptide",
                 site_names: { "Right Abdomen (Upper)": "R Abdomen (U)", "Right Abdomen (Lower)": "R Abdomen (L)", "Left Abdomen (Upper)": "L Abdomen (U)", "Left Abdomen (Lower)": "L Abdomen (L)", "Right Flank": "Right Flank", "Left Flank": "Left Flank", "Right Thigh": "Right Thigh", "Left Thigh": "Left Thigh", "Right Deltoid": "Right Deltoid", "Left Deltoid": "Left Deltoid", "Right Buttock": "Right Buttock", "Left Buttock": "Left Buttock", "Other": "Other" }
             },
             fr: {
@@ -309,6 +330,7 @@
                 modal_site_title: "Zone d'injection", cancel: "Annuler", confirm: "Confirmer", today: "Aujourd'hui", toast_logged: "Logé !", toast_removed: "Supprimé", toast_error: "Erreur connexion",
                 toast_hl_missing: "Demi-vie manquante", delete_undo: "Sera supprimé...", undo: "Annuler",
                 confirm_disconnect: "Déconnecter la base ?", confirm_del_preset: "Supprimer ce preset ?", confirm_del_library: "Retirer de la bibliothèque ?",
+                modal_day_details_title: "Détails de la journée", log_for_this_day: "Loger pour ce jour", log_this_peptide: "Loger ce peptide",
                 site_names: { "Right Abdomen (Upper)": "Abdomen D (Haut)", "Right Abdomen (Lower)": "Abdomen D (Bas)", "Left Abdomen (Upper)": "Abdomen G (Haut)", "Left Abdomen (Lower)": "Abdomen G (Bas)", "Right Flank": "Flanc Droit", "Left Flank": "Flanc Gauche", "Right Thigh": "Cuisse Droite", "Left Thigh": "Cuisse Gauche", "Right Deltoid": "Deltoïde D", "Left Deltoid": "Deltoïde G", "Right Buttock": "Fessier D", "Left Buttock": "Fessier G", "Other": "Autre" }
             }
         };
@@ -589,11 +611,10 @@
                 const pepLogs = history.filter(h => h.peptide.toLowerCase().trim() === p.peptide.toLowerCase().trim());
                 if(pepLogs.length > 0) {
                     const lastLog = new Date(Math.max(...pepLogs.map(l => new Date(l.date).getTime())));
-                    // Project up to 2 months ahead
                     let next = new Date(lastLog);
                     for(let j=0; j<10; j++) {
                         next.setDate(next.getDate() + parseInt(p.frequency));
-                        predictions.push({ date: new Date(next), peptide: p.peptide });
+                        predictions.push({ date: new Date(next), peptide: p.peptide, preset: p });
                     }
                 }
             });
@@ -604,24 +625,81 @@
                 dayEl.className = 'cal-day' + (date.toDateString() === todayStr ? ' today' : '');
                 dayEl.innerHTML = `<span>${d}</span>`;
                 
-                // Historical Dots
                 const dayHistory = history.filter(h => new Date(h.date).toDateString() === date.toDateString());
+                const dayPred = predictions.filter(p => p.date.toDateString() === date.toDateString());
+
                 dayHistory.forEach(() => {
                     const dot = document.createElement('div');
                     dot.className = 'cal-dot past';
                     dayEl.appendChild(dot);
                 });
                 
-                // Future Predictions Dots
-                const dayPred = predictions.filter(p => p.date.toDateString() === date.toDateString());
                 dayPred.forEach(() => {
                     const dot = document.createElement('div');
                     dot.className = 'cal-dot future-predicted';
                     dayEl.appendChild(dot);
                 });
-                
+
+                dayEl.onclick = () => showDayDetails(date, dayHistory, dayPred);
                 grid.appendChild(dayEl);
             }
+        }
+
+        function showDayDetails(date, dayHistory, dayPred) {
+            const modal = document.getElementById('day-details-modal');
+            const content = document.getElementById('day-details-content');
+            const logBtn = document.getElementById('day-details-log-btn');
+            
+            document.getElementById('day-details-date').innerText = date.toLocaleDateString(currentLang==='fr'?'fr-FR':'en-US', { weekday: 'long', day: 'numeric', month: 'long' });
+            
+            let html = "";
+            if (dayHistory.length > 0) {
+                html += `<p class="text-[10px] uppercase font-black text-slate-500 mb-2">${t('tab_history')}</p>`;
+                dayHistory.forEach(h => {
+                    html += `<div class="bg-slate-800/50 p-3 rounded-xl border border-indigo-500/20 mb-2">
+                        <p class="font-bold text-sm">${h.peptide} <span class="text-indigo-400 font-mono">${h.dosage}</span></p>
+                        <p class="text-[9px] opacity-60 uppercase font-bold">${t('site_names')[h.site] || h.site}</p>
+                    </div>`;
+                });
+            }
+
+            if (dayPred.length > 0) {
+                html += `<p class="text-[10px] uppercase font-black text-slate-500 mt-4 mb-2">Suggéré</p>`;
+                dayPred.forEach(p => {
+                    html += `<button onclick="logForDayWithPreset('${date.toISOString()}', ${JSON.stringify(p.preset).replace(/"/g, '&quot;')})" class="w-full text-left bg-indigo-500/10 p-3 rounded-xl border border-indigo-500/40 hover:bg-indigo-500/20 transition mb-2">
+                        <p class="font-bold text-sm text-indigo-300">${p.peptide} <span class="text-xs opacity-70">${p.preset.value} ${p.preset.unit}</span></p>
+                        <p class="text-[9px] font-black uppercase text-indigo-400 mt-1">${t('log_this_peptide')}</p>
+                    </button>`;
+                });
+            }
+
+            if (dayHistory.length === 0 && dayPred.length === 0) {
+                html = `<div class="text-center py-8 opacity-40 text-sm italic font-medium">-- Aucun événement --</div>`;
+            }
+
+            content.innerHTML = html;
+            
+            logBtn.onclick = () => {
+                const dateStr = date.toISOString().slice(0, 16);
+                switchView('log');
+                document.getElementById('log-time').value = dateStr;
+                closeDayDetails();
+            };
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeDayDetails() { document.getElementById('day-details-modal').classList.add('hidden'); }
+        
+        function logForDayWithPreset(dateIso, preset) {
+            closeDayDetails();
+            switchView('log');
+            document.getElementById('log-time').value = dateIso.slice(0, 16);
+            document.getElementById('log-peptide').value = preset.peptide;
+            document.getElementById('log-dosage').value = preset.value;
+            document.getElementById('log-unit').value = preset.unit;
+            // Optionally auto-open site selector
+            setTimeout(() => openFullSiteModal('manual'), 300);
         }
 
         function deleteWithUndo(row) {
