@@ -641,8 +641,50 @@
         function closeModal() { const modal = document.getElementById('site-modal'); if(modal) modal.classList.add('hidden'); }
         async function finalizeQuickLog(site, preset) { closeModal(); const res = await api({ action: 'logInjection', peptide: preset.peptide, dosage: `${preset.value} ${preset.unit}`, site, timestampMs: Date.now() }); if(res && res.success) { showToast(`${t('toast_logged')} ${preset.peptide}`); loadAllData(); } }
         
-        function calculateSuggestion() { if (!preferredSites.length || !history.length) { const box = document.getElementById('suggestion-box'); if(box) box.classList.add('hidden'); return; } let best = preferredSites[0]; const usage = {}; preferredSites.forEach(s => usage[s] = 0); history.forEach(h => { if(usage.hasOwnProperty(h.site)) usage[h.site] = Math.max(usage[h.site], new Date(h.date).getTime()); }); let minTime = Infinity; for(const [site, time] of Object.entries(usage)) { if(time < minTime) { minTime = time; best = site; } } const sugTxt = document.getElementById('suggestion-text'); if(sugTxt) sugTxt.textContent = translations[currentLang].site_names[best] || best; const box = document.getElementById('suggestion-box'); if(box) box.classList.remove('hidden'); }
-        function useSuggestion() { const sug = document.getElementById('suggestion-text').textContent; let id = sug; for(const [k, v] of Object.entries(translations[currentLang].site_names)) { if(v === sug) { id = k; break; } } const logSite = document.getElementById('log-site'); if(logSite) logSite.value = id; const logLabel = document.getElementById('log-site-label'); if(logLabel) logLabel.innerText = sug; }
+        function calculateSuggestion() { 
+            if (!preferredSites.length || !history.length) { 
+                const box = document.getElementById('suggestion-box'); 
+                if(box) box.classList.add('hidden'); 
+                return; 
+            } 
+            let best = preferredSites[0]; 
+            const usage = {}; 
+            preferredSites.forEach(s => usage[s] = 0); 
+            
+            history.forEach(h => { 
+                if(usage.hasOwnProperty(h.site)) usage[h.site] = Math.max(usage[h.site], new Date(h.date).getTime()); 
+            }); 
+            
+            let minTime = Infinity; 
+            for(const [site, time] of Object.entries(usage)) { 
+                if(time < minTime) { minTime = time; best = site; } 
+            } 
+            
+            const sugTxt = document.getElementById('suggestion-text'); 
+            if(sugTxt) {
+                // Affiche le nom traduit
+                sugTxt.textContent = translations[currentLang].site_names[best] || best;
+                // Stocke l'ID technique de manière fiable
+                sugTxt.dataset.siteId = best;
+            }
+            
+            const box = document.getElementById('suggestion-box'); 
+            if(box) box.classList.remove('hidden'); 
+        }
+
+        function useSuggestion() { 
+            const sugTxt = document.getElementById('suggestion-text');
+            // Récupération directe de l'ID technique stocké, plus de reverse lookup fragile
+            const id = sugTxt ? sugTxt.dataset.siteId : null;
+            
+            if (!id) return;
+
+            const logSite = document.getElementById('log-site'); 
+            if(logSite) logSite.value = id; 
+            
+            const logLabel = document.getElementById('log-site-label'); 
+            if(logLabel) logLabel.innerText = translations[currentLang].site_names[id] || id; 
+        }
 
         function renderPeptideList() { const pepList = document.getElementById('peptide-list'); if(pepList) pepList.innerHTML = peptideLibrary.map(p => `<div class="glass-card px-3 py-1 rounded-full text-[10px] flex items-center gap-2 border-slate-700"><span>${p.name} (${p.halfLife}${p.hlUnit === 'days' ? 'd' : 'h'})</span><button onclick="deletePeptide(${p.row})" class="text-slate-500">✕</button></div>`).join(''); }
         function renderPresetsList() { const preList = document.getElementById('presets-list'); if(preList) preList.innerHTML = presets.map(p => `<div class="flex justify-between items-center glass-card p-4 rounded-2xl mb-2"><div><p class="text-sm font-bold">${p.label}</p><p class="text-[10px] text-slate-500">${p.peptide} • ${p.value}${p.unit} ${p.frequency > 0 ? `(Q${p.frequency}d)` : ''}</p></div><button onclick="deletePreset(${p.row})" class="text-red-500 font-bold p-2">✕</button></div>`).join(''); }
