@@ -52,11 +52,7 @@
         .body-zone.selected { fill: #6366f1; stroke: white; }
         .body-zone.suggested { stroke: #6366f1; stroke-width: 2; stroke-dasharray: 4; animation: pulse-stroke 2s infinite; }
         @keyframes pulse-stroke { 0%, 100% { stroke-opacity: 0.4; } 50% { stroke-opacity: 1; } }
-        .syringe-container { position: relative; width: 60px; height: 200px; margin: 0 auto; background: rgba(255,255,255,0.05); border-radius: 8px; border: 2px solid #475569; overflow: hidden; }
-        .liquid { position: absolute; bottom: 0; left: 0; width: 100%; background: linear-gradient(to top, #ef4444, #f87171); transition: height 0.5s; opacity: 0.8; }
-        .plunger { position: absolute; bottom: 0; left: 0; width: 100%; height: 8px; background: #334155; z-index: 2; transition: bottom 0.5s; border-top: 2px solid #cbd5e1; }
-        .mark { position: absolute; left: 0; width: 30%; height: 1px; background: rgba(255,255,255,0.2); }
-        .mark.major { width: 100%; background: rgba(255,255,255,0.4); }
+        
         #toast-container { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%); z-index: 100; width: 90%; max-width: 400px; pointer-events: none; }
         .toast { background: rgba(30, 41, 59, 0.95); backdrop-filter: blur(8px); border: 1px solid rgba(99, 102, 241, 0.3); color: white; padding: 1rem 1.25rem; border-radius: 1rem; margin-top: 0.5rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5); pointer-events: auto; animation: bounce-in 0.4s ease-out; transition: all 0.4s; }
         
@@ -66,7 +62,6 @@
         .cal-day.today { border-color: #6366f1; background: rgba(99, 102, 241, 0.1); }
         .cal-dot { width: 4px; height: 4px; border-radius: 50%; margin-top: 2px; }
         .cal-dot.past { background: #6366f1; }
-        .cal-dot.future { background: #6366f1; opacity: 0.3; }
         .cal-dot.future-predicted { background: #10b981; opacity: 0.4; }
     </style>
 </head>
@@ -102,15 +97,12 @@
                 <button onclick="switchView('log')" id="tab-log" class="nav-pill flex-1 py-3 px-1 text-[9px]" data-t="tab_log">Log</button>
                 <button onclick="switchView('levels')" id="tab-levels" class="nav-pill flex-1 py-3 px-1 text-[9px]" data-t="tab_levels">Levels</button>
                 <button onclick="switchView('history')" id="tab-history" class="nav-pill flex-1 py-3 px-1 text-[9px]" data-t="tab_history">History</button>
-                <button onclick="switchView('calculator')" id="tab-calculator" class="nav-pill flex-1 py-3 px-1 text-[9px]" data-t="tab_calc">Calc</button>
                 <button onclick="switchView('config')" id="tab-config" class="nav-pill flex-1 py-3 px-1 text-[9px]" data-t="tab_config">Config</button>
             </div>
         </nav>
 
         <main class="space-y-6">
-            <!-- VIEW: DASHBOARD -->
             <div id="view-dash" class="space-y-6 animate-slide-up">
-                <!-- Status Row -->
                 <div class="grid grid-cols-2 gap-3">
                     <div class="glass-card p-4 rounded-2xl">
                         <p class="text-[10px] uppercase font-black text-indigo-400 opacity-70 mb-1" data-t="dash_total_level">Total Accumulation</p>
@@ -121,16 +113,12 @@
                         <p id="dash-week-inj" class="text-2xl font-black text-white">0</p>
                     </div>
                 </div>
-
-                <!-- Next Injection Card -->
                 <div id="dash-next-inj-container" class="glass-card p-5 rounded-3xl border-l-4 border-indigo-500">
                     <p class="text-[10px] uppercase font-black text-indigo-400 mb-2" data-t="dash_next_inj">Next Planned Injection</p>
                     <div id="dash-next-inj-content">
                         <p class="text-lg font-bold text-white">--</p>
                     </div>
                 </div>
-
-                <!-- Suggested Site -->
                 <div id="suggestion-box" class="glass-card p-4 rounded-2xl border border-white/5 flex justify-between items-center hidden" onclick="switchView('log'); useSuggestion();">
                     <div>
                         <p class="text-[10px] text-indigo-400 font-bold uppercase tracking-wider" data-t="suggested_site_label">Suggested Site</p>
@@ -140,14 +128,10 @@
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
                     </div>
                 </div>
-
-                <!-- Quick Actions Grid -->
                 <div>
                     <p class="text-[10px] uppercase font-black text-slate-500 mb-3 px-1" data-t="dash_quick_actions">Quick Logs</p>
                     <div id="dash-quick-log-container" class="grid grid-cols-2 gap-3"></div>
                 </div>
-
-                <!-- Recent History Preview -->
                 <div class="glass-card p-5 rounded-3xl">
                     <div class="flex justify-between items-center mb-4">
                         <p class="text-[10px] uppercase font-black text-slate-500" data-t="dash_recent">Recent Activity</p>
@@ -157,7 +141,6 @@
                 </div>
             </div>
 
-            <!-- VIEW: LOG -->
             <div id="view-log" class="hidden space-y-6 animate-slide-up">
                 <form id="log-form" class="glass-card p-6 rounded-3xl space-y-4 text-white shadow-xl">
                     <h2 class="text-xs font-bold text-indigo-300 uppercase tracking-wider text-center" data-t="manual_entry">Manual Entry</h2>
@@ -177,7 +160,6 @@
                 </form>
             </div>
 
-            <!-- VIEW: LEVELS -->
             <div id="view-levels" class="hidden space-y-6 animate-slide-up">
                 <div class="glass-card p-6 rounded-3xl shadow-xl text-white">
                     <div class="flex justify-between items-center mb-6">
@@ -203,30 +185,21 @@
                 </div>
             </div>
 
-            <!-- VIEW: HISTORY -->
             <div id="view-history" class="hidden space-y-4 animate-slide-up">
                 <div class="flex gap-2">
                     <button onclick="switchHistoryView('list')" id="hist-btn-list" class="flex-1 py-2 text-[10px] font-bold uppercase tracking-widest rounded-xl bg-indigo-600 border border-indigo-400">List</button>
                     <button onclick="switchHistoryView('calendar')" id="hist-btn-calendar" class="flex-1 py-2 text-[10px] font-bold uppercase tracking-widest rounded-xl bg-slate-800 border border-slate-700">Calendar</button>
                 </div>
-                
                 <div id="history-list-view" class="space-y-4">
-                    <div class="glass-card p-2 rounded-2xl">
-                        <input type="text" id="history-filter" placeholder="Filter..." class="input-field border-none bg-transparent" oninput="renderHistory()">
-                    </div>
+                    <div class="glass-card p-2 rounded-2xl"><input type="text" id="history-filter" placeholder="Filter..." class="input-field border-none bg-transparent" oninput="renderHistory()"></div>
                     <div id="history-list" class="space-y-3 pb-20"></div>
                 </div>
-
                 <div id="history-calendar-view" class="hidden space-y-4">
                     <div class="glass-card p-6 rounded-3xl">
                         <div class="flex justify-between items-center mb-6">
-                            <button onclick="changeMonth(-1)" class="p-2 text-indigo-300">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
-                            </button>
+                            <button onclick="changeMonth(-1)" class="p-2 text-indigo-300"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg></button>
                             <h2 id="calendar-month-year" class="text-sm font-black uppercase tracking-widest text-white">--</h2>
-                            <button onclick="changeMonth(1)" class="p-2 text-indigo-300">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
-                            </button>
+                            <button onclick="changeMonth(1)" class="p-2 text-indigo-300"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg></button>
                         </div>
                         <div class="grid grid-cols-7 gap-1 mb-2">
                             <div class="text-[8px] text-center font-bold text-slate-500 uppercase">Mon</div>
@@ -242,29 +215,6 @@
                 </div>
             </div>
 
-            <!-- VIEW: CALCULATOR -->
-            <div id="view-calculator" class="hidden animate-slide-up">
-                <div class="glass-card p-6 rounded-3xl flex flex-col items-center shadow-xl">
-                    <div class="syringe-container mb-6">
-                        <div class="absolute inset-0 z-10" id="syringe-marks"></div>
-                        <div id="visual-liquid" class="liquid"></div>
-                        <div id="visual-plunger" class="plunger"></div>
-                    </div>
-                    <div class="text-center text-white">
-                        <p class="text-indigo-300 text-xs font-bold uppercase tracking-widest mb-1" data-t="draw_volume">Volume to draw (U-100)</p>
-                        <div class="text-6xl font-black text-white flex items-end justify-center gap-2">
-                            <span id="calc-result">0</span><span class="text-2xl text-slate-500 mb-2">IU</span>
-                        </div>
-                    </div>
-                    <div class="w-full space-y-4 mt-8 text-white">
-                        <input type="number" id="calc-vial" placeholder="Vial mass (mg)" step="any" class="input-field" oninput="runCalc()">
-                        <input type="number" id="calc-water" placeholder="Water (mL)" step="any" class="input-field" oninput="runCalc()">
-                        <input type="number" id="calc-dose" placeholder="Target dose (mcg)" step="any" class="input-field" oninput="runCalc()">
-                    </div>
-                </div>
-            </div>
-
-            <!-- VIEW: CONFIG -->
             <div id="view-config" class="hidden space-y-6 animate-slide-up text-white pb-10">
                 <section class="glass-card p-6 rounded-3xl">
                     <h2 class="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-4" data-t="pref_sites">Preferred Sites</h2>
@@ -351,9 +301,9 @@
         const translations = {
             en: {
                 setup_title: "Database Connection", setup_connect: "Connect", status_checking: "Checking...", status_connected: "Connected", status_disconnected: "Disconnected",
-                tab_dash: "Dash", tab_log: "Log", tab_levels: "Levels", tab_history: "History", tab_calc: "Calc", tab_config: "Config",
+                tab_dash: "Dash", tab_log: "Log", tab_levels: "Levels", tab_history: "History", tab_config: "Config",
                 suggested_site_label: "Suggested Site", manual_entry: "Manual Entry", select_site: "Select site...", log_btn: "Log Injection",
-                graph_title: "Accumulation Graph (mg)", reset_today: "Reset to Today", stat_current: "Current Level", stat_peak: "Peak (14d)", mg_unit: "Milligrams (mg)", draw_volume: "Volume to draw",
+                graph_title: "Accumulation Graph (mg)", reset_today: "Reset to Today", stat_current: "Current Level", stat_peak: "Peak (14d)", mg_unit: "Milligrams (mg)",
                 pref_sites: "Preferred Sites", library_title: "Peptide Library", unit_hours: "Hours", unit_days: "Days", add_btn: "Add", disconnect_btn: "Disconnect Database",
                 modal_site_title: "Injection Zone", cancel: "Cancel", confirm: "Confirm", today: "Today", toast_logged: "Logged!", toast_removed: "Removed", toast_error: "Connection Error",
                 toast_hl_missing: "Half-life missing for this peptide", delete_undo: "Will be deleted...", undo: "Undo",
@@ -364,9 +314,9 @@
             },
             fr: {
                 setup_title: "Connexion Database", setup_connect: "Se connecter", status_checking: "Vérification...", status_connected: "Connecté", status_disconnected: "Déconnecté",
-                tab_dash: "Dash", tab_log: "Log", tab_levels: "Niveaux", tab_history: "Hist.", tab_calc: "Calc", tab_config: "Config",
+                tab_dash: "Dash", tab_log: "Journal", tab_levels: "Niveaux", tab_history: "Hist.", tab_config: "Config",
                 suggested_site_label: "Site Suggéré", manual_entry: "Entrée Manuelle", select_site: "Sélect. site...", log_btn: "Loger l'injection",
-                graph_title: "Accumulation (mg)", reset_today: "Aujourd'hui", stat_current: "Niveau Actuel", stat_peak: "Pic (14j)", mg_unit: "Milligrammes (mg)", draw_volume: "Volume à tirer",
+                graph_title: "Accumulation (mg)", reset_today: "Aujourd'hui", stat_current: "Niveau Actuel", stat_peak: "Pic (14j)", mg_unit: "Milligrammes (mg)",
                 pref_sites: "Sites Favoris", library_title: "Bibliothèque", unit_hours: "Heures", unit_days: "Jours", add_btn: "Ajouter", disconnect_btn: "Déconnexion Database",
                 modal_site_title: "Zone d'injection", cancel: "Annuler", confirm: "Confirmer", today: "Aujourd'hui", toast_logged: "Logé !", toast_removed: "Supprimé", toast_error: "Erreur connexion",
                 toast_hl_missing: "Demi-vie manquante", delete_undo: "Sera supprimé...", undo: "Annuler",
@@ -396,16 +346,22 @@
             if(!APP_URL) return; 
             try { 
                 const res = await fetch(`${APP_URL}?action=ping`).then(r => r.json()); 
-                if(res.success) { 
+                if(res && res.success) { 
                     document.getElementById('status-dot').className = "w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"; 
                     document.getElementById('status-text').innerText = t('status_connected'); 
                     document.getElementById('status-text').className = "text-green-500"; 
-                } 
+                } else {
+                    setDisconnectedStatus();
+                }
             } catch(e) { 
-                document.getElementById('status-dot').className = "w-2 h-2 rounded-full bg-red-500 animate-pulse"; 
-                document.getElementById('status-text').innerText = t('status_disconnected'); 
-                document.getElementById('status-text').className = "text-red-500"; 
+                setDisconnectedStatus();
             } 
+        }
+
+        function setDisconnectedStatus() {
+            document.getElementById('status-dot').className = "w-2 h-2 rounded-full bg-red-500 animate-pulse"; 
+            document.getElementById('status-text').innerText = t('status_disconnected'); 
+            document.getElementById('status-text').className = "text-red-500"; 
         }
 
         async function api(data) { 
@@ -432,17 +388,24 @@
                 toast.appendChild(btn);
             }
             container.appendChild(toast);
-            setTimeout(() => { if(toast && toast.parentNode) { toast.style.opacity = '0'; toast.style.transform = 'translateY(20px) translateX(-50%)'; setTimeout(() => toast.remove(), 400); } }, duration);
+            setTimeout(() => { 
+                if(toast && toast.parentNode) { 
+                    toast.style.opacity = '0'; 
+                    toast.style.transform = 'translateY(20px)'; 
+                    setTimeout(() => toast.remove(), 400); 
+                } 
+            }, duration);
         }
 
         function switchView(view) {
             document.querySelectorAll('main > div').forEach(d => d.classList.add('hidden'));
             document.getElementById('view-' + view).classList.remove('hidden');
             document.querySelectorAll('.nav-pill').forEach(b => b.classList.remove('active'));
-            document.getElementById('tab-' + view).classList.add('active');
+            const tab = document.getElementById('tab-' + view);
+            if (tab) tab.classList.add('active');
+            
             if(view === 'dash') renderDashboard();
             if(view === 'levels') setTimeout(updateLevelChart, 100); 
-            if(view === 'calculator') initSyringe();
             if(view === 'history') { if(historyView === 'calendar') renderCalendar(); else renderHistory(); }
         }
 
@@ -461,7 +424,7 @@
             } catch(e) { console.error(e); } finally { document.getElementById('status-dot').classList.remove('animate-spin'); }
         }
 
-        function renderUI() { populatePeptideSelects(); renderPeptideList(); renderPresetsList(); renderQuickLogs(); renderPrefSites(); calculateSuggestion(); renderHistory(); if(historyView === 'calendar') renderCalendar(); }
+        function renderUI() { populatePeptideSelects(); renderPeptideList(); renderPresetsList(); renderPrefSites(); calculateSuggestion(); renderHistory(); if(historyView === 'calendar') renderCalendar(); }
 
         function populatePeptideSelects() {
             const selects = [document.getElementById('log-peptide'), document.getElementById('level-peptide-filter'), document.getElementById('conf-peptide-select')];
@@ -470,11 +433,14 @@
             selects.forEach(s => { if(!s) return; const prev = s.value; s.innerHTML = (s.id === 'level-peptide-filter' ? '' : `<option value="">Select Peptide</option>`) + sorted.map(n => `<option value="${n}">${n}</option>`).join(''); s.value = prev || (s.options[0] ? s.options[0].value : ""); });
         }
 
-        // --- DASHBOARD LOGIC ---
         function renderDashboard() {
-            if (!history.length && !presets.length) return;
+            if (!history.length && !presets.length) {
+                document.getElementById('dash-total-level').innerText = "0.00 mg";
+                document.getElementById('dash-week-inj').innerText = "0";
+                document.getElementById('dash-next-inj-content').innerHTML = `<p class="text-sm opacity-40 italic">Aucune donnée</p>`;
+                return;
+            }
 
-            // 1. Total Level Calculation
             let totalMg = 0;
             const now = Date.now();
             const peptidesInHistory = [...new Set(history.map(h => h.peptide))];
@@ -495,13 +461,11 @@
             });
             document.getElementById('dash-total-level').innerHTML = `${totalMg.toFixed(2)} <span class="text-xs opacity-50">mg</span>`;
 
-            // 2. Injections this week
             const startOfWeek = new Date();
             startOfWeek.setDate(startOfWeek.getDate() - 7);
             const weekInj = history.filter(h => new Date(h.date) >= startOfWeek).length;
             document.getElementById('dash-week-inj').innerText = weekInj;
 
-            // 3. Next Injection Prediction
             const predictions = [];
             presets.filter(p => p.frequency > 0).forEach(p => {
                 const pepLogs = history.filter(h => h.peptide.toLowerCase().trim() === p.peptide.toLowerCase().trim());
@@ -522,23 +486,21 @@
                     <div class="flex justify-between items-center">
                         <div>
                             <p class="text-xl font-black ${isOverdue ? 'text-red-400' : 'text-white'}">${next.peptide}</p>
-                            <p class="text-xs font-bold opacity-60">${dateStr} ${isOverdue ? '(OVERDUE)' : ''}</p>
+                            <p class="text-xs font-bold opacity-60">${dateStr} ${isOverdue ? '(RETARD)' : ''}</p>
                         </div>
                         <button onclick="logForDayWithPreset('${next.date.toISOString()}', ${JSON.stringify(next.preset).replace(/"/g, '&quot;')})" class="bg-indigo-500 px-4 py-2 rounded-xl text-[10px] font-black uppercase">Log</button>
                     </div>
                 `;
             } else {
-                nextCont.innerHTML = `<p class="text-sm opacity-40 italic">No schedule set in presets</p>`;
+                nextCont.innerHTML = `<p class="text-sm opacity-40 italic">Planning non défini</p>`;
             }
 
-            // 4. Quick Logs Mirror
             const quickCont = document.getElementById('dash-quick-log-container');
             quickCont.innerHTML = presets.map(p => `<button onclick="openFullSiteModal('preset', ${JSON.stringify(p).replace(/"/g, '&quot;')})" class="glass-card p-4 rounded-2xl text-left border border-white/5 active:scale-95 transition"><p class="font-black text-[9px] uppercase tracking-wider text-indigo-300 mb-1 opacity-70">${p.label}</p><p class="font-bold text-sm truncate">${p.peptide}</p></button>`).join('');
 
-            // 5. Recent Activity Preview
             const recentCont = document.getElementById('dash-recent-list');
-            const sorted = [...history].sort((a, b) => new Date(b.date) - new Date(a.date)).reverse().slice(0, 3);
-            recentCont.innerHTML = sorted.map(h => `
+            const sortedRecent = [...history].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 3);
+            recentCont.innerHTML = sortedRecent.map(h => `
                 <div class="flex justify-between items-center border-b border-white/5 pb-2">
                     <div>
                         <p class="text-xs font-bold">${h.peptide}</p>
@@ -546,7 +508,7 @@
                     </div>
                     <p class="text-[10px] font-mono text-indigo-300">${h.dosage}</p>
                 </div>
-            `).join('');
+            `).join('') || '<p class="text-center py-4 text-xs opacity-40 italic">Aucune activité récente</p>';
         }
 
         function getHalfLife(peptideName) {
@@ -586,6 +548,10 @@
                 dataPoints.push(total);
                 pointTimestamps.push(tMs);
             }
+            
+            // Correction : On remplit currentChartLabels ici
+            currentChartLabels = labels;
+            
             if(chart) chart.destroy();
             chart = new Chart(canvas.getContext('2d'), {
                 type: 'line',
@@ -632,7 +598,6 @@
         function calculateSuggestion() { if (!preferredSites.length || !history.length) { document.getElementById('suggestion-box').classList.add('hidden'); return; } let best = preferredSites[0]; const usage = {}; preferredSites.forEach(s => usage[s] = 0); history.forEach(h => { if(usage.hasOwnProperty(h.site)) usage[h.site] = Math.max(usage[h.site], new Date(h.date).getTime()); }); let minTime = Infinity; for(const [site, time] of Object.entries(usage)) { if(time < minTime) { minTime = time; best = site; } } document.getElementById('suggestion-text').textContent = translations[currentLang].site_names[best] || best; document.getElementById('suggestion-box').classList.remove('hidden'); }
         function useSuggestion() { const sug = document.getElementById('suggestion-text').textContent; let id = sug; for(const [k, v] of Object.entries(translations[currentLang].site_names)) { if(v === sug) { id = k; break; } } document.getElementById('log-site').value = id; document.getElementById('log-site-label').innerText = sug; }
 
-        function renderQuickLogs() { }
         function renderPeptideList() { document.getElementById('peptide-list').innerHTML = peptideLibrary.map(p => `<div class="glass-card px-3 py-1 rounded-full text-[10px] flex items-center gap-2 border-slate-700"><span>${p.name} (${p.halfLife}${p.hlUnit === 'days' ? 'd' : 'h'})</span><button onclick="deletePeptide(${p.row})" class="text-slate-500">✕</button></div>`).join(''); }
         function renderPresetsList() { document.getElementById('presets-list').innerHTML = presets.map(p => { return `<div class="flex justify-between items-center glass-card p-4 rounded-2xl mb-2"><div><p class="text-sm font-bold">${p.label}</p><p class="text-[10px] text-slate-500">${p.peptide} • ${p.value}${p.unit} ${p.frequency > 0 ? `(Q${p.frequency}d)` : ''}</p></div><button onclick="deletePreset(${p.row})" class="text-red-500 font-bold p-2">✕</button></div>`; }).join(''); }
         function renderHistory() { const filter = document.getElementById('history-filter').value.toLowerCase(); const sorted = [...history].sort((a, b) => new Date(b.date) - new Date(a.date)); document.getElementById('history-list').innerHTML = sorted.filter(h => h.peptide.toLowerCase().includes(filter) || h.site.toLowerCase().includes(filter)).map(h => `<div class="glass-card p-4 rounded-2xl flex justify-between items-center shadow-sm" id="history-row-${h.row}"><div><p class="font-bold text-sm">${h.peptide} <span class="text-indigo-400 ml-2 font-mono">${h.dosage}</span></p><p class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">${translations[currentLang].site_names[h.site] || h.site} • ${new Date(h.date).toLocaleDateString()}</p></div><button onclick="deleteWithUndo(${h.row})" class="text-slate-600 hover:text-red-500 p-2">✕</button></div>`).join(''); }
@@ -659,24 +624,42 @@
             const daysInMonth = new Date(year, month + 1, 0).getDate();
             for(let i=0; i<firstDay; i++) grid.appendChild(document.createElement('div'));
             const todayStr = new Date().toDateString();
+            
             const predictions = [];
             presets.filter(p => p.frequency > 0).forEach(p => {
                 const pepLogs = history.filter(h => h.peptide.toLowerCase().trim() === p.peptide.toLowerCase().trim());
                 if(pepLogs.length > 0) {
                     const lastLog = new Date(Math.max(...pepLogs.map(l => new Date(l.date).getTime())));
                     let next = new Date(lastLog);
-                    for(let j=0; j<10; j++) { next.setDate(next.getDate() + parseInt(p.frequency)); predictions.push({ date: new Date(next), peptide: p.peptide, preset: p }); }
+                    for(let j=0; j<10; j++) { 
+                        next.setDate(next.getDate() + parseInt(p.frequency)); 
+                        predictions.push({ date: new Date(next), peptide: p.peptide, preset: p }); 
+                    }
                 }
             });
+
             for(let d=1; d<=daysInMonth; d++) {
                 const date = new Date(year, month, d);
                 const dayEl = document.createElement('div');
                 dayEl.className = 'cal-day' + (date.toDateString() === todayStr ? ' today' : '');
                 dayEl.innerHTML = `<span>${d}</span>`;
+                
                 const dayHistory = history.filter(h => new Date(h.date).toDateString() === date.toDateString());
                 const dayPred = predictions.filter(p => p.date.toDateString() === date.toDateString());
-                dayHistory.forEach(() => { const dot = document.createElement('div'); dot.className = 'cal-dot past'; dayEl.appendChild(dot); });
-                dayPred.forEach(() => { const dot = document.createElement('div'); dot.className = 'cal-dot future-predicted'; dayEl.appendChild(dot); });
+                
+                dayHistory.forEach(() => { 
+                    const dot = document.createElement('div');
+                    dot.className = 'cal-dot past';
+                    dayEl.appendChild(dot);
+                });
+                
+                // Correction : Création correcte du dot prédictif
+                dayPred.forEach(() => { 
+                    const dot = document.createElement('div');
+                    dot.className = 'cal-dot future-predicted';
+                    dayEl.appendChild(dot);
+                });
+
                 dayEl.onclick = () => showDayDetails(date, dayHistory, dayPred);
                 grid.appendChild(dayEl);
             }
@@ -719,7 +702,6 @@
             setTimeout(async () => { if (!cancelled) { await api({ action: 'deleteLog', row: row }); loadAllData(); } }, 3500);
         }
 
-        function runCalc() { const v = parseFloat(document.getElementById('calc-vial').value), w = parseFloat(document.getElementById('calc-water').value), d = parseFloat(document.getElementById('calc-dose').value); if(v && w && d) { const iu = (d / ((v * 1000) / w)) * 100; document.getElementById('calc-result').textContent = iu.toFixed(iu >= 10 ? 1 : 2); document.getElementById('visual-liquid').style.height = Math.min(iu, 100) + '%'; document.getElementById('visual-plunger').style.bottom = Math.min(iu, 100) + '%'; } }
         function saveUrl() { const url = document.getElementById('setup-url').value.trim(); if(url) { localStorage.setItem('pep_url', url); location.reload(); } }
         function resetApp() { if(confirm(t('confirm_disconnect'))) { localStorage.removeItem('pep_url'); location.reload(); } }
         async function deletePreset(row) { if(confirm(t('confirm_del_preset'))) { const res = await api({action:'deleteConfig', row}); if(res.success) loadAllData(); } }
@@ -727,13 +709,67 @@
 
         window.onload = () => {
             updateLanguage();
-            if(!APP_URL) document.getElementById('setup-screen').classList.remove('hidden');
-            else { document.getElementById('app-container').classList.remove('hidden'); document.getElementById('log-time').value = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0,16); checkStatus(); loadAllData(); switchView('dash'); setInterval(checkStatus, 30000); }
+            if(!APP_URL) {
+                document.getElementById('setup-screen').classList.remove('hidden');
+            } else { 
+                document.getElementById('app-container').classList.remove('hidden'); 
+                document.getElementById('log-time').value = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0,16); 
+                checkStatus(); 
+                loadAllData(); 
+                switchView('dash'); 
+                setInterval(checkStatus, 30000); 
+            }
         };
 
-        document.getElementById('log-form').onsubmit = async (e) => { e.preventDefault(); const site = document.getElementById('log-site').value; if(!site) return; const res = await api({ action: 'logInjection', peptide: document.getElementById('log-peptide').value, dosage: document.getElementById('log-dosage').value + ' ' + document.getElementById('log-unit').value, site, notes: document.getElementById('log-notes').value, timestampMs: new Date(document.getElementById('log-time').value).getTime() }); if(res.success) { showToast(t('toast_logged')); loadAllData(); switchView('dash'); e.target.reset(); } };
-        document.getElementById('peptide-add-form').onsubmit = async (e) => { e.preventDefault(); const res = await api({ action: 'savePeptide', name: document.getElementById('new-peptide-name').value, halfLife: document.getElementById('new-peptide-hl').value, hlUnit: document.getElementById('new-peptide-unit').value }); if(res.success) { showToast(t('toast_logged')); loadAllData(); e.target.reset(); } };
-        document.getElementById('config-form').onsubmit = async (e) => { e.preventDefault(); const res = await api({ action: 'saveConfig', label: document.getElementById('conf-label').value, peptide: document.getElementById('conf-peptide-select').value, value: document.getElementById('conf-val').value, unit: document.getElementById('conf-unit').value, frequency: document.getElementById('conf-frequency').value }); if(res.success) { showToast(t('toast_logged')); loadAllData(); e.target.reset(); } };
+        document.getElementById('log-form').onsubmit = async (e) => { 
+            e.preventDefault(); 
+            const site = document.getElementById('log-site').value; 
+            if(!site) return; 
+            const res = await api({ 
+                action: 'logInjection', 
+                peptide: document.getElementById('log-peptide').value, 
+                dosage: document.getElementById('log-dosage').value + ' ' + document.getElementById('log-unit').value, 
+                site, 
+                notes: document.getElementById('log-notes').value, 
+                timestampMs: new Date(document.getElementById('log-time').value).getTime() 
+            }); 
+            if(res.success) { 
+                showToast(t('toast_logged')); 
+                loadAllData(); 
+                switchView('dash'); 
+                e.target.reset(); 
+            } 
+        };
+        document.getElementById('peptide-add-form').onsubmit = async (e) => { 
+            e.preventDefault(); 
+            const res = await api({ 
+                action: 'savePeptide', 
+                name: document.getElementById('new-peptide-name').value, 
+                halfLife: document.getElementById('new-peptide-hl').value, 
+                hlUnit: document.getElementById('new-peptide-unit').value 
+            }); 
+            if(res.success) { 
+                showToast(t('toast_logged')); 
+                loadAllData(); 
+                e.target.reset(); 
+            } 
+        };
+        document.getElementById('config-form').onsubmit = async (e) => { 
+            e.preventDefault(); 
+            const res = await api({ 
+                action: 'saveConfig', 
+                label: document.getElementById('conf-label').value, 
+                peptide: document.getElementById('conf-peptide-select').value, 
+                value: document.getElementById('conf-val').value, 
+                unit: document.getElementById('conf-unit').value, 
+                frequency: document.getElementById('conf-frequency').value 
+            }); 
+            if(res.success) { 
+                showToast(t('toast_logged')); 
+                loadAllData(); 
+                e.target.reset(); 
+            } 
+        };
     </script>
 </body>
 </html>
