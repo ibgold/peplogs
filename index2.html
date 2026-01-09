@@ -49,7 +49,6 @@
         .nav-pill { color: #94a3b8; transition: all 0.3s; display: flex; align-items: center; justify-content: center; border-radius: 0.75rem; font-size: 10px; font-weight: 700; text-transform: uppercase; }
         .nav-pill.active { background: #6366f1 !important; color: white !important; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25); }
         .body-zone { fill: rgba(148, 163, 184, 0.1); stroke: rgba(255,255,255,0.2); stroke-width: 1; transition: all 0.2s; cursor: pointer; }
-        .body-zone:hover { fill: rgba(99, 102, 241, 0.3); }
         .body-zone.selected { fill: #6366f1; stroke: white; }
         .body-zone.suggested { stroke: #6366f1; stroke-width: 2; stroke-dasharray: 4; animation: pulse-stroke 2s infinite; }
         @keyframes pulse-stroke { 0%, 100% { stroke-opacity: 0.4; } 50% { stroke-opacity: 1; } }
@@ -60,6 +59,15 @@
         .mark.major { width: 100%; background: rgba(255,255,255,0.4); }
         #toast-container { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%); z-index: 100; width: 90%; max-width: 400px; pointer-events: none; }
         .toast { background: rgba(30, 41, 59, 0.95); backdrop-filter: blur(8px); border: 1px solid rgba(99, 102, 241, 0.3); color: white; padding: 1rem 1.25rem; border-radius: 1rem; margin-top: 0.5rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5); pointer-events: auto; animation: bounce-in 0.4s ease-out; transition: all 0.4s; }
+        
+        /* Calendar Styles */
+        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+        .cal-day { aspect-ratio: 1/1; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 10px; font-size: 10px; font-weight: 600; position: relative; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); }
+        .cal-day.today { border-color: #6366f1; background: rgba(99, 102, 241, 0.1); }
+        .cal-dot { width: 4px; height: 4px; border-radius: 50%; margin-top: 2px; }
+        .cal-dot.past { background: #6366f1; }
+        .cal-dot.future { background: #6366f1; opacity: 0.3; }
+        .cal-dot.future-predicted { background: #10b981; opacity: 0.4; }
     </style>
 </head>
 <body class="flex flex-col items-center pb-24 px-4">
@@ -154,10 +162,41 @@
             </div>
 
             <div id="view-history" class="hidden space-y-4 animate-slide-up">
-                <div class="glass-card p-2 rounded-2xl mb-4">
-                    <input type="text" id="history-filter" placeholder="Filter..." class="input-field border-none bg-transparent" oninput="renderHistory()">
+                <div class="flex gap-2">
+                    <button onclick="switchHistoryView('list')" id="hist-btn-list" class="flex-1 py-2 text-[10px] font-bold uppercase tracking-widest rounded-xl bg-indigo-600 border border-indigo-400">List</button>
+                    <button onclick="switchHistoryView('calendar')" id="hist-btn-calendar" class="flex-1 py-2 text-[10px] font-bold uppercase tracking-widest rounded-xl bg-slate-800 border border-slate-700">Calendar</button>
                 </div>
-                <div id="history-list" class="space-y-3 pb-20"></div>
+                
+                <div id="history-list-view" class="space-y-4">
+                    <div class="glass-card p-2 rounded-2xl">
+                        <input type="text" id="history-filter" placeholder="Filter..." class="input-field border-none bg-transparent" oninput="renderHistory()">
+                    </div>
+                    <div id="history-list" class="space-y-3 pb-20"></div>
+                </div>
+
+                <div id="history-calendar-view" class="hidden space-y-4">
+                    <div class="glass-card p-6 rounded-3xl">
+                        <div class="flex justify-between items-center mb-6">
+                            <button onclick="changeMonth(-1)" class="p-2 text-indigo-300">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                            </button>
+                            <h2 id="calendar-month-year" class="text-sm font-black uppercase tracking-widest text-white">--</h2>
+                            <button onclick="changeMonth(1)" class="p-2 text-indigo-300">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                            </button>
+                        </div>
+                        <div class="grid grid-cols-7 gap-1 mb-2">
+                            <div class="text-[8px] text-center font-bold text-slate-500 uppercase">Mon</div>
+                            <div class="text-[8px] text-center font-bold text-slate-500 uppercase">Tue</div>
+                            <div class="text-[8px] text-center font-bold text-slate-500 uppercase">Wed</div>
+                            <div class="text-[8px] text-center font-bold text-slate-500 uppercase">Thu</div>
+                            <div class="text-[8px] text-center font-bold text-slate-500 uppercase">Fri</div>
+                            <div class="text-[8px] text-center font-bold text-slate-500 uppercase">Sat</div>
+                            <div class="text-[8px] text-center font-bold text-slate-500 uppercase">Sun</div>
+                        </div>
+                        <div id="calendar-grid" class="cal-grid"></div>
+                    </div>
+                </div>
             </div>
 
             <div id="view-calculator" class="hidden animate-slide-up">
@@ -204,6 +243,10 @@
                         <input type="text" id="conf-label" placeholder="Label" class="input-field" required>
                         <select id="conf-peptide-select" class="input-field" required></select>
                         <div class="flex gap-2"><input type="number" id="conf-val" placeholder="Dose" step="any" class="input-field flex-1" required><select id="conf-unit" class="bg-slate-700 rounded-xl px-3 font-bold"><option>mcg</option><option>mg</option></select></div>
+                        <div class="space-y-1">
+                            <label class="text-[10px] uppercase font-bold text-slate-500">Frequency (days)</label>
+                            <input type="number" id="conf-frequency" placeholder="0 = no schedule" class="input-field">
+                        </div>
                         <button type="submit" class="btn-primary w-full py-3 rounded-xl font-bold uppercase text-sm">Save Preset</button>
                     </form>
                 </section>
@@ -276,6 +319,10 @@
         let pendingAction = null, selectedSite = "";
         let currentChartLabels = [];
         
+        // Calendar State
+        let calendarDate = new Date();
+        let historyView = 'list';
+        
         const DEFAULT_HALF_LIVES = { "tirzepatide": 120, "retatrutide": 144 };
         const ALL_SITES = ["Right Abdomen (Upper)", "Right Abdomen (Lower)", "Left Abdomen (Upper)", "Left Abdomen (Lower)", "Right Flank", "Left Flank", "Right Thigh", "Left Thigh", "Right Deltoid", "Left Deltoid", "Right Buttock", "Left Buttock", "Other"];
         let preferredSites = JSON.parse(localStorage.getItem('pref_sites')) || ["Right Abdomen (Lower)", "Left Abdomen (Lower)"];
@@ -343,13 +390,16 @@
             
             if(view === 'levels') setTimeout(updateLevelChart, 100); 
             if(view === 'calculator') initSyringe();
+            if(view === 'history') {
+                if(historyView === 'calendar') renderCalendar();
+                else renderHistory();
+            }
         }
 
         async function loadAllData() {
             if(!APP_URL) return;
             document.getElementById('status-dot').classList.add('animate-spin');
             try {
-                // Un seul appel consolidé pour tout récupérer
                 const res = await fetch(`${APP_URL}?action=getAllData`).then(r => r.json());
                 if (res.success) {
                     presets = res.presets || [];
@@ -364,7 +414,7 @@
             }
         }
 
-        function renderUI() { populatePeptideSelects(); renderPeptideList(); renderPresetsList(); renderQuickLogs(); renderPrefSites(); calculateSuggestion(); renderHistory(); }
+        function renderUI() { populatePeptideSelects(); renderPeptideList(); renderPresetsList(); renderQuickLogs(); renderPrefSites(); calculateSuggestion(); renderHistory(); if(historyView === 'calendar') renderCalendar(); }
 
         function populatePeptideSelects() {
             const selects = [document.getElementById('log-peptide'), document.getElementById('level-peptide-filter'), document.getElementById('conf-peptide-select')];
@@ -496,10 +546,83 @@
 
         function renderQuickLogs() { const cont = document.getElementById('quick-log-container'); if(!presets.length) { cont.innerHTML = '<p class="col-span-2 text-center text-[10px] opacity-50 p-4">Add presets in Config</p>'; return; } cont.innerHTML = presets.map(p => `<button onclick="openFullSiteModal('preset', ${JSON.stringify(p).replace(/"/g, '&quot;')})" class="glass-card p-4 rounded-2xl text-left border border-slate-700 active:scale-95 transition"><p class="font-black text-[9px] uppercase tracking-wider text-indigo-300 mb-1 opacity-70">${p.label}</p><p class="font-bold text-sm truncate">${p.peptide}</p><p class="text-[10px] opacity-70">${p.value} ${p.unit}</p></button>`).join(''); }
         function renderPeptideList() { document.getElementById('peptide-list').innerHTML = peptideLibrary.map(p => `<div class="glass-card px-3 py-1 rounded-full text-[10px] flex items-center gap-2 border-slate-700"><span>${p.name} (${p.halfLife}${p.hlUnit === 'days' ? 'd' : 'h'})</span><button onclick="deletePeptide(${p.row})" class="text-slate-500">✕</button></div>`).join(''); }
-        function renderPresetsList() { document.getElementById('presets-list').innerHTML = presets.map(p => { return `<div class="flex justify-between items-center glass-card p-4 rounded-2xl mb-2"><div><p class="text-sm font-bold">${p.label}</p><p class="text-[10px] text-slate-500">${p.peptide} • ${p.value}${p.unit}</p></div><button onclick="deletePreset(${p.row})" class="text-red-500 font-bold p-2">✕</button></div>`; }).join(''); }
+        function renderPresetsList() { document.getElementById('presets-list').innerHTML = presets.map(p => { return `<div class="flex justify-between items-center glass-card p-4 rounded-2xl mb-2"><div><p class="text-sm font-bold">${p.label}</p><p class="text-[10px] text-slate-500">${p.peptide} • ${p.value}${p.unit} ${p.frequency > 0 ? `(Q${p.frequency}d)` : ''}</p></div><button onclick="deletePreset(${p.row})" class="text-red-500 font-bold p-2">✕</button></div>`; }).join(''); }
         function renderHistory() { const filter = document.getElementById('history-filter').value.toLowerCase(); const sorted = [...history].sort((a, b) => new Date(b.date) - new Date(a.date)); document.getElementById('history-list').innerHTML = sorted.filter(h => h.peptide.toLowerCase().includes(filter) || h.site.toLowerCase().includes(filter)).map(h => `<div class="glass-card p-4 rounded-2xl flex justify-between items-center shadow-sm" id="history-row-${h.row}"><div><p class="font-bold text-sm">${h.peptide} <span class="text-indigo-400 ml-2 font-mono">${h.dosage}</span></p><p class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">${translations[currentLang].site_names[h.site] || h.site} • ${new Date(h.date).toLocaleDateString(currentLang==='fr'?'fr-FR':'en-US', {day:'numeric', month:'short', hour:'numeric', minute:'numeric'})}</p>${h.notes ? `<p class="text-[10px] italic opacity-60 mt-1">${h.notes}</p>` : ''}</div><button onclick="deleteWithUndo(${h.row})" class="text-slate-600 hover:text-red-500 p-2">✕</button></div>`).join(''); }
         function renderPrefSites() { document.getElementById('preferred-sites-grid').innerHTML = ALL_SITES.map(s => `<button onclick="togglePrefSite('${s}')" class="p-3 text-[10px] rounded-xl border font-bold transition ${preferredSites.includes(s) ? 'bg-indigo-600 border-indigo-400 text-white' : 'bg-slate-800/50 border-slate-700 text-slate-500'}">${translations[currentLang].site_names[s] || s}</button>`).join(''); }
         function togglePrefSite(site) { preferredSites = preferredSites.includes(site) ? preferredSites.filter(x => x !== site) : [...preferredSites, site]; localStorage.setItem('pref_sites', JSON.stringify(preferredSites)); renderPrefSites(); calculateSuggestion(); }
+
+        // Calendar Logic
+        function switchHistoryView(view) {
+            historyView = view;
+            document.getElementById('history-list-view').classList.toggle('hidden', view !== 'list');
+            document.getElementById('history-calendar-view').classList.toggle('hidden', view !== 'calendar');
+            document.getElementById('hist-btn-list').className = view === 'list' ? 'flex-1 py-2 text-[10px] font-bold uppercase tracking-widest rounded-xl bg-indigo-600 border border-indigo-400' : 'flex-1 py-2 text-[10px] font-bold uppercase tracking-widest rounded-xl bg-slate-800 border border-slate-700';
+            document.getElementById('hist-btn-calendar').className = view === 'calendar' ? 'flex-1 py-2 text-[10px] font-bold uppercase tracking-widest rounded-xl bg-indigo-600 border border-indigo-400' : 'flex-1 py-2 text-[10px] font-bold uppercase tracking-widest rounded-xl bg-slate-800 border border-slate-700';
+            if(view === 'calendar') renderCalendar();
+        }
+
+        function changeMonth(delta) {
+            calendarDate.setMonth(calendarDate.getMonth() + delta);
+            renderCalendar();
+        }
+
+        function renderCalendar() {
+            const grid = document.getElementById('calendar-grid');
+            const header = document.getElementById('calendar-month-year');
+            grid.innerHTML = '';
+            
+            const month = calendarDate.getMonth();
+            const year = calendarDate.getFullYear();
+            header.innerText = calendarDate.toLocaleDateString(currentLang==='fr'?'fr-FR':'en-US', { month: 'long', year: 'numeric' });
+            
+            const firstDay = (new Date(year, month, 1).getDay() + 6) % 7; // Monday start
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            
+            // Empty days
+            for(let i=0; i<firstDay; i++) grid.appendChild(document.createElement('div'));
+            
+            const todayStr = new Date().toDateString();
+            
+            // Calculate Predictions
+            const predictions = [];
+            presets.filter(p => p.frequency > 0).forEach(p => {
+                const pepLogs = history.filter(h => h.peptide.toLowerCase().trim() === p.peptide.toLowerCase().trim());
+                if(pepLogs.length > 0) {
+                    const lastLog = new Date(Math.max(...pepLogs.map(l => new Date(l.date).getTime())));
+                    // Project up to 2 months ahead
+                    let next = new Date(lastLog);
+                    for(let j=0; j<10; j++) {
+                        next.setDate(next.getDate() + parseInt(p.frequency));
+                        predictions.push({ date: new Date(next), peptide: p.peptide });
+                    }
+                }
+            });
+
+            for(let d=1; d<=daysInMonth; d++) {
+                const date = new Date(year, month, d);
+                const dayEl = document.createElement('div');
+                dayEl.className = 'cal-day' + (date.toDateString() === todayStr ? ' today' : '');
+                dayEl.innerHTML = `<span>${d}</span>`;
+                
+                // Historical Dots
+                const dayHistory = history.filter(h => new Date(h.date).toDateString() === date.toDateString());
+                dayHistory.forEach(() => {
+                    const dot = document.createElement('div');
+                    dot.className = 'cal-dot past';
+                    dayEl.appendChild(dot);
+                });
+                
+                // Future Predictions Dots
+                const dayPred = predictions.filter(p => p.date.toDateString() === date.toDateString());
+                dayPred.forEach(() => {
+                    const dot = document.createElement('div');
+                    dot.className = 'cal-dot future-predicted';
+                    dayEl.appendChild(dot);
+                });
+                
+                grid.appendChild(dayEl);
+            }
+        }
 
         function deleteWithUndo(row) {
             const el = document.getElementById(`history-row-${row}`);
@@ -533,7 +656,7 @@
 
         document.getElementById('log-form').onsubmit = async (e) => { e.preventDefault(); const site = document.getElementById('log-site').value; if(!site) return; const res = await api({ action: 'logInjection', peptide: document.getElementById('log-peptide').value, dosage: document.getElementById('log-dosage').value + ' ' + document.getElementById('log-unit').value, site, notes: document.getElementById('log-notes').value, timestampMs: new Date(document.getElementById('log-time').value).getTime() }); if(res.success) { showToast(t('toast_logged')); loadAllData(); e.target.reset(); document.getElementById('log-site-label').innerText = t('select_site'); document.getElementById('log-time').value = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0,16); } };
         document.getElementById('peptide-add-form').onsubmit = async (e) => { e.preventDefault(); const name = document.getElementById('new-peptide-name').value.trim(), hl = document.getElementById('new-peptide-hl').value; if(name && hl) { const res = await api({ action: 'savePeptide', name, halfLife: hl, hlUnit: document.getElementById('new-peptide-unit').value }); if(res.success) { showToast(t('toast_logged')); loadAllData(); e.target.reset(); } } };
-        document.getElementById('config-form').onsubmit = async (e) => { e.preventDefault(); const res = await api({ action: 'saveConfig', label: document.getElementById('conf-label').value, peptide: document.getElementById('conf-peptide-select').value, value: document.getElementById('conf-val').value, unit: document.getElementById('conf-unit').value }); if(res.success) { showToast(t('toast_logged')); loadAllData(); e.target.reset(); } };
+        document.getElementById('config-form').onsubmit = async (e) => { e.preventDefault(); const res = await api({ action: 'saveConfig', label: document.getElementById('conf-label').value, peptide: document.getElementById('conf-peptide-select').value, value: document.getElementById('conf-val').value, unit: document.getElementById('conf-unit').value, frequency: document.getElementById('conf-frequency').value }); if(res.success) { showToast(t('toast_logged')); loadAllData(); e.target.reset(); } };
     </script>
 </body>
 </html>
