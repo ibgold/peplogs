@@ -62,6 +62,7 @@
         .cal-day.today { border-color: #6366f1; background: rgba(99, 102, 241, 0.1); }
         .cal-dot { width: 4px; height: 4px; border-radius: 50%; margin-top: 2px; }
         .cal-dot.past { background: #6366f1; }
+        .cal-dot.future { background: #6366f1; opacity: 0.3; }
         .cal-dot.future-predicted { background: #10b981; opacity: 0.4; }
     </style>
 </head>
@@ -251,7 +252,7 @@
         </main>
     </div>
 
-    <!-- MODAL: SITE SELECTOR -->
+    <!-- MODALs: SITE SELECTOR & DAY DETAILS -->
     <div id="site-modal" class="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-md hidden flex flex-col items-center justify-center p-4">
         <div class="w-full max-w-sm flex flex-col items-center gap-6 text-white">
             <h3 class="text-xl font-bold" data-t="modal_site_title">Injection Zone</h3>
@@ -259,16 +260,16 @@
                 <svg viewBox="0 0 200 450" class="h-full w-auto">
                     <circle cx="100" cy="35" r="25" class="fill-slate-800" />
                     <path d="M70,70 L130,70 L145,160 L135,260 L65,260 L55,160 Z" class="fill-slate-800" />
-                    <path d="M50,80 L20,180 L35,190 L60,95 Z" class="body-zone" id="zone-Left Deltoid" onclick="selectZone('Left Deltoid')" />
-                    <path d="M150,80 L180,180 L165,190 L140,95 Z" class="body-zone" id="zone-Right Deltoid" onclick="selectZone('Right Deltoid')" />
-                    <rect x="75" y="160" width="23" height="35" rx="4" class="body-zone" id="zone-Left Abdomen (Upper)" onclick="selectZone('Left Abdomen (Upper)')" />
-                    <rect x="102" y="160" width="23" height="35" rx="4" class="body-zone" id="zone-Right Abdomen (Upper)" onclick="selectZone('Right Abdomen (Upper)')" />
-                    <rect x="75" y="198" width="23" height="35" rx="4" class="body-zone" id="zone-Left Abdomen (Lower)" onclick="selectZone('Left Abdomen (Lower)')" />
-                    <rect x="102" y="198" width="23" height="35" rx="4" class="body-zone" id="zone-Right Abdomen (Lower)" onclick="selectZone('Right Abdomen (Lower)')" />
-                    <path d="M58,180 L72,180 L72,240 L58,230 Z" class="body-zone" id="zone-Left Flank" onclick="selectZone('Left Flank')" />
-                    <path d="M142,180 L128,180 L128,240 L142,230 Z" class="body-zone" id="zone-Right Flank" onclick="selectZone('Right Flank')" />
-                    <path d="M68,265 L55,420 L88,420 L95,265 Z" class="body-zone" id="zone-Left Thigh" onclick="selectZone('Left Thigh')" />
-                    <path d="M132,265 L145,420 L112,420 L105,265 Z" class="body-zone" id="zone-Right Thigh" onclick="selectZone('Right Thigh')" />
+                    <path d="M50,80 L20,180 L35,190 L60,95 Z" class="body-zone" id="zone-left-deltoid" onclick="selectZone('Left Deltoid')" />
+                    <path d="M150,80 L180,180 L165,190 L140,95 Z" class="body-zone" id="zone-right-deltoid" onclick="selectZone('Right Deltoid')" />
+                    <rect x="75" y="160" width="23" height="35" rx="4" class="body-zone" id="zone-left-abdomen-upper" onclick="selectZone('Left Abdomen (Upper)')" />
+                    <rect x="102" y="160" width="23" height="35" rx="4" class="body-zone" id="zone-right-abdomen-upper" onclick="selectZone('Right Abdomen (Upper)')" />
+                    <rect x="75" y="198" width="23" height="35" rx="4" class="body-zone" id="zone-left-abdomen-lower" onclick="selectZone('Left Abdomen (Lower)')" />
+                    <rect x="102" y="198" width="23" height="35" rx="4" class="body-zone" id="zone-right-abdomen-lower" onclick="selectZone('Right Abdomen (Lower)')" />
+                    <path d="M58,180 L72,180 L72,240 L58,230 Z" class="body-zone" id="zone-left-flank" onclick="selectZone('Left Flank')" />
+                    <path d="M142,180 L128,180 L128,240 L142,230 Z" class="body-zone" id="zone-right-flank" onclick="selectZone('Right Flank')" />
+                    <path d="M68,265 L55,420 L88,420 L95,265 Z" class="body-zone" id="zone-left-thigh" onclick="selectZone('Left Thigh')" />
+                    <path d="M132,265 L145,420 L112,420 L105,265 Z" class="body-zone" id="zone-right-thigh" onclick="selectZone('Right Thigh')" />
                 </svg>
             </div>
             <div class="w-full space-y-3">
@@ -282,7 +283,6 @@
         </div>
     </div>
 
-    <!-- MODAL: DAY DETAILS -->
     <div id="day-details-modal" class="fixed inset-0 z-[110] bg-slate-900/95 backdrop-blur-md hidden flex flex-col items-center justify-center p-4">
         <div class="glass-card w-full max-w-sm p-6 rounded-3xl space-y-6 text-white shadow-2xl animate-bounce-in">
             <div class="text-center">
@@ -338,8 +338,25 @@
         const ALL_SITES = ["Right Abdomen (Upper)", "Right Abdomen (Lower)", "Left Abdomen (Upper)", "Left Abdomen (Lower)", "Right Flank", "Left Flank", "Right Thigh", "Left Thigh", "Right Deltoid", "Left Deltoid", "Right Buttock", "Left Buttock", "Other"];
         let preferredSites = JSON.parse(localStorage.getItem('pref_sites')) || ["Right Abdomen (Lower)", "Left Abdomen (Lower)"];
 
+        // Static Mapping: Human Name -> DOM ID
+        const SITE_IDS = {
+            "Right Abdomen (Upper)": "right-abdomen-upper",
+            "Right Abdomen (Lower)": "right-abdomen-lower",
+            "Left Abdomen (Upper)": "left-abdomen-upper",
+            "Left Abdomen (Lower)": "left-abdomen-lower",
+            "Right Flank": "right-flank",
+            "Left Flank": "left-flank",
+            "Right Thigh": "right-thigh",
+            "Left Thigh": "left-thigh",
+            "Right Deltoid": "right-deltoid",
+            "Left Deltoid": "left-deltoid",
+            "Right Buttock": "right-buttock",
+            "Left Buttock": "left-buttock",
+            "Other": "other"
+        };
+
         function t(key) { return translations[currentLang][key] || key; }
-        function updateLanguage() { document.querySelectorAll('[data-t]').forEach(el => el.innerText = t(el.getAttribute('data-t'))); document.getElementById('lang-toggle').innerText = currentLang.toUpperCase(); if(APP_URL) renderUI(); if(chart) updateLevelChart(); }
+        function updateLanguage() { document.querySelectorAll('[data-t]').forEach(el => el.innerText = t(el.getAttribute('data-t'))); document.getElementById('lang-toggle').innerText = currentLang.toUpperCase(); if(APP_URL) renderUI(); }
         function toggleLanguage() { currentLang = currentLang === 'en' ? 'fr' : 'en'; localStorage.setItem('pep_lang', currentLang); updateLanguage(); }
         
         async function checkStatus() { 
@@ -347,32 +364,26 @@
             try { 
                 const res = await fetch(`${APP_URL}?action=ping`).then(r => r.json()); 
                 if(res && res.success) { 
-                    document.getElementById('status-dot').className = "w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"; 
-                    document.getElementById('status-text').innerText = t('status_connected'); 
-                    document.getElementById('status-text').className = "text-green-500"; 
-                } else {
-                    setDisconnectedStatus();
-                }
-            } catch(e) { 
-                setDisconnectedStatus();
-            } 
+                    const dot = document.getElementById('status-dot');
+                    const txt = document.getElementById('status-text');
+                    if(dot) dot.className = "w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"; 
+                    if(txt) { txt.innerText = t('status_connected'); txt.className = "text-green-500"; }
+                } else { setDisconnectedStatus(); }
+            } catch(e) { setDisconnectedStatus(); } 
         }
 
         function setDisconnectedStatus() {
-            document.getElementById('status-dot').className = "w-2 h-2 rounded-full bg-red-500 animate-pulse"; 
-            document.getElementById('status-text').innerText = t('status_disconnected'); 
-            document.getElementById('status-text').className = "text-red-500"; 
+            const dot = document.getElementById('status-dot');
+            const txt = document.getElementById('status-text');
+            if(dot) dot.className = "w-2 h-2 rounded-full bg-red-500 animate-pulse"; 
+            if(txt) { txt.innerText = t('status_disconnected'); txt.className = "text-red-500"; }
         }
 
         async function api(data) { 
             try { 
                 const res = await fetch(APP_URL, { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'text/plain;charset=utf-8' } }); 
-                const result = await res.json();
-                return result;
-            } catch(e) { 
-                showToast(t('toast_error'), "error"); 
-                return {success:false, error: e.message}; 
-            } 
+                return await res.json();
+            } catch(e) { showToast(t('toast_error'), "error"); return {success:false, error: e.message}; } 
         }
 
         function showToast(msg, type = 'success', duration = 3000, action = null) {
@@ -388,13 +399,7 @@
                 toast.appendChild(btn);
             }
             container.appendChild(toast);
-            setTimeout(() => { 
-                if(toast && toast.parentNode) { 
-                    toast.style.opacity = '0'; 
-                    toast.style.transform = 'translateY(20px)'; 
-                    setTimeout(() => toast.remove(), 400); 
-                } 
-            }, duration);
+            setTimeout(() => { if(toast && toast.parentNode) { toast.style.opacity = '0'; toast.style.transform = 'translateY(20px)'; setTimeout(() => toast.remove(), 400); } }, duration);
         }
 
         function switchView(view) {
@@ -411,20 +416,33 @@
 
         async function loadAllData() {
             if(!APP_URL) return;
-            document.getElementById('status-dot').classList.add('animate-spin');
+            const dot = document.getElementById('status-dot');
+            if(dot) dot.classList.add('animate-spin');
             try {
                 const res = await fetch(`${APP_URL}?action=getAllData`).then(r => r.json());
-                if (res.success) {
+                if (res && res.success) {
                     presets = res.presets || [];
                     history = res.history || [];
                     peptideLibrary = res.peptides || [];
                     renderUI();
-                    renderDashboard();
                 }
-            } catch(e) { console.error(e); } finally { document.getElementById('status-dot').classList.remove('animate-spin'); }
+            } catch(e) { console.error(e); } finally { if(dot) dot.classList.remove('animate-spin'); }
         }
 
-        function renderUI() { populatePeptideSelects(); renderPeptideList(); renderPresetsList(); renderPrefSites(); calculateSuggestion(); renderHistory(); if(historyView === 'calendar') renderCalendar(); }
+        function renderUI() { 
+            populatePeptideSelects(); 
+            renderPeptideList(); 
+            renderPresetsList(); 
+            renderQuickLogs(); 
+            renderPrefSites(); 
+            calculateSuggestion(); 
+            renderHistory(); 
+            renderDashboard();
+            // Important : only update chart if the view is active to avoid sizing issues
+            const levelTab = document.getElementById('tab-levels');
+            if(levelTab && levelTab.classList.contains('active')) updateLevelChart();
+            if(historyView === 'calendar') renderCalendar(); 
+        }
 
         function populatePeptideSelects() {
             const selects = [document.getElementById('log-peptide'), document.getElementById('level-peptide-filter'), document.getElementById('conf-peptide-select')];
@@ -434,15 +452,8 @@
         }
 
         function renderDashboard() {
-            if (!history.length && !presets.length) {
-                document.getElementById('dash-total-level').innerText = "0.00 mg";
-                document.getElementById('dash-week-inj').innerText = "0";
-                document.getElementById('dash-next-inj-content').innerHTML = `<p class="text-sm opacity-40 italic">Aucune donnée</p>`;
-                return;
-            }
-
-            let totalMg = 0;
             const now = Date.now();
+            let totalMg = 0;
             const peptidesInHistory = [...new Set(history.map(h => h.peptide))];
             peptidesInHistory.forEach(pep => {
                 const hlHours = getHalfLife(pep);
@@ -452,19 +463,19 @@
                     pepLogs.forEach(log => {
                         const lDate = new Date(log.date).getTime();
                         if (lDate <= now) {
-                            let doseVal = parseFloat(log.dosage);
-                            if (log.dosage.toLowerCase().includes('mcg')) doseVal /= 1000;
+                            let doseVal = parseFloat(log.dosage) || 0;
+                            if (typeof log.dosage === 'string' && log.dosage.toLowerCase().includes('mcg')) doseVal /= 1000;
                             totalMg += doseVal * Math.pow(Math.E, -k * ((now - lDate) / 3600000));
                         }
                     });
                 }
             });
-            document.getElementById('dash-total-level').innerHTML = `${totalMg.toFixed(2)} <span class="text-xs opacity-50">mg</span>`;
-
-            const startOfWeek = new Date();
-            startOfWeek.setDate(startOfWeek.getDate() - 7);
-            const weekInj = history.filter(h => new Date(h.date) >= startOfWeek).length;
-            document.getElementById('dash-week-inj').innerText = weekInj;
+            const totalEl = document.getElementById('dash-total-level');
+            if(totalEl) totalEl.innerHTML = `${totalMg.toFixed(2)} <span class="text-xs opacity-50">mg</span>`;
+            
+            const weekInj = history.filter(h => (now - new Date(h.date).getTime()) <= (7 * 24 * 3600000)).length;
+            const weekEl = document.getElementById('dash-week-inj');
+            if(weekEl) weekEl.innerText = weekInj;
 
             const predictions = [];
             presets.filter(p => p.frequency > 0).forEach(p => {
@@ -477,38 +488,29 @@
                 }
             });
             const nextCont = document.getElementById('dash-next-inj-content');
-            if (predictions.length > 0) {
-                predictions.sort((a, b) => a.date - b.date);
-                const next = predictions[0];
-                const isOverdue = next.date < now;
-                const dateStr = next.date.toLocaleDateString(currentLang==='fr'?'fr-FR':'en-US', { weekday: 'short', day: 'numeric', month: 'short' });
-                nextCont.innerHTML = `
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <p class="text-xl font-black ${isOverdue ? 'text-red-400' : 'text-white'}">${next.peptide}</p>
-                            <p class="text-xs font-bold opacity-60">${dateStr} ${isOverdue ? '(RETARD)' : ''}</p>
-                        </div>
-                        <button onclick="logForDayWithPreset('${next.date.toISOString()}', ${JSON.stringify(next.preset).replace(/"/g, '&quot;')})" class="bg-indigo-500 px-4 py-2 rounded-xl text-[10px] font-black uppercase">Log</button>
-                    </div>
-                `;
-            } else {
-                nextCont.innerHTML = `<p class="text-sm opacity-40 italic">Planning non défini</p>`;
+            if (nextCont) {
+                if (predictions.length > 0) {
+                    predictions.sort((a, b) => a.date - b.date);
+                    const next = predictions[0];
+                    const isOverdue = next.date < now;
+                    const dateStr = next.date.toLocaleDateString(currentLang==='fr'?'fr-FR':'en-US', { weekday: 'short', day: 'numeric', month: 'short' });
+                    nextCont.innerHTML = `<div class="flex justify-between items-center"><div><p class="text-xl font-black ${isOverdue ? 'text-red-400' : 'text-white'}">${next.peptide}</p><p class="text-xs font-bold opacity-60">${dateStr} ${isOverdue ? (currentLang==='fr'?'(RETARD)':'(OVERDUE)') : ''}</p></div><button onclick="logForDayWithPreset('${next.date.toISOString()}', ${JSON.stringify(next.preset).replace(/"/g, '&quot;')})" class="bg-indigo-500 px-4 py-2 rounded-xl text-[10px] font-black uppercase">Log</button></div>`;
+                } else {
+                    nextCont.innerHTML = `<p class="text-sm opacity-40 italic">${currentLang==='fr'?'Aucun planning':'No schedule set'}</p>`;
+                }
             }
 
-            const quickCont = document.getElementById('dash-quick-log-container');
-            quickCont.innerHTML = presets.map(p => `<button onclick="openFullSiteModal('preset', ${JSON.stringify(p).replace(/"/g, '&quot;')})" class="glass-card p-4 rounded-2xl text-left border border-white/5 active:scale-95 transition"><p class="font-black text-[9px] uppercase tracking-wider text-indigo-300 mb-1 opacity-70">${p.label}</p><p class="font-bold text-sm truncate">${p.peptide}</p></button>`).join('');
-
             const recentCont = document.getElementById('dash-recent-list');
-            const sortedRecent = [...history].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 3);
-            recentCont.innerHTML = sortedRecent.map(h => `
-                <div class="flex justify-between items-center border-b border-white/5 pb-2">
-                    <div>
-                        <p class="text-xs font-bold">${h.peptide}</p>
-                        <p class="text-[9px] opacity-50 uppercase">${new Date(h.date).toLocaleDateString()}</p>
-                    </div>
-                    <p class="text-[10px] font-mono text-indigo-300">${h.dosage}</p>
-                </div>
-            `).join('') || '<p class="text-center py-4 text-xs opacity-40 italic">Aucune activité récente</p>';
+            if(recentCont) {
+                const sortedRecent = [...history].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 3);
+                recentCont.innerHTML = sortedRecent.map(h => `<div class="flex justify-between items-center border-b border-white/5 pb-2"><div><p class="text-xs font-bold">${h.peptide}</p><p class="text-[9px] opacity-50 uppercase">${new Date(h.date).toLocaleDateString()}</p></div><p class="text-[10px] font-mono text-indigo-300">${h.dosage}</p></div>`).join('') || '<p class="text-center py-4 text-xs opacity-40 italic">--</p>';
+            }
+        }
+
+        function renderQuickLogs() {
+            const quickCont = document.getElementById('dash-quick-log-container');
+            if(!quickCont) return;
+            quickCont.innerHTML = presets.map(p => `<button onclick="openFullSiteModal('preset', ${JSON.stringify(p).replace(/"/g, '&quot;')})" class="glass-card p-4 rounded-2xl text-left border border-white/5 active:scale-95 transition"><p class="font-black text-[9px] uppercase tracking-wider text-indigo-300 mb-1 opacity-70">${p.label}</p><p class="font-bold text-sm truncate">${p.peptide}</p></button>`).join('');
         }
 
         function getHalfLife(peptideName) {
@@ -519,7 +521,12 @@
         }
 
         function updateLevelChart() {
-            const selected = document.getElementById('level-peptide-filter').value;
+            const viewLevels = document.getElementById('view-levels');
+            if(!viewLevels || viewLevels.classList.contains('hidden')) return; // Exit if tab hidden
+            
+            const selectedEl = document.getElementById('level-peptide-filter');
+            if(!selectedEl) return;
+            const selected = selectedEl.value;
             const canvas = document.getElementById('levelChart');
             if(!selected || !canvas) return;
             const hlHours = getHalfLife(selected);
@@ -538,8 +545,8 @@
                 pepLogs.forEach(log => {
                     const lDate = new Date(log.date).getTime();
                     if (lDate <= tMs) {
-                        let doseVal = parseFloat(log.dosage);
-                        if (log.dosage.toLowerCase().includes('mcg')) doseVal /= 1000;
+                        let doseVal = parseFloat(log.dosage) || 0;
+                        if (typeof log.dosage === 'string' && log.dosage.toLowerCase().includes('mcg')) doseVal /= 1000;
                         total += doseVal * Math.pow(Math.E, -k * ((tMs - lDate) / 3600000));
                     }
                 });
@@ -548,10 +555,7 @@
                 dataPoints.push(total);
                 pointTimestamps.push(tMs);
             }
-            
-            // Correction : On remplit currentChartLabels ici
             currentChartLabels = labels;
-            
             if(chart) chart.destroy();
             chart = new Chart(canvas.getContext('2d'), {
                 type: 'line',
@@ -559,7 +563,8 @@
                 options: { responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { color: '#64748b', font: { size: 9 }, autoSkip: true, maxTicksLimit: 8 }, grid: { display: false } }, y: { beginAtZero: true, ticks: { color: '#64748b', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.03)' } } }, plugins: { legend: { display: false }, zoom: { zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' }, pan: { enabled: true, mode: 'x' } } } }
             });
             const tIdx = labels.indexOf(t('today'));
-            document.getElementById('stat-current-level').innerText = (tIdx !== -1 ? dataPoints[tIdx] : 0).toFixed(2);
+            const currentLevelEl = document.getElementById('stat-current-level');
+            if(currentLevelEl) currentLevelEl.innerText = (tIdx !== -1 ? dataPoints[tIdx] : 0).toFixed(2);
             resetToToday();
         }
 
@@ -567,48 +572,75 @@
 
         function openFullSiteModal(type, extraData = null) {
             pendingAction = { type, extraData }; selectedSite = "";
-            document.getElementById('selected-zone-name').innerText = "--";
+            const zoneNameEl = document.getElementById('selected-zone-name');
+            if(zoneNameEl) zoneNameEl.innerText = "--";
             document.querySelectorAll('.body-zone').forEach(z => z.classList.remove('selected', 'suggested'));
             const sug = document.getElementById('suggestion-text').textContent;
-            let sugId = sug;
+            let sugId = "";
             for(const [id, label] of Object.entries(translations[currentLang].site_names)) { if(label === sug) { sugId = id; break; } }
-            const sugEl = document.getElementById(`zone-${sugId}`);
-            if(sugEl) sugEl.classList.add('suggested');
-            document.getElementById('site-buttons-container').innerHTML = ["Right Buttock", "Left Buttock", "Other"].map(s => `<button onclick="selectZone('${s}')" class="bg-slate-800 p-2 rounded-xl text-[10px] font-bold text-white border border-slate-700" id="btn-${s.replace(/ /g, '-')}">${translations[currentLang].site_names[s]}</button>`).join('');
-            document.getElementById('site-modal').classList.remove('hidden');
+            if(sugId && SITE_IDS[sugId]) {
+                const sugEl = document.getElementById(`zone-${SITE_IDS[sugId]}`);
+                if(sugEl) sugEl.classList.add('suggested');
+            }
+            const siteBtnsCont = document.getElementById('site-buttons-container');
+            if(siteBtnsCont) siteBtnsCont.innerHTML = ["Right Buttock", "Left Buttock", "Other"].map(s => `<button onclick="selectZone('${s}')" class="bg-slate-800 p-2 rounded-xl text-[10px] font-bold text-white border border-slate-700" id="btn-${SITE_IDS[s]}">${translations[currentLang].site_names[s]}</button>`).join('');
+            const modal = document.getElementById('site-modal');
+            if(modal) modal.classList.remove('hidden');
         }
 
         function selectZone(siteId) {
-            selectedSite = siteId; document.getElementById('selected-zone-name').innerText = translations[currentLang].site_names[siteId] || siteId;
+            selectedSite = siteId; 
+            const zoneNameEl = document.getElementById('selected-zone-name');
+            if(zoneNameEl) zoneNameEl.innerText = translations[currentLang].site_names[siteId] || siteId;
             document.querySelectorAll('.body-zone').forEach(z => z.classList.remove('selected'));
             document.querySelectorAll('#site-buttons-container button').forEach(b => b.classList.remove('bg-indigo-600'));
-            const zoneEl = document.getElementById(`zone-${siteId}`); if(zoneEl) zoneEl.classList.add('selected');
-            const btnEl = document.getElementById(`btn-${siteId.replace(/ /g, '-')}`); if(btnEl) btnEl.classList.add('bg-indigo-600');
+            
+            const safeId = SITE_IDS[siteId];
+            if(safeId) {
+                const zoneEl = document.getElementById(`zone-${safeId}`); if(zoneEl) zoneEl.classList.add('selected');
+                const btnEl = document.getElementById(`btn-${safeId}`); if(btnEl) btnEl.classList.add('bg-indigo-600');
+            }
         }
 
         function confirmZoneSelection() {
             if(!selectedSite) return;
-            if(pendingAction.type === 'manual') { document.getElementById('log-site').value = selectedSite; document.getElementById('log-site-label').innerText = translations[currentLang].site_names[selectedSite] || selectedSite; closeModal(); }
+            if(pendingAction.type === 'manual') { 
+                const logSiteInput = document.getElementById('log-site');
+                const logSiteLabel = document.getElementById('log-site-label');
+                if(logSiteInput) logSiteInput.value = selectedSite; 
+                if(logSiteLabel) logSiteLabel.innerText = translations[currentLang].site_names[selectedSite] || selectedSite; 
+                closeModal(); 
+            }
             else if(pendingAction.type === 'preset') finalizeQuickLog(selectedSite, pendingAction.extraData);
         }
 
-        function closeModal() { document.getElementById('site-modal').classList.add('hidden'); }
-        async function finalizeQuickLog(site, preset) { closeModal(); const res = await api({ action: 'logInjection', peptide: preset.peptide, dosage: `${preset.value} ${preset.unit}`, site, timestampMs: Date.now() }); if(res.success) { showToast(`${t('toast_logged')} ${preset.peptide}`); loadAllData(); } }
+        function closeModal() { const modal = document.getElementById('site-modal'); if(modal) modal.classList.add('hidden'); }
+        async function finalizeQuickLog(site, preset) { closeModal(); const res = await api({ action: 'logInjection', peptide: preset.peptide, dosage: `${preset.value} ${preset.unit}`, site, timestampMs: Date.now() }); if(res && res.success) { showToast(`${t('toast_logged')} ${preset.peptide}`); loadAllData(); } }
         
-        function calculateSuggestion() { if (!preferredSites.length || !history.length) { document.getElementById('suggestion-box').classList.add('hidden'); return; } let best = preferredSites[0]; const usage = {}; preferredSites.forEach(s => usage[s] = 0); history.forEach(h => { if(usage.hasOwnProperty(h.site)) usage[h.site] = Math.max(usage[h.site], new Date(h.date).getTime()); }); let minTime = Infinity; for(const [site, time] of Object.entries(usage)) { if(time < minTime) { minTime = time; best = site; } } document.getElementById('suggestion-text').textContent = translations[currentLang].site_names[best] || best; document.getElementById('suggestion-box').classList.remove('hidden'); }
-        function useSuggestion() { const sug = document.getElementById('suggestion-text').textContent; let id = sug; for(const [k, v] of Object.entries(translations[currentLang].site_names)) { if(v === sug) { id = k; break; } } document.getElementById('log-site').value = id; document.getElementById('log-site-label').innerText = sug; }
+        function calculateSuggestion() { if (!preferredSites.length || !history.length) { const box = document.getElementById('suggestion-box'); if(box) box.classList.add('hidden'); return; } let best = preferredSites[0]; const usage = {}; preferredSites.forEach(s => usage[s] = 0); history.forEach(h => { if(usage.hasOwnProperty(h.site)) usage[h.site] = Math.max(usage[h.site], new Date(h.date).getTime()); }); let minTime = Infinity; for(const [site, time] of Object.entries(usage)) { if(time < minTime) { minTime = time; best = site; } } const sugTxt = document.getElementById('suggestion-text'); if(sugTxt) sugTxt.textContent = translations[currentLang].site_names[best] || best; const box = document.getElementById('suggestion-box'); if(box) box.classList.remove('hidden'); }
+        function useSuggestion() { const sug = document.getElementById('suggestion-text').textContent; let id = sug; for(const [k, v] of Object.entries(translations[currentLang].site_names)) { if(v === sug) { id = k; break; } } const logSite = document.getElementById('log-site'); if(logSite) logSite.value = id; const logLabel = document.getElementById('log-site-label'); if(logLabel) logLabel.innerText = sug; }
 
-        function renderPeptideList() { document.getElementById('peptide-list').innerHTML = peptideLibrary.map(p => `<div class="glass-card px-3 py-1 rounded-full text-[10px] flex items-center gap-2 border-slate-700"><span>${p.name} (${p.halfLife}${p.hlUnit === 'days' ? 'd' : 'h'})</span><button onclick="deletePeptide(${p.row})" class="text-slate-500">✕</button></div>`).join(''); }
-        function renderPresetsList() { document.getElementById('presets-list').innerHTML = presets.map(p => { return `<div class="flex justify-between items-center glass-card p-4 rounded-2xl mb-2"><div><p class="text-sm font-bold">${p.label}</p><p class="text-[10px] text-slate-500">${p.peptide} • ${p.value}${p.unit} ${p.frequency > 0 ? `(Q${p.frequency}d)` : ''}</p></div><button onclick="deletePreset(${p.row})" class="text-red-500 font-bold p-2">✕</button></div>`; }).join(''); }
-        function renderHistory() { const filter = document.getElementById('history-filter').value.toLowerCase(); const sorted = [...history].sort((a, b) => new Date(b.date) - new Date(a.date)); document.getElementById('history-list').innerHTML = sorted.filter(h => h.peptide.toLowerCase().includes(filter) || h.site.toLowerCase().includes(filter)).map(h => `<div class="glass-card p-4 rounded-2xl flex justify-between items-center shadow-sm" id="history-row-${h.row}"><div><p class="font-bold text-sm">${h.peptide} <span class="text-indigo-400 ml-2 font-mono">${h.dosage}</span></p><p class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">${translations[currentLang].site_names[h.site] || h.site} • ${new Date(h.date).toLocaleDateString()}</p></div><button onclick="deleteWithUndo(${h.row})" class="text-slate-600 hover:text-red-500 p-2">✕</button></div>`).join(''); }
-        function renderPrefSites() { document.getElementById('preferred-sites-grid').innerHTML = ALL_SITES.map(s => `<button onclick="togglePrefSite('${s}')" class="p-3 text-[10px] rounded-xl border font-bold transition ${preferredSites.includes(s) ? 'bg-indigo-600 border-indigo-400 text-white' : 'bg-slate-800/50 border-slate-700 text-slate-500'}">${translations[currentLang].site_names[s] || s}</button>`).join(''); }
+        function renderPeptideList() { const pepList = document.getElementById('peptide-list'); if(pepList) pepList.innerHTML = peptideLibrary.map(p => `<div class="glass-card px-3 py-1 rounded-full text-[10px] flex items-center gap-2 border-slate-700"><span>${p.name} (${p.halfLife}${p.hlUnit === 'days' ? 'd' : 'h'})</span><button onclick="deletePeptide(${p.row})" class="text-slate-500">✕</button></div>`).join(''); }
+        function renderPresetsList() { const preList = document.getElementById('presets-list'); if(preList) preList.innerHTML = presets.map(p => `<div class="flex justify-between items-center glass-card p-4 rounded-2xl mb-2"><div><p class="text-sm font-bold">${p.label}</p><p class="text-[10px] text-slate-500">${p.peptide} • ${p.value}${p.unit} ${p.frequency > 0 ? `(Q${p.frequency}d)` : ''}</p></div><button onclick="deletePreset(${p.row})" class="text-red-500 font-bold p-2">✕</button></div>`).join(''); }
+        function renderHistory() { 
+            const filterEl = document.getElementById('history-filter');
+            if(!filterEl) return;
+            const filter = filterEl.value.toLowerCase();
+            const sorted = [...history].sort((a, b) => new Date(b.date) - new Date(a.date));
+            const listEl = document.getElementById('history-list');
+            if(listEl) listEl.innerHTML = sorted.filter(h => h.peptide.toLowerCase().includes(filter) || h.site.toLowerCase().includes(filter)).map(h => `<div class="glass-card p-4 rounded-2xl flex justify-between items-center shadow-sm" id="history-row-${h.row}"><div><p class="font-bold text-sm">${h.peptide} <span class="text-indigo-400 ml-2 font-mono">${h.dosage}</span></p><p class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">${translations[currentLang].site_names[h.site] || h.site} • ${new Date(h.date).toLocaleDateString()}</p></div><button onclick="deleteWithUndo(${h.row})" class="text-slate-600 hover:text-red-500 p-2">✕</button></div>`).join(''); 
+        }
+        function renderPrefSites() { const grid = document.getElementById('preferred-sites-grid'); if(grid) grid.innerHTML = ALL_SITES.map(s => `<button onclick="togglePrefSite('${s}')" class="p-3 text-[10px] rounded-xl border font-bold transition ${preferredSites.includes(s) ? 'bg-indigo-600 border-indigo-400 text-white' : 'bg-slate-800/50 border-slate-700 text-slate-500'}">${translations[currentLang].site_names[s] || s}</button>`).join(''); }
         function togglePrefSite(site) { preferredSites = preferredSites.includes(site) ? preferredSites.filter(x => x !== site) : [...preferredSites, site]; localStorage.setItem('pref_sites', JSON.stringify(preferredSites)); renderPrefSites(); calculateSuggestion(); }
 
         function switchHistoryView(view) {
             historyView = view;
-            document.getElementById('history-list-view').classList.toggle('hidden', view !== 'list');
-            document.getElementById('history-calendar-view').classList.toggle('hidden', view !== 'calendar');
+            const lv = document.getElementById('history-list-view');
+            const cv = document.getElementById('history-calendar-view');
+            if(lv) lv.classList.toggle('hidden', view !== 'list');
+            if(cv) cv.classList.toggle('hidden', view !== 'calendar');
             if(view === 'calendar') renderCalendar();
+            else renderHistory();
         }
 
         function changeMonth(delta) { calendarDate.setMonth(calendarDate.getMonth() + delta); renderCalendar(); }
@@ -616,6 +648,7 @@
         function renderCalendar() {
             const grid = document.getElementById('calendar-grid');
             const header = document.getElementById('calendar-month-year');
+            if(!grid || !header) return;
             grid.innerHTML = '';
             const month = calendarDate.getMonth();
             const year = calendarDate.getFullYear();
@@ -624,7 +657,6 @@
             const daysInMonth = new Date(year, month + 1, 0).getDate();
             for(let i=0; i<firstDay; i++) grid.appendChild(document.createElement('div'));
             const todayStr = new Date().toDateString();
-            
             const predictions = [];
             presets.filter(p => p.frequency > 0).forEach(p => {
                 const pepLogs = history.filter(h => h.peptide.toLowerCase().trim() === p.peptide.toLowerCase().trim());
@@ -637,29 +669,15 @@
                     }
                 }
             });
-
             for(let d=1; d<=daysInMonth; d++) {
                 const date = new Date(year, month, d);
                 const dayEl = document.createElement('div');
                 dayEl.className = 'cal-day' + (date.toDateString() === todayStr ? ' today' : '');
                 dayEl.innerHTML = `<span>${d}</span>`;
-                
                 const dayHistory = history.filter(h => new Date(h.date).toDateString() === date.toDateString());
                 const dayPred = predictions.filter(p => p.date.toDateString() === date.toDateString());
-                
-                dayHistory.forEach(() => { 
-                    const dot = document.createElement('div');
-                    dot.className = 'cal-dot past';
-                    dayEl.appendChild(dot);
-                });
-                
-                // Correction : Création correcte du dot prédictif
-                dayPred.forEach(() => { 
-                    const dot = document.createElement('div');
-                    dot.className = 'cal-dot future-predicted';
-                    dayEl.appendChild(dot);
-                });
-
+                dayHistory.forEach(() => { const dot = document.createElement('div'); dot.className = 'cal-dot past'; dayEl.appendChild(dot); });
+                dayPred.forEach(() => { const dot = document.createElement('div'); dot.className = 'cal-dot future-predicted'; dayEl.appendChild(dot); });
                 dayEl.onclick = () => showDayDetails(date, dayHistory, dayPred);
                 grid.appendChild(dayEl);
             }
@@ -669,6 +687,7 @@
             const modal = document.getElementById('day-details-modal');
             const content = document.getElementById('day-details-content');
             const logBtn = document.getElementById('day-details-log-btn');
+            if(!modal || !content) return;
             document.getElementById('day-details-date').innerText = date.toLocaleDateString(currentLang==='fr'?'fr-FR':'en-US', { weekday: 'long', day: 'numeric', month: 'long' });
             let html = "";
             if (dayHistory.length > 0) {
@@ -676,44 +695,51 @@
                 dayHistory.forEach(h => { html += `<div class="bg-slate-800/50 p-3 rounded-xl border border-indigo-500/20 mb-2"><p class="font-bold text-sm">${h.peptide} <span class="text-indigo-400 font-mono">${h.dosage}</span></p></div>`; });
             }
             if (dayPred.length > 0) {
-                html += `<p class="text-[10px] uppercase font-black text-slate-500 mt-4 mb-2">Suggéré</p>`;
+                html += `<p class="text-[10px] uppercase font-black text-slate-500 mt-4 mb-2">${currentLang==='fr'?'Suggéré':'Suggested'}</p>`;
                 dayPred.forEach(p => { html += `<button onclick="logForDayWithPreset('${date.toISOString()}', ${JSON.stringify(p.preset).replace(/"/g, '&quot;')})" class="w-full text-left bg-indigo-500/10 p-3 rounded-xl border border-indigo-500/40 mb-2"><p class="font-bold text-sm text-indigo-300">${p.peptide}</p></button>`; });
             }
             content.innerHTML = html || `<div class="text-center py-8 opacity-40">-- Aucun événement --</div>`;
-            logBtn.onclick = () => { switchView('log'); document.getElementById('log-time').value = date.toISOString().slice(0, 16); closeDayDetails(); };
+            logBtn.onclick = () => { switchView('log'); const timeInp = document.getElementById('log-time'); if(timeInp) timeInp.value = date.toISOString().slice(0, 16); closeDayDetails(); };
             modal.classList.remove('hidden');
         }
 
-        function closeDayDetails() { document.getElementById('day-details-modal').classList.add('hidden'); }
+        function closeDayDetails() { const modal = document.getElementById('day-details-modal'); if(modal) modal.classList.add('hidden'); }
         
         function logForDayWithPreset(dateIso, preset) {
             closeDayDetails();
             switchView('log');
-            document.getElementById('log-time').value = dateIso.slice(0, 16);
-            document.getElementById('log-peptide').value = preset.peptide;
-            document.getElementById('log-dosage').value = preset.value;
-            document.getElementById('log-unit').value = preset.unit;
+            const timeInp = document.getElementById('log-time');
+            const pepInp = document.getElementById('log-peptide');
+            const doseInp = document.getElementById('log-dosage');
+            const unitInp = document.getElementById('log-unit');
+            if(timeInp) timeInp.value = dateIso.slice(0, 16);
+            if(pepInp) pepInp.value = preset.peptide;
+            if(doseInp) doseInp.value = preset.value;
+            if(unitInp) unitInp.value = preset.unit;
             setTimeout(() => openFullSiteModal('manual'), 300);
         }
 
         function deleteWithUndo(row) {
             let cancelled = false;
             showToast(t('delete_undo'), "error", 4000, { label: t('undo'), callback: () => { cancelled = true; } });
-            setTimeout(async () => { if (!cancelled) { await api({ action: 'deleteLog', row: row }); loadAllData(); } }, 3500);
+            setTimeout(async () => { if (!cancelled) { const res = await api({ action: 'deleteLog', row: row }); if(res && res.success) loadAllData(); } }, 3500);
         }
 
         function saveUrl() { const url = document.getElementById('setup-url').value.trim(); if(url) { localStorage.setItem('pep_url', url); location.reload(); } }
         function resetApp() { if(confirm(t('confirm_disconnect'))) { localStorage.removeItem('pep_url'); location.reload(); } }
-        async function deletePreset(row) { if(confirm(t('confirm_del_preset'))) { const res = await api({action:'deleteConfig', row}); if(res.success) loadAllData(); } }
-        async function deletePeptide(row) { if(confirm(t('confirm_del_library'))) { const res = await api({action:'deletePeptide', row}); if(res.success) loadAllData(); } }
+        async function deletePreset(row) { if(confirm(t('confirm_del_preset'))) { const res = await api({action:'deleteConfig', row}); if(res && res.success) loadAllData(); } }
+        async function deletePeptide(row) { if(confirm(t('confirm_del_library'))) { const res = await api({action:'deletePeptide', row}); if(res && res.success) loadAllData(); } }
 
         window.onload = () => {
             updateLanguage();
             if(!APP_URL) {
-                document.getElementById('setup-screen').classList.remove('hidden');
+                const setup = document.getElementById('setup-screen');
+                if(setup) setup.classList.remove('hidden');
             } else { 
-                document.getElementById('app-container').classList.remove('hidden'); 
-                document.getElementById('log-time').value = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0,16); 
+                const app = document.getElementById('app-container');
+                if(app) app.classList.remove('hidden'); 
+                const timeInp = document.getElementById('log-time');
+                if(timeInp) timeInp.value = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0,16); 
                 checkStatus(); 
                 loadAllData(); 
                 switchView('dash'); 
@@ -733,42 +759,17 @@
                 notes: document.getElementById('log-notes').value, 
                 timestampMs: new Date(document.getElementById('log-time').value).getTime() 
             }); 
-            if(res.success) { 
-                showToast(t('toast_logged')); 
-                loadAllData(); 
-                switchView('dash'); 
-                e.target.reset(); 
-            } 
+            if(res && res.success) { showToast(t('toast_logged')); loadAllData(); switchView('dash'); e.target.reset(); } 
         };
         document.getElementById('peptide-add-form').onsubmit = async (e) => { 
             e.preventDefault(); 
-            const res = await api({ 
-                action: 'savePeptide', 
-                name: document.getElementById('new-peptide-name').value, 
-                halfLife: document.getElementById('new-peptide-hl').value, 
-                hlUnit: document.getElementById('new-peptide-unit').value 
-            }); 
-            if(res.success) { 
-                showToast(t('toast_logged')); 
-                loadAllData(); 
-                e.target.reset(); 
-            } 
+            const res = await api({ action: 'savePeptide', name: document.getElementById('new-peptide-name').value, halfLife: document.getElementById('new-peptide-hl').value, hlUnit: document.getElementById('new-peptide-unit').value }); 
+            if(res && res.success) { showToast(t('toast_logged')); loadAllData(); e.target.reset(); } 
         };
         document.getElementById('config-form').onsubmit = async (e) => { 
             e.preventDefault(); 
-            const res = await api({ 
-                action: 'saveConfig', 
-                label: document.getElementById('conf-label').value, 
-                peptide: document.getElementById('conf-peptide-select').value, 
-                value: document.getElementById('conf-val').value, 
-                unit: document.getElementById('conf-unit').value, 
-                frequency: document.getElementById('conf-frequency').value 
-            }); 
-            if(res.success) { 
-                showToast(t('toast_logged')); 
-                loadAllData(); 
-                e.target.reset(); 
-            } 
+            const res = await api({ action: 'saveConfig', label: document.getElementById('conf-label').value, peptide: document.getElementById('conf-peptide-select').value, value: document.getElementById('conf-val').value, unit: document.getElementById('conf-unit').value, frequency: document.getElementById('conf-frequency').value }); 
+            if(res && res.success) { showToast(t('toast_logged')); loadAllData(); e.target.reset(); } 
         };
     </script>
 </body>
