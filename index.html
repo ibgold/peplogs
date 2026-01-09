@@ -10,7 +10,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Peptide Log">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3022/3022243.png">
+    <link rel="apple-touch-icon" href="logo.png">
+    <link rel="manifest" href="manifest.json">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
@@ -88,6 +89,11 @@
                 </div>
             </div>
             <div class="flex items-center gap-2">
+                <!-- PWA Install Button (Hidden by default) -->
+                <button id="pwa-install-btn" class="hidden bg-indigo-500/20 border border-indigo-500/50 px-3 py-1.5 rounded-xl text-xs font-black text-indigo-300 hover:bg-indigo-500/40 transition-colors uppercase tracking-widest flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                    <span>Install</span>
+                </button>
                 <button onclick="toggleLanguage()" id="lang-toggle" class="bg-slate-800/50 border border-slate-700 px-3 py-1.5 rounded-xl text-xs font-black text-indigo-300 hover:bg-slate-700 transition-colors uppercase tracking-widest">EN</button>
             </div>
         </header>
@@ -364,19 +370,19 @@
 
         // Static Mapping: Human Name -> DOM ID
         const SITE_IDS = {
-            "Right Abdomen (Upper)": "right-abdomen-upper",
-            "Right Abdomen (Lower)": "right-abdomen-lower",
-            "Left Abdomen (Upper)": "left-abdomen-upper",
-            "Left Abdomen (Lower)": "left-abdomen-lower",
-            "Right Flank": "right-flank",
-            "Left Flank": "left-flank",
-            "Right Thigh": "right-thigh",
-            "Left Thigh": "left-thigh",
-            "Right Deltoid": "right-deltoid",
-            "Left Deltoid": "left-deltoid",
-            "Right Buttock": "right-buttock",
-            "Left Buttock": "left-buttock",
-            "Other": "other"
+            "Right Abdomen (Upper)": "zone-right-abdomen-upper",
+            "Right Abdomen (Lower)": "zone-right-abdomen-lower",
+            "Left Abdomen (Upper)": "zone-left-abdomen-upper",
+            "Left Abdomen (Lower)": "zone-left-abdomen-lower",
+            "Right Flank": "zone-right-flank",
+            "Left Flank": "zone-left-flank",
+            "Right Thigh": "zone-right-thigh",
+            "Left Thigh": "zone-left-thigh",
+            "Right Deltoid": "zone-right-deltoid",
+            "Left Deltoid": "zone-left-deltoid",
+            "Right Buttock": "zone-right-buttock", // Might not exist in SVG front view, handled via buttons
+            "Left Buttock": "zone-left-buttock",
+            "Other": "zone-other"
         };
 
         function t(key) { return translations[currentLang][key] || key; }
@@ -603,7 +609,7 @@
             let sugId = "";
             for(const [id, label] of Object.entries(translations[currentLang].site_names)) { if(label === sug) { sugId = id; break; } }
             if(sugId && SITE_IDS[sugId]) {
-                const sugEl = document.getElementById(`zone-${SITE_IDS[sugId]}`);
+                const sugEl = document.getElementById(SITE_IDS[sugId]);
                 if(sugEl) sugEl.classList.add('suggested');
             }
             const siteBtnsCont = document.getElementById('site-buttons-container');
@@ -621,7 +627,7 @@
             
             const safeId = SITE_IDS[siteId];
             if(safeId) {
-                const zoneEl = document.getElementById(`zone-${safeId}`); if(zoneEl) zoneEl.classList.add('selected');
+                const zoneEl = document.getElementById(safeId); if(zoneEl) zoneEl.classList.add('selected');
                 const btnEl = document.getElementById(`btn-${safeId}`); if(btnEl) btnEl.classList.add('bg-indigo-600');
             }
         }
@@ -650,11 +656,9 @@
             let best = preferredSites[0]; 
             const usage = {}; 
             preferredSites.forEach(s => usage[s] = 0); 
-            
             history.forEach(h => { 
                 if(usage.hasOwnProperty(h.site)) usage[h.site] = Math.max(usage[h.site], new Date(h.date).getTime()); 
             }); 
-            
             let minTime = Infinity; 
             for(const [site, time] of Object.entries(usage)) { 
                 if(time < minTime) { minTime = time; best = site; } 
@@ -662,10 +666,8 @@
             
             const sugTxt = document.getElementById('suggestion-text'); 
             if(sugTxt) {
-                // Affiche le nom traduit
                 sugTxt.textContent = translations[currentLang].site_names[best] || best;
-                // Stocke l'ID technique de manière fiable
-                sugTxt.dataset.siteId = best;
+                sugTxt.dataset.siteId = best; // Store Technical ID
             }
             
             const box = document.getElementById('suggestion-box'); 
@@ -674,14 +676,11 @@
 
         function useSuggestion() { 
             const sugTxt = document.getElementById('suggestion-text');
-            // Récupération directe de l'ID technique stocké, plus de reverse lookup fragile
-            const id = sugTxt ? sugTxt.dataset.siteId : null;
-            
+            const id = sugTxt ? sugTxt.dataset.siteId : null; // Retrieve Technical ID
             if (!id) return;
 
             const logSite = document.getElementById('log-site'); 
             if(logSite) logSite.value = id; 
-            
             const logLabel = document.getElementById('log-site-label'); 
             if(logLabel) logLabel.innerText = translations[currentLang].site_names[id] || id; 
         }
@@ -791,6 +790,25 @@
             setTimeout(async () => { if (!cancelled) { const res = await api({ action: 'deleteLog', row: row }); if(res && res.success) loadAllData(); } }, 3500);
         }
 
+        // PWA Install Logic
+        let deferredPrompt;
+        const installBtn = document.getElementById('pwa-install-btn');
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            if(installBtn) installBtn.classList.remove('hidden');
+        });
+        if(installBtn) {
+            installBtn.addEventListener('click', async () => {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    const { outcome } = await deferredPrompt.userChoice;
+                    deferredPrompt = null;
+                    installBtn.classList.add('hidden');
+                }
+            });
+        }
+
         function saveUrl() { const url = document.getElementById('setup-url').value.trim(); if(url) { localStorage.setItem('pep_url', url); location.reload(); } }
         function resetApp() { if(confirm(t('confirm_disconnect'))) { localStorage.removeItem('pep_url'); location.reload(); } }
         async function deletePreset(row) { if(confirm(t('confirm_del_preset'))) { const res = await api({action:'deleteConfig', row}); if(res && res.success) loadAllData(); } }
@@ -837,6 +855,11 @@
             const res = await api({ action: 'saveConfig', label: document.getElementById('conf-label').value, peptide: document.getElementById('conf-peptide-select').value, value: document.getElementById('conf-val').value, unit: document.getElementById('conf-unit').value, frequency: document.getElementById('conf-frequency').value }); 
             if(res && res.success) { showToast(t('toast_logged')); loadAllData(); e.target.reset(); } 
         };
+
+        // Modification ici : On vérifie que le protocole est http ou https avant d'enregistrer le SW
+        if ('serviceWorker' in navigator && (window.location.protocol === 'https:' || window.location.protocol === 'http:')) { 
+            window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(err => console.error(err))); 
+        }
     </script>
 </body>
 </html>
