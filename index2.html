@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <!-- PWA Meta Tags -->
+    <title>Peptide Log Pro</title>
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="PeptideLog">
+    
+    <!-- App Icon -->
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3022/3022252.png">
+    
+    <!-- Web Manifest (Inline Base64) -->
+    <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIlBlcHRpZGUgTG9nIFBybyIsCiAgInNob3J0X25hbWUiOiAiUGVwdGlkZUxvZyIsCiAgInN0YXJ0X3VybCI6ICIuIiwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjMGYxNzJhIiwKICAidGhlbWVfY29sb3IiOiAiIzYzNjZmMSIsCiAgImljb25zIjogWwogICAgewogICAgICAic3JjIjogImh0dHBzOi8vY2RuLWljb25zLXBuZy5mbGF0aWNvbi5jb20vNTEyLzMwMjIvMzAyMjI1Mi5wbmciLAogICAgICAic2l6ZXMiOiAiNTEyeDUxMiIsCiAgICAgICJ0eXBlIjogImltYWdlL3BuZyIsCiAgICAgICJwdXJwb3NlIjogImFueSBtYXNrYWJsZSIKICAgIH0KICBdCn0=">
+
+    <!-- Dependencies -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1/dist/chartjs-plugin-zoom.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: { background: '#0f172a', surface: '#1e293b', primary: '#6366f1' },
+                    animation: { 'fade-in': 'fadeIn 0.3s ease-out', 'slide-up': 'slideUp 0.4s ease-out', 'bounce-in': 'bounceIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55)' },
+                    keyframes: { 
+                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } }, 
+                        slideUp: { '0%': { transform: 'translateY(10px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } },
+                        bounceIn: { '0%': { transform: 'scale(0.8)', opacity: '0' }, '100%': { transform: 'scale(1)', opacity: '1' } }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Outfit', sans-serif; background-color: #0f172a; background-image: radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%); color: #f8fafc; min-height: 100vh; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
+        .glass-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); }
+        .input-field { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(148, 163, 184, 0.2); color: white; border-radius: 1rem; padding: 0.75rem 1rem; width: 100%; font-size: 16px; transition: all 0.2s; }
+        .input-field:focus { border-color: #6366f1; outline: none; background: rgba(15, 23, 42, 0.9); }
+        .btn-primary { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3); }
+        
+        .nav-pill { color: #94a3b8; transition: all 0.3s; display: flex; align-items: center; justify-content: center; text-align: center; border-radius: 0.75rem; font-size: 9px; font-weight: 700; text-transform: uppercase; border: 1px solid transparent; }
+        .nav-pill.active { background: #6366f1 !important; color: white !important; border-color: rgba(255,255,255,0.1); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25); }
+        
+        /* Calendar Styles */
+        .cal-day { aspect-ratio: 1/1; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 0.75rem; font-size: 14px; position: relative; cursor: pointer; transition: background 0.2s; }
+        .cal-day:hover { background: rgba(255,255,255,0.05); }
+        .cal-day.today { background: rgba(99, 102, 241, 0.2); border: 1px solid #6366f1; }
+        .cal-day.selected { background: #6366f1 !important; color: white; }
+        .cal-dot { width: 4px; height: 4px; border-radius: 50%; background: #6366f1; position: absolute; bottom: 6px; }
+        
+        /* Syringe Visual */
+        .syringe-container { position: relative; width: 60px; height: 220px; margin: 0 auto; background: rgba(255,255,255,0.05); border-radius: 8px; border: 2px solid #475569; overflow: hidden; }
+        .syringe-marks { position: absolute; top: 0; right: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none; }
+        .mark { position: absolute; left: 0; width: 40%; height: 1px; background: rgba(255,255,255,0.3); }
+        .mark.major { width: 100%; background: rgba(255,255,255,0.6); }
+        .liquid { position: absolute; bottom: 0; left: 0; width: 100%; background: linear-gradient(to top, #ef4444, #f87171); transition: height 0.5s; opacity: 0.8; }
+        .plunger { position: absolute; bottom: 0; left: 0; width: 100%; height: 8px; background: #334155; z-index: 2; transition: bottom 0.5s; border-top: 2px solid #cbd5e1; }
+        
+        /* Toast Notifications */
+        #toast-container { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%); z-index: 100; width: 90%; max-width: 400px; pointer-events: none; }
+        .toast { background: rgba(30, 41, 59, 0.95); backdrop-filter: blur(8px); border: 1px solid rgba(99, 102, 241, 0.3); color: white; padding: 1rem 1.25rem; border-radius: 1rem; margin-top: 0.5rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5); pointer-events: auto; animation: bounce-in 0.4s ease-out; transition: all 0.4s; }
+        .toast.error { border-color: #ef4444; }
+        
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="flex flex-col items-center pb-24 px-4">
+
+    <div id="toast-container"></div>
+
+    <!-- Setup Screen -->
+    <div id="setup-screen" class="fixed inset-0 z-50 bg-slate-900 flex items-center justify-center p-6 hidden text-white text-center">
+        <div class="glass-card w-full max-w-md p-8 rounded-3xl space-y-6">
+            <h2 class="text-2xl font-bold">Database Setup</h2>
+            <p class="text-slate-400 text-sm">Enter your Google Apps Script Deployment URL</p>
+            <input type="url" id="setup-url" placeholder="https://script.google.com/..." class="input-field text-center">
+            <button onclick="saveUrl()" class="btn-primary w-full py-4 rounded-2xl font-bold">Connect</button>
+        </div>
+    </div>
+
+    <!-- Main App UI -->
+    <div id="app-container" class="w-full max-w-lg hidden animate-fade-in">
+        <header class="py-6 flex justify-between items-center text-white">
+            <h1 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-white">Peptide Log</h1>
+            <div id="status-label" class="text-[10px] font-bold uppercase tracking-widest flex items-center gap-2">
+                <span id="status-dot" class="w-2 h-2 rounded-full bg-slate-500 animate-pulse"></span>
+                <span id="status-text" class="text-slate-500">Syncing...</span>
+            </div>
+        </header>
+
+        <nav class="mb-6 sticky top-4 z-40">
+            <div class="flex bg-slate-800/80 p-1.5 rounded-2xl border border-slate-700/50 backdrop-blur-xl w-full shadow-2xl items-stretch overflow-x-auto scrollbar-hide">
+                <button onclick="switchView('log')" id="tab-log" class="nav-pill active flex-1 py-3 px-2">Log</button>
+                <button onclick="switchView('calendar')" id="tab-calendar" class="nav-pill flex-1 py-3 px-2">Cal</button>
+                <button onclick="switchView('levels')" id="tab-levels" class="nav-pill flex-1 py-3 px-2">Levels</button>
+                <button onclick="switchView('history')" id="tab-history" class="nav-pill flex-1 py-3 px-2">History</button>
+                <button onclick="switchView('calculator')" id="tab-calculator" class="nav-pill flex-1 py-3 px-2">Calc</button>
+                <button onclick="switchView('config')" id="tab-config" class="nav-pill flex-1 py-3 px-2">Config</button>
+            </div>
+        </nav>
+
+        <main class="space-y-6">
+            
+            <!-- VIEW: LOG -->
+            <div id="view-log" class="space-y-6 animate-slide-up">
+                <div id="suggestion-box" class="glass-card p-4 rounded-2xl border-l-4 border-l-indigo-500 flex justify-between items-center hidden">
+                    <div><p class="text-[10px] text-indigo-400 font-bold uppercase tracking-wider">Suggested Site</p><p id="suggestion-text" class="text-lg font-bold text-white">--</p></div>
+                    <button onclick="useSuggestion()" class="btn-primary px-4 py-2 rounded-lg text-xs font-bold text-white">Use</button>
+                </div>
+                <div id="quick-log-container" class="grid grid-cols-2 gap-3"></div>
+                <form id="log-form" class="glass-card p-6 rounded-3xl space-y-4 text-white shadow-xl">
+                    <h2 class="text-xs font-bold text-indigo-300 uppercase tracking-wider mb-2 text-center">Manual Entry</h2>
+                    <select id="log-peptide" class="input-field" required></select>
+                    <div class="flex gap-2">
+                        <input type="number" id="log-dosage" placeholder="Dose" step="any" class="input-field">
+                        <select id="log-unit" class="bg-slate-700 text-white rounded-xl px-3 font-bold"><option>mcg</option><option>mg</option></select>
+                    </div>
+                    <select id="log-site" class="input-field" required></select>
+                    <input type="datetime-local" id="log-time" class="input-field" style="color-scheme: dark;">
+                    <button type="submit" class="btn-primary w-full py-4 rounded-2xl font-bold text-lg">Log Injection</button>
+                </form>
+            </div>
+
+            <!-- VIEW: CALENDAR -->
+            <div id="view-calendar" class="hidden space-y-6 animate-slide-up">
+                <div class="glass-card p-6 rounded-3xl shadow-xl text-white">
+                    <div class="flex justify-between items-center mb-6">
+                        <button onclick="changeMonth(-1)" class="p-2 text-slate-400 hover:text-white">←</button>
+                        <h2 id="calendar-title" class="text-lg font-bold">Month Year</h2>
+                        <button onclick="changeMonth(1)" class="p-2 text-slate-400 hover:text-white">→</button>
+                    </div>
+                    <div class="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-slate-500 uppercase mb-2">
+                        <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+                    </div>
+                    <div id="calendar-grid" class="grid grid-cols-7 gap-1"></div>
+                </div>
+                <div id="day-details" class="space-y-3"></div>
+            </div>
+
+            <!-- VIEW: LEVELS -->
+            <div id="view-levels" class="hidden space-y-6 animate-slide-up">
+                <div class="glass-card p-6 rounded-3xl shadow-xl text-white">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xs font-bold text-indigo-300 uppercase tracking-wider flex-1 ml-4">Accumulation (mg)</h2>
+                        <select id="level-peptide-filter" class="bg-slate-800 text-xs border border-slate-700 rounded-lg px-2 py-1 text-white outline-none" onchange="updateLevelChart()"></select>
+                    </div>
+                    <div class="relative h-64 w-full px-2">
+                        <canvas id="levelChart"></canvas>
+                    </div>
+                    <div class="flex flex-col items-center mt-4 space-y-2">
+                        <button onclick="resetToToday()" class="text-[10px] text-indigo-400 font-bold uppercase tracking-widest border border-indigo-500/30 px-4 py-2 rounded-full hover:bg-indigo-500/10">
+                            Reset View to Today
+                        </button>
+                        <p class="text-[8px] text-slate-500 italic">Pinch to zoom • Drag history</p>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 mt-8">
+                        <div class="bg-slate-800/50 p-4 rounded-2xl border border-slate-700/50 text-center">
+                            <p class="text-[10px] text-slate-500 uppercase font-bold">Current Level</p>
+                            <p id="stat-current-level" class="text-2xl font-black text-indigo-400 mt-1 leading-none">0.00</p>
+                            <p class="text-[8px] text-slate-500 mt-2 uppercase font-bold tracking-tighter">Milligrams (mg)</p>
+                        </div>
+                        <div class="bg-slate-800/50 p-4 rounded-2xl border border-slate-700/50 text-center">
+                            <p class="text-[10px] text-slate-500 uppercase font-bold">Local Peak (14d)</p>
+                            <p id="stat-peak-level" class="text-2xl font-black text-white mt-1 leading-none">0.00</p>
+                            <p id="stat-peak-date" class="text-[8px] text-indigo-300 mt-2 uppercase font-bold tracking-tighter">--</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: HISTORY -->
+            <div id="view-history" class="hidden space-y-4 animate-slide-up">
+                <div class="glass-card p-2 rounded-2xl mb-4">
+                    <input type="text" id="history-filter" placeholder="Search peptide or site..." class="input-field border-none bg-transparent" oninput="renderHistory()">
+                </div>
+                <div id="history-list" class="space-y-3 pb-20"></div>
+            </div>
+
+            <!-- VIEW: CALCULATOR -->
+            <div id="view-calculator" class="hidden animate-slide-up">
+                <div class="glass-card p-6 rounded-3xl flex flex-col items-center shadow-xl">
+                    <div class="syringe-container mb-6">
+                        <div class="syringe-marks" id="syringe-marks"></div>
+                        <div id="visual-liquid" class="liquid"></div>
+                        <div id="visual-plunger" class="plunger"></div>
+                    </div>
+                    <div class="text-center text-white">
+                        <p class="text-indigo-300 text-xs font-bold uppercase mb-1">Draw to IU (U-100)</p>
+                        <div class="text-6xl font-black text-white flex items-end justify-center gap-2">
+                            <span id="calc-result">0</span><span class="text-2xl text-slate-500 mb-2">IU</span>
+                        </div>
+                    </div>
+                    <div class="w-full space-y-4 mt-8 text-white">
+                        <input type="number" id="calc-vial" placeholder="Vial Mass (mg)" step="any" class="input-field" oninput="runCalc()">
+                        <input type="number" id="calc-water" placeholder="Bac Water (mL)" step="any" class="input-field" oninput="runCalc()">
+                        <input type="number" id="calc-dose" placeholder="Target Dose (mcg)" step="any" class="input-field" oninput="runCalc()">
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: CONFIG -->
+            <div id="view-config" class="hidden space-y-6 animate-slide-up text-white pb-10">
+                <section class="glass-card p-6 rounded-3xl"><h2 class="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-4">Preferred Sites</h2><div id="preferred-sites-grid" class="grid grid-cols-2 gap-2"></div></section>
+                <section class="glass-card p-6 rounded-3xl"><h2 class="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-4 text-center">Peptide Library</h2><form id="peptide-add-form" class="flex gap-2 mb-4"><input type="text" id="new-peptide-name" placeholder="Name" class="input-field flex-1"><button type="submit" class="btn-primary px-6 rounded-xl font-bold text-xs uppercase">Add</button></form><div id="peptide-list" class="flex flex-wrap gap-2"></div></section>
+                <section class="glass-card p-6 rounded-3xl">
+                    <h2 class="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-4 text-center">Add Quick Log</h2>
+                    <form id="config-form" class="space-y-4">
+                        <input type="text" id="conf-label" placeholder="Label (e.g. BPC Morning)" class="input-field" required>
+                        <select id="conf-peptide-select" class="input-field" required></select>
+                        <div class="flex gap-2"><input type="number" id="conf-val" placeholder="Dose" step="any" class="input-field flex-1" required><select id="conf-unit" class="bg-slate-700 text-white rounded-xl px-3 font-bold"><option>mcg</option><option>mg</option></select></div>
+                        <button type="submit" class="btn-primary w-full py-3 rounded-xl font-bold uppercase text-sm tracking-widest">Save Shortcut</button>
+                    </form>
+                </section>
+                <div id="presets-list" class="space-y-2"></div>
+                <button onclick="resetApp()" class="w-full py-4 text-red-400 text-xs font-bold border border-red-900/30 rounded-2xl mt-4 bg-red-900/10">Disconnect database</button>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Site -->
+    <div id="site-modal" class="fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-sm hidden flex items-center justify-center p-6 text-white text-center">
+        <div class="glass-card w-full max-w-sm p-6 rounded-3xl space-y-4">
+            <h3 class="font-bold text-lg">Select Injection Site</h3>
+            <div id="modal-sites" class="grid grid-cols-2 gap-2 max-h-[50vh] overflow-y-auto pr-1"></div>
+            <button onclick="closeModal()" class="w-full py-3 text-slate-500 font-bold border-t border-slate-700 mt-2">Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        // --- STATE ---
+        let APP_URL = localStorage.getItem('pep_url');
+        let history = [], presets = [], peptideLibrary = [], chart = null;
+        let pendingPreset = null;
+        let currentChartLabels = [], currentChartData = [], currentDetailedDates = [];
+        let currentCalDate = new Date();
+        let selectedCalDate = new Date();
+        
+        const ALL_SITES = ["Right Abdomen (Upper)", "Right Abdomen (Lower)", "Left Abdomen (Upper)", "Left Abdomen (Lower)", "Right Flank", "Left Flank", "Right Thigh", "Left Thigh", "Right Deltoid", "Left Deltoid", "Right Buttock", "Left Buttock", "Other"];
+        const HALF_LIVES = { "tirzepatide": 120, "retatrutide": 144 };
+        let preferredSites = JSON.parse(localStorage.getItem('pref_sites')) || ["Right Abdomen (Lower)", "Left Abdomen (Lower)"];
+
+        // Service Worker for PWA
+        if ('serviceWorker' in navigator) {
+            const swCode = `self.addEventListener('fetch', function(event) {});`;
+            const blob = new Blob([swCode], {type: 'application/javascript'});
+            navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(()=>{});
+        }
+
+        // --- UTILS ---
+        function showToast(msg, type = 'success', duration = 3000, action = null) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type === 'error' ? 'error' : ''}`;
+            toast.innerHTML = `<span>${msg}</span>`;
+            if(action) {
+                const btn = document.createElement('button');
+                btn.className = "ml-4 text-indigo-400 font-bold uppercase text-[10px]";
+                btn.innerText = action.label;
+                btn.onclick = (e) => { e.stopPropagation(); action.callback(); toast.remove(); };
+                toast.appendChild(btn);
+            }
+            container.appendChild(toast);
+            setTimeout(() => { if(toast && toast.parentNode) { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 400); } }, duration);
+        }
+
+        async function checkStatus() {
+            if(!APP_URL) return;
+            const dot = document.getElementById('status-dot'), txt = document.getElementById('status-text');
+            try {
+                const res = await fetch(`${APP_URL}?action=ping`).then(r => r.json());
+                if(res.success) {
+                    dot.className = "w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]";
+                    txt.innerText = "Connected"; txt.className = "text-green-500";
+                }
+            } catch(e) {
+                dot.className = "w-2 h-2 rounded-full bg-red-500 animate-pulse";
+                txt.innerText = "Offline"; txt.className = "text-red-500";
+            }
+        }
+
+        async function api(data) { 
+            try { 
+                const res = await fetch(APP_URL, { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'text/plain;charset=utf-8' } }); 
+                return await res.json(); 
+            } catch(e) { showToast("Sync Error", "error"); return {success:false}; } 
+        }
+
+        // --- NAVIGATION ---
+        function switchView(view) {
+            document.querySelectorAll('main > div').forEach(d => d.classList.add('hidden'));
+            document.getElementById('view-' + view).classList.remove('hidden');
+            document.querySelectorAll('.nav-pill').forEach(b => b.classList.remove('active'));
+            document.getElementById('tab-' + view).classList.add('active');
+            
+            loadAllData().then(() => {
+                if(view === 'calendar') renderCalendar();
+                if(view === 'levels') setTimeout(updateLevelChart, 50);
+                if(view === 'calculator') initSyringe();
+            });
+        }
+
+        async function loadAllData() {
+            if(!APP_URL) return;
+            try {
+                const [r1, r2, r3, r4] = await Promise.all([
+                    fetch(`${APP_URL}?action=getPresets`).then(r => r.json()),
+                    fetch(`${APP_URL}?action=getPeptides`).then(r => r.json()),
+                    fetch(`${APP_URL}?action=getHistory`).then(r => r.json()),
+                    fetch(`${APP_URL}?action=ping`).then(r => r.json())
+                ]);
+                presets = r1.presets || []; history = r3.history || []; peptideLibrary = r2.peptides || [];
+                renderUI();
+            } catch(e) { console.error("Data error", e); }
+        }
+
+        function renderUI() { populatePeptideSelects(); renderPeptideList(); renderPresetsList(); renderQuickLogs(); renderPrefSites(); calculateSuggestion(); renderHistory(); if(!document.getElementById('view-calendar').classList.contains('hidden')) renderCalendar(); }
+
+        function populatePeptideSelects() {
+            const selects = [document.getElementById('log-peptide'), document.getElementById('conf-peptide-select'), document.getElementById('level-peptide-filter')];
+            const names = new Set([...presets.map(p => p.peptide), ...peptideLibrary.map(p => p.name)]);
+            const sorted = Array.from(names).sort();
+            selects.forEach(s => {
+                if(!s) return;
+                const prev = s.value;
+                if(s.id === 'level-peptide-filter') {
+                    const glpOnly = sorted.filter(n => HALF_LIVES[n.toLowerCase()]);
+                    s.innerHTML = glpOnly.map(n => `<option value="${n}">${n}</option>`).join('');
+                } else {
+                    s.innerHTML = '<option value="">Select Peptide</option>' + sorted.map(n => `<option value="${n}">${n}</option>`).join('');
+                }
+                s.value = prev || (s.options[0] ? s.options[0].value : "");
+            });
+        }
+
+        // --- CALENDAR ---
+        function changeMonth(dir) { currentCalDate.setMonth(currentCalDate.getMonth() + dir); renderCalendar(); }
+        function renderCalendar() {
+            const grid = document.getElementById('calendar-grid'), title = document.getElementById('calendar-title');
+            grid.innerHTML = '';
+            const year = currentCalDate.getFullYear(), month = currentCalDate.getMonth();
+            title.innerText = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(currentCalDate);
+            const firstDay = new Date(year, month, 1).getDay(), daysInMonth = new Date(year, month + 1, 0).getDate(), today = new Date();
+
+            for (let i = 0; i < firstDay; i++) grid.appendChild(document.createElement('div'));
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dayEl = document.createElement('div'); dayEl.className = 'cal-day'; dayEl.innerText = d;
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                if (history.some(h => new Date(h.date).toISOString().split('T')[0] === dateStr)) {
+                    const dot = document.createElement('div'); dot.className = 'cal-dot'; dayEl.appendChild(dot);
+                }
+                if (year === today.getFullYear() && month === today.getMonth() && d === today.getDate()) dayEl.classList.add('today');
+                if (selectedCalDate && year === selectedCalDate.getFullYear() && month === selectedCalDate.getMonth() && d === selectedCalDate.getDate()) {
+                    dayEl.classList.add('selected'); showDayDetails(dateStr);
+                }
+                dayEl.onclick = () => { selectedCalDate = new Date(year, month, d); renderCalendar(); };
+                grid.appendChild(dayEl);
+            }
+        }
+
+        function showDayDetails(dateStr) {
+            const container = document.getElementById('day-details');
+            const dayInjections = history.filter(h => new Date(h.date).toISOString().split('T')[0] === dateStr);
+            if (!dayInjections.length) { container.innerHTML = '<p class="text-center text-slate-500 text-xs italic py-4">No injections today.</p>'; return; }
+            container.innerHTML = dayInjections.map(h => `
+                <div class="glass-card p-4 rounded-2xl flex justify-between items-center text-white border-l-4 border-l-indigo-500">
+                    <div>
+                        <p class="font-bold text-sm">${h.peptide} <span class="text-indigo-400 font-mono">${h.dosage}</span></p>
+                        <p class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">${h.site} • ${new Date(h.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // --- GRAPH ---
+        function updateLevelChart() {
+            const selected = document.getElementById('level-peptide-filter').value;
+            const canvas = document.getElementById('levelChart');
+            if(!selected || !HALF_LIVES[selected.toLowerCase()] || !canvas) return;
+            
+            const hlHours = HALF_LIVES[selected.toLowerCase()], k = Math.log(2) / hlHours, now = new Date();
+            const nowTime = now.getTime();
+            const pepLogs = history.filter(h => h.peptide.toLowerCase() === selected.toLowerCase());
+            if(!pepLogs.length) return;
+            
+            const firstInjectionDate = new Date(Math.min(...pepLogs.map(l => new Date(l.date).getTime())));
+            const labels = [], dataPoints = [], detailedDates = [];
+            const startTime = firstInjectionDate.getTime() - 86400000; 
+            const endTime = nowTime + 604800000;
+            const totalHours = (endTime - startTime) / 3600000;
+            const stepHours = totalHours > 1000 ? 12 : 4; 
+            
+            for (let tMs = startTime; tMs <= endTime; tMs += (stepHours * 3600000)) { 
+                const t = new Date(tMs); let total = 0;
+                pepLogs.forEach(log => {
+                    const ld = new Date(log.date);
+                    if (ld <= t) {
+                        let doseVal = parseFloat(log.dosage); if (log.dosage.toLowerCase().includes('mg')) doseVal *= 1000;
+                        total += doseVal * Math.pow(Math.E, -k * ((t-ld)/3600000));
+                    }
+                });
+                const isNow = Math.abs(tMs - nowTime) < (stepHours/2 * 3600000);
+                labels.push(isNow ? "Today" : t.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+                dataPoints.push(total / 1000); detailedDates.push(t);
+            }
+
+            currentChartLabels = labels; currentChartData = dataPoints; currentDetailedDates = detailedDates;
+            if(chart) chart.destroy();
+            
+            const todayLinePlugin = {
+                id: 'todayLine',
+                afterDraw: (chart) => {
+                    const { ctx, scales: { x } } = chart;
+                    const idx = labels.indexOf("Today");
+                    if (idx !== -1) {
+                        const xPos = x.getPixelForValue(idx);
+                        ctx.save(); ctx.beginPath(); ctx.setLineDash([5, 5]);
+                        ctx.moveTo(xPos, chart.chartArea.top); ctx.lineTo(xPos, chart.chartArea.bottom);
+                        ctx.lineWidth = 1; ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)'; ctx.stroke(); ctx.restore();
+                    }
+                }
+            };
+
+            chart = new Chart(canvas.getContext('2d'), {
+                type: 'line', data: { labels, datasets: [{ data: dataPoints, borderColor: '#6366f1', borderWidth: 2, backgroundColor: 'rgba(99, 102, 241, 0.1)', fill: true, tension: 0.3, pointRadius: 0 }] },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: {
+                        x: { display: true, ticks: { color: '#64748b', font: { size: 9 }, autoSkip: true, maxTicksLimit: 8 }, grid: { display: false } },
+                        y: { beginAtZero: true, ticks: { color: '#64748b', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.03)', drawBorder: false } }
+                    },
+                    plugins: { 
+                        legend: { display: false }, tooltip: { enabled: true, mode: 'index', intersect: false },
+                        zoom: { zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' }, pan: { enabled: true, mode: 'x', threshold: 5 } }
+                    }
+                },
+                plugins: [todayLinePlugin]
+            });
+
+            // ROBUST PEAK CALCULATION
+            const todayIdx = labels.indexOf("Today");
+            document.getElementById('stat-current-level').innerText = (todayIdx !== -1 ? dataPoints[todayIdx] : 0).toFixed(2);
+            const wStart = Math.max(0, todayIdx - (7 * 24 / stepHours)), wEnd = Math.min(dataPoints.length - 1, todayIdx + (7 * 24 / stepHours));
+            let localMax = 0, localMaxIdx = todayIdx;
+            for (let j = wStart; j <= wEnd; j++) { if (dataPoints[j] > localMax) { localMax = dataPoints[j]; localMaxIdx = j; } }
+            document.getElementById('stat-peak-level').innerText = localMax.toFixed(2);
+            document.getElementById('stat-peak-date').innerText = `Peak: ${detailedDates[localMaxIdx].toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric' })}`;
+            resetToToday();
+        }
+
+        function resetToToday() {
+            if(!chart || !currentChartLabels.length) return;
+            const idx = currentChartLabels.indexOf("Today");
+            if(idx === -1) return;
+            const range = Math.round(7 * (24 / ((currentDetailedDates[1]-currentDetailedDates[0])/3600000)));
+            chart.options.scales.x.min = Math.max(0, idx - range);
+            chart.options.scales.x.max = Math.min(currentChartLabels.length - 1, idx + range/2);
+            chart.update();
+        }
+
+        // --- CALCULATOR ---
+        function initSyringe() {
+            const container = document.getElementById('syringe-marks'); if(!container) return; container.innerHTML = '';
+            for(let i=0; i<=10; i++) { const m = document.createElement('div'); m.className = `mark ${i%5===0?'major':''}`; m.style.bottom = `${i*10}%`; container.appendChild(m); }
+        }
+
+        function runCalc() {
+            const v = parseFloat(document.getElementById('calc-vial').value), w = parseFloat(document.getElementById('calc-water').value), d = parseFloat(document.getElementById('calc-dose').value);
+            if(v && w && d) {
+                const iu = (d / (v * 1000 / w)) * 100;
+                document.getElementById('calc-result').textContent = iu.toFixed(1);
+                document.getElementById('visual-liquid').style.height = Math.min(iu, 100) + '%';
+                document.getElementById('visual-plunger').style.bottom = Math.min(iu, 100) + '%';
+            }
+        }
+
+        // --- QUICK LOGS ---
+        function renderQuickLogs() { 
+            const container = document.getElementById('quick-log-container');
+            if(!presets.length) { container.innerHTML = '<div class="col-span-2 p-8 text-center text-slate-500 text-xs italic">No shortcuts.</div>'; return; }
+            container.innerHTML = presets.map(p => `
+                <button onclick="openSiteModal(${p.row})" class="glass-card p-4 rounded-2xl text-left border border-slate-700 active:scale-95 transition text-white">
+                    <p class="font-black text-[9px] uppercase text-indigo-300 mb-1 opacity-70">${p.label}</p>
+                    <p class="font-bold text-sm truncate">${p.peptide}</p>
+                    <p class="text-[10px] opacity-70">${p.value} ${p.unit}</p>
+                </button>
+            `).join(''); 
+        }
+
+        function openSiteModal(row) { 
+            pendingPreset = presets.find(p => p.row == row); 
+            document.getElementById('modal-sites').innerHTML = ALL_SITES.map(s => `<button onclick="finalizeQuickLog('${s}')" class="bg-slate-800 p-3 rounded-xl text-[10px] font-bold text-white border border-slate-700 active:bg-indigo-600 transition">${s}</button>`).join(''); 
+            document.getElementById('site-modal').classList.remove('hidden'); 
+        }
+        function closeModal() { document.getElementById('site-modal').classList.add('hidden'); }
+        async function finalizeQuickLog(site) { 
+            closeModal(); const data = { action: 'logInjection', peptide: pendingPreset.peptide, dosage: `${pendingPreset.value} ${pendingPreset.unit}`, site, timestampMs: Date.now() }; 
+            const res = await api(data); if(res.success) { showToast(`Logged: ${pendingPreset.peptide}`); loadAllData(); } 
+        }
+
+        // --- HISTORY & DELETE WITH UNDO ---
+        function renderHistory() { 
+            const filter = document.getElementById('history-filter').value.toLowerCase();
+            document.getElementById('history-list').innerHTML = history.filter(h => h.peptide.toLowerCase().includes(filter) || h.site.toLowerCase().includes(filter)).map(h => `
+                <div class="glass-card p-4 rounded-2xl flex justify-between items-center text-white" id="history-row-${h.row}">
+                    <div><p class="font-bold text-sm">${h.peptide} <span class="text-indigo-400 font-mono">${h.dosage}</span></p><p class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">${h.site} • ${new Date(h.date).toLocaleDateString()}</p></div>
+                    <button onclick="deleteWithUndo(${h.row})" class="text-slate-600 p-2">✕</button>
+                </div>
+            `).join(''); 
+        }
+
+        function deleteWithUndo(row) {
+            const rowEl = document.getElementById(`history-row-${row}`); rowEl.style.opacity = '0.3'; rowEl.style.pointerEvents = 'none';
+            let cancelled = false; showToast("Deleting entry...", "error", 3500, { label: "Undo", callback: () => { cancelled = true; rowEl.style.opacity = '1'; rowEl.style.pointerEvents = 'auto'; showToast("Cancelled"); } });
+            setTimeout(async () => { if(!cancelled) { const res = await api({ action: 'deleteLog', row }); if(res.success) { history = history.filter(h => h.row != row); renderHistory(); } } }, 3000);
+        }
+
+        // --- CONFIG ---
+        function renderPeptideList() { document.getElementById('peptide-list').innerHTML = peptideLibrary.map(p => `<div class="glass-card px-3 py-1 rounded-full text-[10px] flex items-center gap-2 text-white border-slate-700"><span>${p.name}</span><button onclick="api({action:'deletePeptide', row:${p.row}}).then(loadAllData)" class="text-slate-500">✕</button></div>`).join(''); }
+        function renderPresetsList() { document.getElementById('presets-list').innerHTML = presets.map(p => `<div class="flex justify-between items-center glass-card p-4 rounded-2xl text-white mb-2"><div><p class="text-sm font-bold">${p.label}</p><p class="text-[10px] text-slate-500">${p.peptide} • ${p.value}${p.unit}</p></div><button onclick="api({action:'deleteConfig', row:${p.row}}).then(loadAllData)" class="text-red-500 font-bold p-2">✕</button></div>`).join(''); }
+        function renderPrefSites() { const container = document.getElementById('preferred-sites-grid'); if(container) container.innerHTML = ALL_SITES.map(s => `<button onclick="preferredSites = preferredSites.includes('${s}') ? preferredSites.filter(x => x !== '${s}') : [...preferredSites, '${s}']; localStorage.setItem('pref_sites', JSON.stringify(preferredSites)); renderPrefSites(); calculateSuggestion();" class="p-3 text-[10px] rounded-xl border font-bold transition ${preferredSites.includes(s) ? 'bg-indigo-600 border-indigo-400 text-white' : 'bg-slate-800/50 border-slate-700 text-slate-500'}">${s}</button>`).join(''); }
+        function calculateSuggestion() { if (!preferredSites.length) return; let best = preferredSites[0]; const usage = {}; preferredSites.forEach(s => usage[s] = new Date(0)); history.forEach(h => { if (usage[h.site] && new Date(h.date) > usage[h.site]) usage[h.site] = new Date(h.date); }); let min = new Date(); for (const s in usage) { if (usage[s] < min) { min = usage[s]; best = s; } } document.getElementById('suggestion-text').textContent = best; document.getElementById('suggestion-box').classList.remove('hidden'); }
+        function useSuggestion() { document.getElementById('log-site').value = document.getElementById('suggestion-text').textContent; }
+
+        function saveUrl() { const url = document.getElementById('setup-url').value.trim(); if(url) { localStorage.setItem('pep_url', url); location.reload(); } }
+        function resetApp() { if(confirm("Disconnect database? Local settings remain.")) { localStorage.removeItem('pep_url'); location.reload(); } }
+
+        window.onload = () => {
+            if(!APP_URL) document.getElementById('setup-screen').classList.remove('hidden');
+            else {
+                document.getElementById('app-container').classList.remove('hidden');
+                document.getElementById('log-site').innerHTML = ALL_SITES.map(s => `<option value="${s}">${s}</option>`).join('');
+                document.getElementById('log-time').value = new Date(new Date() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0,16);
+                checkStatus(); loadAllData(); setInterval(checkStatus, 30000);
+            }
+        };
+
+        document.getElementById('log-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const data = { action: 'logInjection', peptide: document.getElementById('log-peptide').value, dosage: document.getElementById('log-dosage').value + ' ' + document.getElementById('log-unit').value, site: document.getElementById('log-site').value, timestampMs: new Date(document.getElementById('log-time').value).getTime() };
+            const res = await api(data); if(res.success) { showToast("Logged!"); loadAllData(); e.target.reset(); }
+        };
+        document.getElementById('peptide-add-form').onsubmit = async (e) => { e.preventDefault(); const name = document.getElementById('new-peptide-name').value.trim(); if(name) { const res = await api({ action: 'savePeptide', name }); if(res.success) { showToast("Added"); loadAllData(); e.target.reset(); } } };
+        document.getElementById('config-form').onsubmit = async (e) => { e.preventDefault(); const data = { action: 'saveConfig', label: document.getElementById('conf-label').value, peptide: document.getElementById('conf-peptide-select').value, value: document.getElementById('conf-val').value, unit: document.getElementById('conf-unit').value }; const res = await api(data); if(res.success) { showToast("Saved"); loadAllData(); e.target.reset(); } };
+    </script>
+</body>
+</html>
