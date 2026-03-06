@@ -126,8 +126,8 @@
             <div id="view-dash" class="space-y-6 animate-slide-up">
                 <div class="grid grid-cols-2 gap-3">
                     <div class="glass-card p-4 rounded-2xl">
-                        <p class="text-[10px] uppercase font-black text-indigo-400 opacity-70 mb-1" data-t="dash_total_level">Total Accumulation</p>
-                        <p id="dash-total-level" class="text-2xl font-black text-white">0.00 <span class="text-xs opacity-50">mg</span></p>
+                        <p class="text-[10px] uppercase font-black text-indigo-400 opacity-70 mb-1" data-t="dash_total_inj">Total Injections</p>
+                        <p id="dash-total-inj" class="text-2xl font-black text-white">0</p>
                     </div>
                     <div class="glass-card p-4 rounded-2xl">
                         <p class="text-[10px] uppercase font-black text-indigo-400 opacity-70 mb-1" data-t="dash_week_inj">Injections Week</p>
@@ -332,7 +332,7 @@
                 pref_sites: "Preferred Sites", library_title: "Peptide Library", unit_hours: "Hours", unit_days: "Days", add_btn: "Add", disconnect_btn: "Disconnect Database",
                 modal_site_title: "Injection Zone", cancel: "Cancel", confirm: "Confirm", today: "Today", toast_logged: "Logged!", toast_removed: "Removed", toast_error: "Connection Error",
                 toast_hl_missing: "Half-life missing for this peptide", delete_undo: "Will be deleted...", undo: "Undo",
-                dash_total_level: "Total Accumulation", dash_week_inj: "Injections this week", dash_next_inj: "Next Scheduled", dash_recent: "Recent Activity", dash_quick_actions: "Quick Logs",
+                dash_total_inj: "Total Injections", dash_week_inj: "Injections this week", dash_next_inj: "Next Scheduled", dash_recent: "Recent Activity", dash_quick_actions: "Quick Logs",
                 confirm_disconnect: "Disconnect database?", confirm_del_preset: "Delete this preset?", confirm_del_library: "Remove from library?",
                 modal_day_details_title: "Day Details", log_for_this_day: "Log for this day", log_this_peptide: "Log this peptide",
                 ui_placeholder_lib: "Vial Units (Optional)", ui_placeholder_quick: "Syringe Units (Optional)", ui_reminder: "Reminder: {ui} UI",
@@ -346,7 +346,7 @@
                 pref_sites: "Sites Favoris", library_title: "Bibliothèque", unit_hours: "Heures", unit_days: "Jours", add_btn: "Ajouter", disconnect_btn: "Déconnexion Database",
                 modal_site_title: "Zone d'injection", cancel: "Annuler", confirm: "Confirmer", today: "Aujourd'hui", toast_logged: "Logé !", toast_removed: "Supprimé", toast_error: "Erreur connexion",
                 toast_hl_missing: "Demi-vie manquante", delete_undo: "Sera supprimé...", undo: "Annuler",
-                dash_total_level: "Accumulation Totale", dash_week_inj: "Injections cette semaine", dash_next_inj: "Prochaine Échéance", dash_recent: "Activité Récente", dash_quick_actions: "Logs Rapides",
+                dash_total_inj: "Total Injections", dash_week_inj: "Injections cette semaine", dash_next_inj: "Prochaine Échéance", dash_recent: "Activité Récente", dash_quick_actions: "Logs Rapides",
                 confirm_disconnect: "Déconnecter la base ?", confirm_del_preset: "Supprimer ce preset ?", confirm_del_library: "Retirer de la bibliothèque ?",
                 modal_day_details_title: "Détails de la journée", log_for_this_day: "Loger pour ce jour", log_this_peptide: "Loger ce peptide",
                 ui_placeholder_lib: "Unités de la fiole (Optionnel)", ui_placeholder_quick: "Unités seringue (Optionnel)", ui_reminder: "Rappel fiole : {ui} UI",
@@ -520,26 +520,12 @@
 
         function renderDashboard() {
             const now = Date.now();
-            let totalMg = 0;
-            const peptidesInHistory = [...new Set(history.map(h => h.peptide))];
-            peptidesInHistory.forEach(pep => {
-                const hlHours = getHalfLife(pep);
-                if (hlHours > 0) {
-                    const k = Math.log(2) / hlHours;
-                    const pepLogs = history.filter(h => h.peptide === pep);
-                    pepLogs.forEach(log => {
-                        const lDate = new Date(log.date).getTime();
-                        if (lDate <= now) {
-                            let doseVal = parseFloat(log.dosage) || 0;
-                            if (typeof log.dosage === 'string' && log.dosage.toLowerCase().includes('mcg')) doseVal /= 1000;
-                            totalMg += doseVal * Math.pow(Math.E, -k * ((now - lDate) / 3600000));
-                        }
-                    });
-                }
-            });
-            const totalEl = document.getElementById('dash-total-level');
-            if(totalEl) totalEl.innerHTML = `${totalMg.toFixed(2)} <span class="text-xs opacity-50">mg</span>`;
             
+            // Mise à jour du Total Injections
+            const totalInjEl = document.getElementById('dash-total-inj');
+            if(totalInjEl) totalInjEl.innerText = history.length;
+            
+            // Mise à jour Injections de la semaine
             const weekInj = history.filter(h => (now - new Date(h.date).getTime()) <= (7 * 24 * 3600000)).length;
             const weekEl = document.getElementById('dash-week-inj');
             if(weekEl) weekEl.innerText = weekInj;
@@ -640,9 +626,51 @@
                 data: { labels, datasets: [{ data: dataPoints, borderColor: '#6366f1', borderWidth: 2, backgroundColor: 'rgba(99, 102, 241, 0.1)', fill: true, tension: 0.3, pointRadius: 0 }] },
                 options: { responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { color: '#64748b', font: { size: 9 }, autoSkip: true, maxTicksLimit: 8 }, grid: { display: false } }, y: { beginAtZero: true, ticks: { color: '#64748b', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.03)' } } }, plugins: { legend: { display: false }, zoom: { zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' }, pan: { enabled: true, mode: 'x' } } } }
             });
-            const tIdx = labels.indexOf(t('today'));
+
+            // 1. CALCUL EXACT : Niveau actuel (indépendant des points du graphique)
+            let exactCurrentLevel = 0;
+            pepLogs.forEach(log => {
+                const lDate = new Date(log.date).getTime();
+                if (lDate <= nowTime) {
+                    let doseVal = parseFloat(log.dosage) || 0;
+                    if (typeof log.dosage === 'string' && log.dosage.toLowerCase().includes('mcg')) doseVal /= 1000;
+                    exactCurrentLevel += doseVal * Math.pow(Math.E, -k * ((nowTime - lDate) / 3600000));
+                }
+            });
             const currentLevelEl = document.getElementById('stat-current-level');
-            if(currentLevelEl) currentLevelEl.innerText = (tIdx !== -1 ? dataPoints[tIdx] : 0).toFixed(2);
+            if(currentLevelEl) currentLevelEl.innerText = exactCurrentLevel.toFixed(2);
+
+            // 2. CALCUL EXACT : Pic sur les 14 derniers jours
+            let peakLevel = 0;
+            let peakDateMs = null;
+            const fourteenDaysAgo = nowTime - (14 * 24 * 3600 * 1000);
+            
+            // Le pic se trouve TOUJOURS exactement au moment d'une injection
+            pepLogs.forEach(targetLog => {
+                const targetTime = new Date(targetLog.date).getTime();
+                // On ne vérifie que les injections des 14 derniers jours
+                if (targetTime >= fourteenDaysAgo && targetTime <= nowTime) {
+                    let levelAtThisInjection = 0;
+                    pepLogs.forEach(log => {
+                        const lDate = new Date(log.date).getTime();
+                        if (lDate <= targetTime) {
+                            let doseVal = parseFloat(log.dosage) || 0;
+                            if (typeof log.dosage === 'string' && log.dosage.toLowerCase().includes('mcg')) doseVal /= 1000;
+                            levelAtThisInjection += doseVal * Math.pow(Math.E, -k * ((targetTime - lDate) / 3600000));
+                        }
+                    });
+                    if (levelAtThisInjection > peakLevel) {
+                        peakLevel = levelAtThisInjection;
+                        peakDateMs = targetTime;
+                    }
+                }
+            });
+
+            const peakLevelEl = document.getElementById('stat-peak-level');
+            const peakDateEl = document.getElementById('stat-peak-date');
+            if(peakLevelEl) peakLevelEl.innerText = peakLevel > 0 ? peakLevel.toFixed(2) : "0.00";
+            if(peakDateEl) peakDateEl.innerText = peakDateMs ? new Date(peakDateMs).toLocaleDateString(currentLang === 'fr'?'fr-FR':'en-US', {month:'short',day:'numeric'}) : "--";
+
             resetToToday();
         }
 
@@ -735,7 +763,7 @@
 
         function renderPeptideList() { 
             const pepList = document.getElementById('peptide-list'); 
-            if(pepList) {
+            if(peList) {
                 pepList.innerHTML = peptideLibrary.map(p => `
                     <div class="glass-card px-3 py-1.5 rounded-full text-[10px] flex items-center gap-2 border-slate-700">
                         <span>${p.name} (${p.halfLife}${p.hlUnit === 'days' ? 'd' : 'h'})</span>
