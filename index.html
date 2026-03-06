@@ -763,7 +763,7 @@
 
         function renderPeptideList() { 
             const pepList = document.getElementById('peptide-list'); 
-            if(peList) {
+            if(pepList) {
                 pepList.innerHTML = peptideLibrary.map(p => `
                     <div class="glass-card px-3 py-1.5 rounded-full text-[10px] flex items-center gap-2 border-slate-700">
                         <span>${p.name} (${p.halfLife}${p.hlUnit === 'days' ? 'd' : 'h'})</span>
