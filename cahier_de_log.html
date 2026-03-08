@@ -126,8 +126,8 @@
             <div id="view-dash" class="space-y-6 animate-slide-up">
                 <div class="grid grid-cols-2 gap-3">
                     <div class="glass-card p-4 rounded-2xl">
-                        <p class="text-[10px] uppercase font-black text-indigo-400 opacity-70 mb-1" data-t="dash_total_inj">Total Injections</p>
-                        <p id="dash-total-inj" class="text-2xl font-black text-white">0</p>
+                        <p class="text-[10px] uppercase font-black text-indigo-400 opacity-70 mb-1" data-t="dash_total_level">Total Accumulation</p>
+                        <p id="dash-total-level" class="text-2xl font-black text-white">0.00 <span class="text-xs opacity-50">mg</span></p>
                     </div>
                     <div class="glass-card p-4 rounded-2xl">
                         <p class="text-[10px] uppercase font-black text-indigo-400 opacity-70 mb-1" data-t="dash_week_inj">Injections Week</p>
@@ -156,7 +156,7 @@
                 <div class="glass-card p-5 rounded-3xl">
                     <div class="flex justify-between items-center mb-4">
                         <p class="text-[10px] uppercase font-black text-slate-500" data-t="dash_recent">Recent Activity</p>
-                        <button onclick="switchView('history')" class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Voir tout</button>
+                        <button onclick="switchView('history')" class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest" data-t="see_all">See all</button>
                     </div>
                     <div id="dash-recent-list" class="space-y-3"></div>
                 </div>
@@ -225,14 +225,14 @@
                             <h2 id="calendar-month-year" class="text-sm font-black uppercase tracking-widest text-white">--</h2>
                             <button onclick="changeMonth(1)" class="p-2 text-indigo-300"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg></button>
                         </div>
-                        <div class="grid grid-cols-7 gap-1 mb-2">
-                            <div class="text-[8px] text-center font-bold text-slate-500 uppercase">Mon</div>
-                            <div class="text-[8px] text-center font-bold text-slate-500 uppercase">Tue</div>
-                            <div class="text-[8px] text-center font-bold text-slate-500 uppercase">Wed</div>
-                            <div class="text-[8px] text-center font-bold text-slate-500 uppercase">Thu</div>
-                            <div class="text-[8px] text-center font-bold text-slate-500 uppercase">Fri</div>
-                            <div class="text-[8px] text-center font-bold text-slate-500 uppercase">Sat</div>
-                            <div class="text-[8px] text-center font-bold text-slate-500 uppercase">Sun</div>
+                        <div class="grid grid-cols-7 gap-1 mb-2" id="calendar-day-headers">
+                            <div class="text-[8px] text-center font-bold text-slate-500 uppercase" data-t="cal_mon">Mon</div>
+                            <div class="text-[8px] text-center font-bold text-slate-500 uppercase" data-t="cal_tue">Tue</div>
+                            <div class="text-[8px] text-center font-bold text-slate-500 uppercase" data-t="cal_wed">Wed</div>
+                            <div class="text-[8px] text-center font-bold text-slate-500 uppercase" data-t="cal_thu">Thu</div>
+                            <div class="text-[8px] text-center font-bold text-slate-500 uppercase" data-t="cal_fri">Fri</div>
+                            <div class="text-[8px] text-center font-bold text-slate-500 uppercase" data-t="cal_sat">Sat</div>
+                            <div class="text-[8px] text-center font-bold text-slate-500 uppercase" data-t="cal_sun">Sun</div>
                         </div>
                         <div id="calendar-grid" class="cal-grid"></div>
                     </div>
@@ -332,10 +332,12 @@
                 pref_sites: "Preferred Sites", library_title: "Peptide Library", unit_hours: "Hours", unit_days: "Days", add_btn: "Add", disconnect_btn: "Disconnect Database",
                 modal_site_title: "Injection Zone", cancel: "Cancel", confirm: "Confirm", today: "Today", toast_logged: "Logged!", toast_removed: "Removed", toast_error: "Connection Error",
                 toast_hl_missing: "Half-life missing for this peptide", delete_undo: "Will be deleted...", undo: "Undo",
-                dash_total_inj: "Total Injections", dash_week_inj: "Injections this week", dash_next_inj: "Next Scheduled", dash_recent: "Recent Activity", dash_quick_actions: "Quick Logs",
+                dash_total_level: "Total Accumulation", dash_week_inj: "Injections this week", dash_next_inj: "Next Scheduled", dash_recent: "Recent Activity", dash_quick_actions: "Quick Logs",
                 confirm_disconnect: "Disconnect database?", confirm_del_preset: "Delete this preset?", confirm_del_library: "Remove from library?",
                 modal_day_details_title: "Day Details", log_for_this_day: "Log for this day", log_this_peptide: "Log this peptide",
                 ui_placeholder_lib: "Vial Units (Optional)", ui_placeholder_quick: "Syringe Units (Optional)", ui_reminder: "Reminder: {ui} UI",
+                see_all: "See all", no_events: "No events", offline_queued: "Saved offline — will sync when reconnected", offline_synced: "Offline data synced!",
+                cal_mon: "Mon", cal_tue: "Tue", cal_wed: "Wed", cal_thu: "Thu", cal_fri: "Fri", cal_sat: "Sat", cal_sun: "Sun",
                 site_names: { "Right Abdomen (Upper)": "R Abdomen (U)", "Right Abdomen (Lower)": "R Abdomen (L)", "Left Abdomen (Upper)": "L Abdomen (U)", "Left Abdomen (Lower)": "L Abdomen (L)", "Right Flank": "Right Flank", "Left Flank": "Left Flank", "Right Thigh": "Right Thigh", "Left Thigh": "Left Thigh", "Right Deltoid": "Right Deltoid", "Left Deltoid": "Left Deltoid", "Right Buttock": "Right Buttock", "Left Buttock": "Left Buttock", "Other": "Other" }
             },
             fr: {
@@ -346,10 +348,12 @@
                 pref_sites: "Sites Favoris", library_title: "Bibliothèque", unit_hours: "Heures", unit_days: "Jours", add_btn: "Ajouter", disconnect_btn: "Déconnexion Database",
                 modal_site_title: "Zone d'injection", cancel: "Annuler", confirm: "Confirmer", today: "Aujourd'hui", toast_logged: "Logé !", toast_removed: "Supprimé", toast_error: "Erreur connexion",
                 toast_hl_missing: "Demi-vie manquante", delete_undo: "Sera supprimé...", undo: "Annuler",
-                dash_total_inj: "Total Injections", dash_week_inj: "Injections cette semaine", dash_next_inj: "Prochaine Échéance", dash_recent: "Activité Récente", dash_quick_actions: "Logs Rapides",
+                dash_total_level: "Accumulation Totale", dash_week_inj: "Injections cette semaine", dash_next_inj: "Prochaine Échéance", dash_recent: "Activité Récente", dash_quick_actions: "Logs Rapides",
                 confirm_disconnect: "Déconnecter la base ?", confirm_del_preset: "Supprimer ce preset ?", confirm_del_library: "Retirer de la bibliothèque ?",
                 modal_day_details_title: "Détails de la journée", log_for_this_day: "Loger pour ce jour", log_this_peptide: "Loger ce peptide",
                 ui_placeholder_lib: "Unités de la fiole (Optionnel)", ui_placeholder_quick: "Unités seringue (Optionnel)", ui_reminder: "Rappel fiole : {ui} UI",
+                see_all: "Voir tout", no_events: "Aucun événement", offline_queued: "Sauvé hors-ligne — sera synchronisé à la reconnexion", offline_synced: "Données hors-ligne synchronisées !",
+                cal_mon: "Lun", cal_tue: "Mar", cal_wed: "Mer", cal_thu: "Jeu", cal_fri: "Ven", cal_sat: "Sam", cal_sun: "Dim",
                 site_names: { "Right Abdomen (Upper)": "Abdomen D (Haut)", "Right Abdomen (Lower)": "Abdomen D (Bas)", "Left Abdomen (Upper)": "Abdomen G (Haut)", "Left Abdomen (Lower)": "Abdomen G (Bas)", "Right Flank": "Flanc Droit", "Left Flank": "Flanc Gauche", "Right Thigh": "Cuisse Droite", "Left Thigh": "Cuisse Gauche", "Right Deltoid": "Deltoïde D", "Left Deltoid": "Deltoïde G", "Right Buttock": "Fessier D", "Left Buttock": "Fessier G", "Other": "Autre" }
             }
         };
@@ -362,6 +366,55 @@
         let calendarDate = new Date();
         let historyView = 'list';
         const DEFAULT_HALF_LIVES = { "tirzepatide": 120, "retatrutide": 144 };
+
+        // === OFFLINE CACHE ===
+        const CACHE_KEY = 'pep_offline_cache';
+        const QUEUE_KEY = 'pep_offline_queue';
+
+        function saveToCache(data) {
+            try { localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), ...data })); } catch(e) { console.warn('Cache save failed', e); }
+        }
+        function loadFromCache() {
+            try { const raw = localStorage.getItem(CACHE_KEY); return raw ? JSON.parse(raw) : null; } catch(e) { return null; }
+        }
+        function getOfflineQueue() {
+            try { const raw = localStorage.getItem(QUEUE_KEY); return raw ? JSON.parse(raw) : []; } catch(e) { return []; }
+        }
+        function saveOfflineQueue(queue) {
+            try { localStorage.setItem(QUEUE_KEY, JSON.stringify(queue)); } catch(e) {}
+        }
+        function addToOfflineQueue(data) {
+            const queue = getOfflineQueue();
+            queue.push({ data, ts: Date.now() });
+            saveOfflineQueue(queue);
+        }
+        async function flushOfflineQueue() {
+            const queue = getOfflineQueue();
+            if (!queue.length) return;
+            const remaining = [];
+            for (const item of queue) {
+                try {
+                    const res = await fetch(APP_URL, { method: 'POST', body: JSON.stringify(item.data), headers: { 'Content-Type': 'text/plain;charset=utf-8' } });
+                    const json = await res.json();
+                    if (!json.success) remaining.push(item);
+                } catch(e) { remaining.push(item); break; }
+            }
+            saveOfflineQueue(remaining);
+            if (remaining.length < queue.length) loadAllData();
+        }
+
+        // === DOSAGE PARSING ===
+        function parseDosage(raw) {
+            if (typeof raw === 'number') return { value: raw, unit: 'mg' };
+            if (!raw || typeof raw !== 'string') return { value: 0, unit: 'mg' };
+            const num = parseFloat(raw) || 0;
+            const unit = raw.toLowerCase().includes('mcg') ? 'mcg' : 'mg';
+            return { value: num, unit };
+        }
+        function dosageToMg(raw) {
+            const d = parseDosage(raw);
+            return d.unit === 'mcg' ? d.value / 1000 : d.value;
+        }
         const ALL_SITES = ["Right Abdomen (Upper)", "Right Abdomen (Lower)", "Left Abdomen (Upper)", "Left Abdomen (Lower)", "Right Flank", "Left Flank", "Right Thigh", "Left Thigh", "Right Deltoid", "Left Deltoid", "Right Buttock", "Left Buttock", "Other"];
         let preferredSites = JSON.parse(localStorage.getItem('pref_sites')) || ["Right Abdomen (Lower)", "Left Abdomen (Lower)"];
 
@@ -418,7 +471,30 @@
             try { 
                 const res = await fetch(APP_URL, { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'text/plain;charset=utf-8' } }); 
                 return await res.json();
-            } catch(e) { showToast(t('toast_error'), "error"); return {success:false, error: e.message}; } 
+            } catch(e) { 
+                // Offline: queue write actions for later sync
+                const writeActions = ['logInjection', 'saveConfig', 'savePeptide', 'deleteLog', 'deleteConfig', 'deletePeptide'];
+                if (writeActions.includes(data.action)) {
+                    addToOfflineQueue(data);
+                    showToast(t('offline_queued'), "error", 4000);
+                    // Optimistic local update for logInjection
+                    if (data.action === 'logInjection') {
+                        history.push({
+                            row: -Date.now(), // temporary negative row
+                            date: data.timestampMs ? new Date(Number(data.timestampMs)).toISOString() : new Date().toISOString(),
+                            peptide: data.peptide,
+                            dosage: data.dosage,
+                            site: data.site,
+                            notes: data.notes || ""
+                        });
+                        saveToCache({ history, presets, peptides: peptideLibrary });
+                        renderUI();
+                    }
+                    return { success: true, offline: true };
+                }
+                showToast(t('toast_error'), "error"); 
+                return { success: false, error: e.message }; 
+            } 
         }
 
         function showToast(msg, type = 'success', duration = 3000, action = null) {
@@ -454,15 +530,32 @@
             if(!APP_URL) return;
             const dot = document.getElementById('status-dot');
             if(dot) dot.classList.add('animate-spin');
+            
+            // Load from cache first for instant render
+            const cached = loadFromCache();
+            if (cached && !history.length) {
+                presets = cached.presets || [];
+                history = cached.history || [];
+                peptideLibrary = cached.peptides || [];
+                renderUI();
+            }
+
             try {
+                // Flush offline queue first
+                await flushOfflineQueue();
+
                 const res = await fetch(`${APP_URL}?action=getAllData`).then(r => r.json());
                 if (res && res.success) {
                     presets = res.presets || [];
                     history = res.history || [];
                     peptideLibrary = res.peptides || [];
+                    saveToCache({ history, presets, peptides: peptideLibrary });
                     renderUI();
                 }
-            } catch(e) { console.error(e); } finally { if(dot) dot.classList.remove('animate-spin'); }
+            } catch(e) { 
+                console.error(e); 
+                // Already rendered from cache above — user can still browse
+            } finally { if(dot) dot.classList.remove('animate-spin'); }
         }
 
         function renderUI() { 
@@ -520,12 +613,25 @@
 
         function renderDashboard() {
             const now = Date.now();
+            let totalMg = 0;
+            const peptidesInHistory = [...new Set(history.map(h => h.peptide))];
+            peptidesInHistory.forEach(pep => {
+                const hlHours = getHalfLife(pep);
+                if (hlHours > 0) {
+                    const k = Math.log(2) / hlHours;
+                    const pepLogs = history.filter(h => h.peptide === pep);
+                    pepLogs.forEach(log => {
+                        const lDate = new Date(log.date).getTime();
+                        if (lDate <= now) {
+                            const doseVal = dosageToMg(log.dosage);
+                            totalMg += doseVal * Math.pow(Math.E, -k * ((now - lDate) / 3600000));
+                        }
+                    });
+                }
+            });
+            const totalEl = document.getElementById('dash-total-level');
+            if(totalEl) totalEl.innerHTML = `${totalMg.toFixed(2)} <span class="text-xs opacity-50">mg</span>`;
             
-            // Mise à jour du Total Injections
-            const totalInjEl = document.getElementById('dash-total-inj');
-            if(totalInjEl) totalInjEl.innerText = history.length;
-            
-            // Mise à jour Injections de la semaine
             const weekInj = history.filter(h => (now - new Date(h.date).getTime()) <= (7 * 24 * 3600000)).length;
             const weekEl = document.getElementById('dash-week-inj');
             if(weekEl) weekEl.innerText = weekInj;
@@ -609,8 +715,7 @@
                 pepLogs.forEach(log => {
                     const lDate = new Date(log.date).getTime();
                     if (lDate <= tMs) {
-                        let doseVal = parseFloat(log.dosage) || 0;
-                        if (typeof log.dosage === 'string' && log.dosage.toLowerCase().includes('mcg')) doseVal /= 1000;
+                        const doseVal = dosageToMg(log.dosage);
                         total += doseVal * Math.pow(Math.E, -k * ((tMs - lDate) / 3600000));
                     }
                 });
@@ -629,6 +734,20 @@
             const tIdx = labels.indexOf(t('today'));
             const currentLevelEl = document.getElementById('stat-current-level');
             if(currentLevelEl) currentLevelEl.innerText = (tIdx !== -1 ? dataPoints[tIdx] : 0).toFixed(2);
+
+            // === PEAK LEVEL (14 days) ===
+            const fourteenDaysAgo = nowTime - (14 * 24 * 3600000);
+            let peakVal = 0, peakTs = nowTime;
+            for (let i = 0; i < pointTimestamps.length; i++) {
+                if (pointTimestamps[i] >= fourteenDaysAgo && pointTimestamps[i] <= nowTime) {
+                    if (dataPoints[i] > peakVal) { peakVal = dataPoints[i]; peakTs = pointTimestamps[i]; }
+                }
+            }
+            const peakLevelEl = document.getElementById('stat-peak-level');
+            const peakDateEl = document.getElementById('stat-peak-date');
+            if (peakLevelEl) peakLevelEl.innerText = peakVal.toFixed(2);
+            if (peakDateEl) peakDateEl.innerText = new Date(peakTs).toLocaleDateString(currentLang === 'fr' ? 'fr-FR' : 'en-US', { month: 'short', day: 'numeric' });
+
             resetToToday();
         }
 
@@ -679,7 +798,26 @@
         }
 
         function closeModal() { const modal = document.getElementById('site-modal'); if(modal) modal.classList.add('hidden'); }
-        async function finalizeQuickLog(site, preset) { closeModal(); const res = await api({ action: 'logInjection', peptide: preset.peptide, dosage: `${preset.value} ${preset.unit}`, site, timestampMs: Date.now() }); if(res && res.success) { showToast(`${t('toast_logged')} ${preset.peptide}`); loadAllData(); } }
+        async function finalizeQuickLog(site, preset) { 
+            closeModal(); 
+            const tsMs = Date.now();
+            const dosageStr = `${preset.value} ${preset.unit}`;
+            // Optimistic local update
+            history.push({
+                row: -tsMs,
+                date: new Date(tsMs).toISOString(),
+                peptide: preset.peptide,
+                dosage: dosageStr,
+                site,
+                notes: ""
+            });
+            saveToCache({ history, presets, peptides: peptideLibrary });
+            renderUI();
+            showToast(`${t('toast_logged')} ${preset.peptide}`);
+            // Then sync with server
+            const res = await api({ action: 'logInjection', peptide: preset.peptide, dosage: dosageStr, site, timestampMs: tsMs }); 
+            if(res && res.success && !res.offline) loadAllData(); 
+        }
         
         function calculateSuggestion() { 
             if (!preferredSites.length || !history.length) { 
@@ -721,7 +859,7 @@
 
         function renderPeptideList() { 
             const pepList = document.getElementById('peptide-list'); 
-            if(peList) {
+            if(pepList) {
                 pepList.innerHTML = peptideLibrary.map(p => `
                     <div class="glass-card px-3 py-1.5 rounded-full text-[10px] flex items-center gap-2 border-slate-700">
                         <span>${p.name} (${p.halfLife}${p.hlUnit === 'days' ? 'd' : 'h'})</span>
@@ -828,7 +966,7 @@
                 html += `<p class="text-[10px] uppercase font-black text-slate-500 mt-4 mb-2">${currentLang==='fr'?'Suggéré':'Suggested'}</p>`;
                 dayPred.forEach(p => { html += `<button onclick="logForDayWithPreset('${date.toISOString()}', ${JSON.stringify(p.preset).replace(/"/g, '&quot;')})" class="w-full text-left bg-indigo-500/10 p-3 rounded-xl border border-indigo-500/40 mb-2"><p class="font-bold text-sm text-indigo-300">${p.peptide}</p></button>`; });
             }
-            content.innerHTML = html || `<div class="text-center py-8 opacity-40">-- Aucun événement --</div>`;
+            content.innerHTML = html || `<div class="text-center py-8 opacity-40">-- ${t('no_events')} --</div>`;
             logBtn.onclick = () => { switchView('log'); const timeInp = document.getElementById('log-time'); if(timeInp) timeInp.value = date.toISOString().slice(0, 16); closeDayDetails(); };
             modal.classList.remove('hidden');
         }
@@ -892,7 +1030,14 @@
                 checkStatus(); 
                 loadAllData(); 
                 switchView('dash'); 
-                setInterval(checkStatus, 30000); 
+                setInterval(checkStatus, 30000);
+                // Flush offline queue when reconnecting
+                window.addEventListener('online', () => { 
+                    flushOfflineQueue().then(() => {
+                        const q = getOfflineQueue();
+                        if (q.length === 0) showToast(t('offline_synced'));
+                    }); 
+                });
             }
         };
 
