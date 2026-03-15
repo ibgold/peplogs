@@ -65,6 +65,11 @@
         .cal-dot.past { background: #6366f1; }
         .cal-dot.future { background: #6366f1; opacity: 0.3; }
         .cal-dot.future-predicted { background: #10b981; opacity: 0.4; }
+
+        /* Next injection navigation */
+        .next-inj-nav-btn { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); transition: all 0.2s; }
+        .next-inj-nav-btn:not(:disabled):hover { background: rgba(99,102,241,0.3); border-color: rgba(99,102,241,0.5); color: white; }
+        .next-inj-nav-btn:disabled { opacity: 0.2; cursor: not-allowed; }
     </style>
 </head>
 <body class="flex flex-col items-center pb-24 px-4">
@@ -365,6 +370,7 @@
         let currentChartLabels = [];
         let calendarDate = new Date();
         let historyView = 'list';
+        let nextInjIndex = 0; // ← Navigation index for next injections
         const DEFAULT_HALF_LIVES = { "tirzepatide": 120, "retatrutide": 144 };
 
         // === OFFLINE CACHE ===
@@ -472,15 +478,13 @@
                 const res = await fetch(APP_URL, { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'text/plain;charset=utf-8' } }); 
                 return await res.json();
             } catch(e) { 
-                // Offline: queue write actions for later sync
                 const writeActions = ['logInjection', 'saveConfig', 'savePeptide', 'deleteLog', 'deleteConfig', 'deletePeptide'];
                 if (writeActions.includes(data.action)) {
                     addToOfflineQueue(data);
                     showToast(t('offline_queued'), "error", 4000);
-                    // Optimistic local update for logInjection
                     if (data.action === 'logInjection') {
                         history.push({
-                            row: -Date.now(), // temporary negative row
+                            row: -Date.now(),
                             date: data.timestampMs ? new Date(Number(data.timestampMs)).toISOString() : new Date().toISOString(),
                             peptide: data.peptide,
                             dosage: data.dosage,
@@ -522,7 +526,7 @@
             
             if(view === 'dash') renderDashboard();
             if(view === 'levels') setTimeout(updateLevelChart, 100); 
-            if(view === 'log') updatePeptideReminder(); // Mettre à jour le rappel à l'ouverture du log
+            if(view === 'log') updatePeptideReminder();
             if(view === 'history') { if(historyView === 'calendar') renderCalendar(); else renderHistory(); }
         }
 
@@ -531,7 +535,6 @@
             const dot = document.getElementById('status-dot');
             if(dot) dot.classList.add('animate-spin');
             
-            // Load from cache first for instant render
             const cached = loadFromCache();
             if (cached && !history.length) {
                 presets = cached.presets || [];
@@ -541,20 +544,18 @@
             }
 
             try {
-                // Flush offline queue first
                 await flushOfflineQueue();
-
                 const res = await fetch(`${APP_URL}?action=getAllData`).then(r => r.json());
                 if (res && res.success) {
                     presets = res.presets || [];
                     history = res.history || [];
                     peptideLibrary = res.peptides || [];
                     saveToCache({ history, presets, peptides: peptideLibrary });
+                    nextInjIndex = 0; // Reset navigation on fresh data load
                     renderUI();
                 }
             } catch(e) { 
                 console.error(e); 
-                // Already rendered from cache above — user can still browse
             } finally { if(dot) dot.classList.remove('animate-spin'); }
         }
 
@@ -591,7 +592,6 @@
                     s.value = s.options[0] ? s.options[0].value : "";
                 }
 
-                // Met à jour le rappel UI si c'est le champ du log
                 if(s.id === 'log-peptide') updatePeptideReminder();
             });
         }
@@ -636,6 +636,7 @@
             const weekEl = document.getElementById('dash-week-inj');
             if(weekEl) weekEl.innerText = weekInj;
 
+            // Build sorted predictions
             const predictions = [];
             presets.filter(p => p.frequency > 0).forEach(p => {
                 const pepLogs = history.filter(h => h.peptide.toLowerCase().trim() === p.peptide.toLowerCase().trim());
@@ -646,14 +647,39 @@
                     predictions.push({ date: next, peptide: p.peptide, preset: p });
                 }
             });
+            predictions.sort((a, b) => a.date - b.date);
+
             const nextCont = document.getElementById('dash-next-inj-content');
             if (nextCont) {
                 if (predictions.length > 0) {
-                    predictions.sort((a, b) => a.date - b.date);
-                    const next = predictions[0];
-                    const isOverdue = next.date < now;
+                    // Clamp index in case predictions changed
+                    nextInjIndex = Math.max(0, Math.min(nextInjIndex, predictions.length - 1));
+                    const next = predictions[nextInjIndex];
+                    const total = predictions.length;
+                    const isOverdue = next.date < new Date();
                     const dateStr = next.date.toLocaleDateString(currentLang==='fr'?'fr-FR':'en-US', { weekday: 'short', day: 'numeric', month: 'short' });
-                    nextCont.innerHTML = `<div class="flex justify-between items-center"><div><p class="text-xl font-black ${isOverdue ? 'text-red-400' : 'text-white'}">${next.peptide}</p><p class="text-xs font-bold opacity-60">${dateStr} ${isOverdue ? (currentLang==='fr'?'(RETARD)':'(OVERDUE)') : ''}</p></div><button onclick="logForDayWithPreset('${next.date.toISOString()}', ${JSON.stringify(next.preset).replace(/"/g, '&quot;')})" class="bg-indigo-500 px-4 py-2 rounded-xl text-[10px] font-black uppercase">Log</button></div>`;
+                    const presetJson = JSON.stringify(next.preset).replace(/"/g, '&quot;');
+                    const dateIso = next.date.toISOString();
+
+                    nextCont.innerHTML = `
+                        <div class="flex justify-between items-center">
+                            <div class="flex-1 min-w-0 mr-2">
+                                <p class="text-xl font-black truncate ${isOverdue ? 'text-red-400' : 'text-white'}">${next.peptide}</p>
+                                <p class="text-xs font-bold opacity-60">${dateStr}${isOverdue ? ' <span class="text-red-400">' + (currentLang==='fr'?'(RETARD)':'(OVERDUE)') + '</span>' : ''}</p>
+                            </div>
+                            <button onclick="logForDayWithPreset('${dateIso}', ${presetJson})" class="bg-indigo-500 px-4 py-2 rounded-xl text-[10px] font-black uppercase shrink-0">Log</button>
+                        </div>
+                        ${total > 1 ? `
+                        <div class="flex items-center justify-between mt-3 pt-3 border-t border-white/10">
+                            <button onclick="navigateNextInj(-1)" class="next-inj-nav-btn text-slate-400" ${nextInjIndex === 0 ? 'disabled' : ''}>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" /></svg>
+                            </button>
+                            <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">${nextInjIndex + 1} <span class="text-slate-700">/</span> ${total}</span>
+                            <button onclick="navigateNextInj(1)" class="next-inj-nav-btn text-slate-400" ${nextInjIndex === total - 1 ? 'disabled' : ''}>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" /></svg>
+                            </button>
+                        </div>` : ''}
+                    `;
                 } else {
                     nextCont.innerHTML = `<p class="text-sm opacity-40 italic">${currentLang==='fr'?'Aucun planning':'No schedule set'}</p>`;
                 }
@@ -664,6 +690,12 @@
                 const sortedRecent = [...history].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 3);
                 recentCont.innerHTML = sortedRecent.map(h => `<div class="flex justify-between items-center border-b border-white/5 pb-2"><div><p class="text-xs font-bold">${h.peptide}</p><p class="text-[9px] opacity-50 uppercase">${new Date(h.date).toLocaleDateString()}</p></div><p class="text-[10px] font-mono text-indigo-300">${h.dosage}</p></div>`).join('') || '<p class="text-center py-4 text-xs opacity-40 italic">--</p>';
             }
+        }
+
+        // ← NEW: navigate between upcoming injections
+        function navigateNextInj(delta) {
+            nextInjIndex += delta;
+            renderDashboard();
         }
 
         function renderQuickLogs() {
@@ -735,7 +767,6 @@
             const currentLevelEl = document.getElementById('stat-current-level');
             if(currentLevelEl) currentLevelEl.innerText = (tIdx !== -1 ? dataPoints[tIdx] : 0).toFixed(2);
 
-            // === PEAK LEVEL (14 days) ===
             const fourteenDaysAgo = nowTime - (14 * 24 * 3600000);
             let peakVal = 0, peakTs = nowTime;
             for (let i = 0; i < pointTimestamps.length; i++) {
@@ -798,11 +829,11 @@
         }
 
         function closeModal() { const modal = document.getElementById('site-modal'); if(modal) modal.classList.add('hidden'); }
+
         async function finalizeQuickLog(site, preset) { 
             closeModal(); 
             const tsMs = Date.now();
             const dosageStr = `${preset.value} ${preset.unit}`;
-            // Optimistic local update
             history.push({
                 row: -tsMs,
                 date: new Date(tsMs).toISOString(),
@@ -814,7 +845,6 @@
             saveToCache({ history, presets, peptides: peptideLibrary });
             renderUI();
             showToast(`${t('toast_logged')} ${preset.peptide}`);
-            // Then sync with server
             const res = await api({ action: 'logInjection', peptide: preset.peptide, dosage: dosageStr, site, timestampMs: tsMs }); 
             if(res && res.success && !res.offline) loadAllData(); 
         }
@@ -850,7 +880,6 @@
             const sugTxt = document.getElementById('suggestion-text');
             const id = sugTxt ? sugTxt.dataset.siteId : null;
             if (!id) return;
-
             const logSite = document.getElementById('log-site'); 
             if(logSite) logSite.value = id; 
             const logLabel = document.getElementById('log-site-label'); 
@@ -1031,7 +1060,6 @@
                 loadAllData(); 
                 switchView('dash'); 
                 setInterval(checkStatus, 30000);
-                // Flush offline queue when reconnecting
                 window.addEventListener('online', () => { 
                     flushOfflineQueue().then(() => {
                         const q = getOfflineQueue();
@@ -1056,7 +1084,6 @@
             if(res && res.success) { showToast(t('toast_logged')); loadAllData(); switchView('dash'); e.target.reset(); } 
         };
 
-        // Ajout du champ UI lors de la sauvegarde du peptide
         document.getElementById('peptide-add-form').onsubmit = async (e) => { 
             e.preventDefault(); 
             const res = await api({ 
@@ -1069,7 +1096,6 @@
             if(res && res.success) { showToast(t('toast_logged')); loadAllData(); e.target.reset(); } 
         };
 
-        // Ajout du champ UI lors de la sauvegarde d'un Quick Log
         document.getElementById('config-form').onsubmit = async (e) => { 
             e.preventDefault(); 
             const res = await api({ 
