@@ -288,11 +288,11 @@
             <section class="glass-card p-6 rounded-3xl border border-cyan-500/10">
                 <h2 class="text-sm font-bold text-cyan-300 uppercase tracking-wider mb-4 flex items-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
-                    Bac Water
+                    <span data-t="bac_water_title">Bac Water</span>
                 </h2>
                 <div id="bac-water-display" class="mb-4 min-h-[60px]"></div>
                 <button onclick="confirmOpenBacWater()" class="w-full py-3 rounded-xl font-bold uppercase text-xs border border-cyan-500/40 bg-cyan-500/10 text-cyan-300 hover:bg-cyan-500/20 transition-colors">
-                    + Nouvelle ouverture aujourd'hui
+                    <span data-t="bac_water_btn">+ Nouvelle ouverture aujourd'hui</span>
                 </button>
             </section>
 
@@ -364,7 +364,8 @@ const translations = {
         log_for_this_day:"Log for this day", ui_placeholder_lib:"Vial Units (Optional)", ui_placeholder_quick:"Syringe Units (Optional)", ui_reminder:"Reminder: {ui} UI",
         see_all:"See all", no_events:"No events", offline_queued:"Saved offline — will sync when reconnected", offline_synced:"Offline data synced!",
         cal_mon:"Mon", cal_tue:"Tue", cal_wed:"Wed", cal_thu:"Thu", cal_fri:"Fri", cal_sat:"Sat", cal_sun:"Sun",
-        site_names:{"Right Abdomen (Upper)":"R Abdomen (U)","Right Abdomen (Lower)":"R Abdomen (L)","Left Abdomen (Upper)":"L Abdomen (U)","Left Abdomen (Lower)":"L Abdomen (L)","Right Flank":"Right Flank","Left Flank":"Left Flank","Right Thigh":"Right Thigh","Left Thigh":"Left Thigh","Right Deltoid":"Right Deltoid","Left Deltoid":"Left Deltoid","Right Buttock":"Right Buttock","Left Buttock":"Left Buttock","Other":"Other"}
+        site_names:{"Right Abdomen (Upper)":"R Abdomen (U)","Right Abdomen (Lower)":"R Abdomen (L)","Left Abdomen (Upper)":"L Abdomen (U)","Left Abdomen (Lower)":"L Abdomen (L)","Right Flank":"Right Flank","Left Flank":"Left Flank","Right Thigh":"Right Thigh","Left Thigh":"Left Thigh","Right Deltoid":"Right Deltoid","Left Deltoid":"Left Deltoid","Right Buttock":"Right Buttock","Left Buttock":"Left Buttock","Other":"Other"},
+        bac_water_title:"Bac Water", bac_water_btn:"+ New opening today", bac_water_none:"No opening recorded.", bac_water_opened_on:"Opened on", bac_water_elapsed:"Days elapsed", bac_water_remaining:"{n}d remaining", bac_water_expired:"EXPIRED", bac_water_confirm:"Record a new Bac Water opening today ({date})?", bac_water_toast:"Bac Water recorded!"
     },
     fr: {
         setup_title:"Connexion Database", setup_connect:"Se connecter", status_checking:"Vérification...", status_connected:"Connecté", status_disconnected:"Déconnecté",
@@ -379,7 +380,8 @@ const translations = {
         log_for_this_day:"Loger pour ce jour", ui_placeholder_lib:"Unités de la fiole (Optionnel)", ui_placeholder_quick:"Unités seringue (Optionnel)", ui_reminder:"Rappel fiole : {ui} UI",
         see_all:"Voir tout", no_events:"Aucun événement", offline_queued:"Sauvé hors-ligne — sera synchronisé à la reconnexion", offline_synced:"Données hors-ligne synchronisées !",
         cal_mon:"Lun", cal_tue:"Mar", cal_wed:"Mer", cal_thu:"Jeu", cal_fri:"Ven", cal_sat:"Sam", cal_sun:"Dim",
-        site_names:{"Right Abdomen (Upper)":"Abdomen D (Haut)","Right Abdomen (Lower)":"Abdomen D (Bas)","Left Abdomen (Upper)":"Abdomen G (Haut)","Left Abdomen (Lower)":"Abdomen G (Bas)","Right Flank":"Flanc Droit","Left Flank":"Flanc Gauche","Right Thigh":"Cuisse Droite","Left Thigh":"Cuisse Gauche","Right Deltoid":"Deltoïde D","Left Deltoid":"Deltoïde G","Right Buttock":"Fessier D","Left Buttock":"Fessier G","Other":"Autre"}
+        site_names:{"Right Abdomen (Upper)":"Abdomen D (Haut)","Right Abdomen (Lower)":"Abdomen D (Bas)","Left Abdomen (Upper)":"Abdomen G (Haut)","Left Abdomen (Lower)":"Abdomen G (Bas)","Right Flank":"Flanc Droit","Left Flank":"Flanc Gauche","Right Thigh":"Cuisse Droite","Left Thigh":"Cuisse Gauche","Right Deltoid":"Deltoïde D","Left Deltoid":"Deltoïde G","Right Buttock":"Fessier D","Left Buttock":"Fessier G","Other":"Autre"},
+        bac_water_title:"Bac Water", bac_water_btn:"+ Nouvelle ouverture aujourd'hui", bac_water_none:"Aucune ouverture enregistrée.", bac_water_opened_on:"Ouvert le", bac_water_elapsed:"Jours écoulés", bac_water_remaining:"{n}j restants", bac_water_expired:"EXPIRÉ", bac_water_confirm:"Enregistrer une nouvelle ouverture de Bac Water aujourd'hui ({date}) ?", bac_water_toast:"Bac Water enregistré !"
     }
 };
 
@@ -670,7 +672,7 @@ function renderBacWater() {
     const el = document.getElementById('bac-water-display');
     if (!el) return;
     if (!bacWaterOpenedAt) {
-        el.innerHTML = '<p class="text-sm text-slate-500 italic">Aucune ouverture enregistrée.</p>';
+        el.innerHTML = '<p class="text-sm text-slate-500 italic">' + t('bac_water_none') + '</p>';
         return;
     }
     const openDate = new Date(bacWaterOpenedAt);
@@ -685,16 +687,16 @@ function renderBacWater() {
     else if (daysLeft <= 20) { barColor = 'bg-yellow-500'; textColor = 'text-yellow-400'; }
 
     const dateStr = openDate.toLocaleDateString(currentLang === 'fr' ? 'fr-FR' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' });
-    const statusLabel = isExpired ? (currentLang === 'fr' ? 'EXPIRÉ' : 'EXPIRED') : (daysLeft + 'j restants');
+    const statusLabel = isExpired ? t('bac_water_expired') : t('bac_water_remaining').replace('{n}', daysLeft);
 
     el.innerHTML = `
         <div class="space-y-3">
             <div class="flex justify-between items-baseline">
-                <span class="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Ouvert le</span>
+                <span class="text-[10px] text-slate-500 uppercase font-bold tracking-widest">${t('bac_water_opened_on')}</span>
                 <span class="text-sm font-black text-white">${dateStr}</span>
             </div>
             <div class="flex justify-between items-baseline">
-                <span class="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Jours écoulés</span>
+                <span class="text-[10px] text-slate-500 uppercase font-bold tracking-widest">${t('bac_water_elapsed')}</span>
                 <span class="text-2xl font-black ${textColor}">${daysElapsed} <span class="text-xs font-bold opacity-60">/ ${BAC_WATER_LIMIT_DAYS}j</span></span>
             </div>
             <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
@@ -709,14 +711,14 @@ function renderBacWater() {
 
 async function confirmOpenBacWater() {
     const today = new Date().toLocaleDateString(currentLang === 'fr' ? 'fr-FR' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' });
-    if (!confirm("Enregistrer une nouvelle ouverture de Bac Water aujourd'hui (" + today + ") ?")) return;
+    if (!confirm(t('bac_water_confirm').replace('{date}', today))) return;
     const nowIso = new Date().toISOString();
     const res = await api({ action: 'saveBacWater', openedAt: nowIso });
     if (res && res.success) {
         bacWaterOpenedAt = nowIso;
         saveToCache({ history, presets, peptides: peptideLibrary, bacWater: bacWaterOpenedAt });
         renderBacWater();
-        showToast('Bac Water enregistré !');
+        showToast(t('bac_water_toast'));
     }
 }
 
