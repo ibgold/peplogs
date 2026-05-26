@@ -279,6 +279,11 @@
                         <label class="text-[10px] uppercase font-bold text-slate-500">Frequency (days)</label>
                         <input type="number" id="conf-frequency" placeholder="0 = no schedule" class="input-field">
                     </div>
+                    <div class="space-y-1">
+                        <label class="text-[10px] uppercase font-bold text-slate-500" data-t="cycle_label">Cycle (e.g. 5/2)</label>
+                        <input type="text" id="conf-cycle" placeholder="5/2 — optional" class="input-field" pattern="^\d+/\d+$">
+                        <p class="text-[10px] text-slate-500 ml-1" data-t="cycle_hint">Active days / Rest days. Overrides frequency.</p>
+                    </div>
                     <button type="submit" class="btn-primary w-full py-3 rounded-xl font-bold uppercase text-sm">Save Preset</button>
                 </form>
             </section>
@@ -365,7 +370,9 @@ const translations = {
         see_all:"See all", no_events:"No events", offline_queued:"Saved offline — will sync when reconnected", offline_synced:"Offline data synced!",
         cal_mon:"Mon", cal_tue:"Tue", cal_wed:"Wed", cal_thu:"Thu", cal_fri:"Fri", cal_sat:"Sat", cal_sun:"Sun",
         site_names:{"Right Abdomen (Upper)":"R Abdomen (U)","Right Abdomen (Lower)":"R Abdomen (L)","Left Abdomen (Upper)":"L Abdomen (U)","Left Abdomen (Lower)":"L Abdomen (L)","Right Flank":"Right Flank","Left Flank":"Left Flank","Right Thigh":"Right Thigh","Left Thigh":"Left Thigh","Right Deltoid":"Right Deltoid","Left Deltoid":"Left Deltoid","Right Buttock":"Right Buttock","Left Buttock":"Left Buttock","Other":"Other"},
-        bac_water_title:"Bac Water", bac_water_btn:"+ New opening today", bac_water_none:"No opening recorded.", bac_water_opened_on:"Opened on", bac_water_elapsed:"Days elapsed", bac_water_remaining:"{n}d remaining", bac_water_expired:"EXPIRED", bac_water_confirm:"Record a new Bac Water opening today ({date})?", bac_water_toast:"Bac Water recorded!"
+        bac_water_title:"Bac Water", bac_water_btn:"+ New opening today", bac_water_none:"No opening recorded.", bac_water_opened_on:"Opened on", bac_water_elapsed:"Days elapsed", bac_water_remaining:"{n}d remaining", bac_water_expired:"EXPIRED", bac_water_confirm:"Record a new Bac Water opening today ({date})?", bac_water_toast:"Bac Water recorded!",
+        cycle_label:"Cycle (e.g. 5/2)", cycle_hint:"Active days / Rest days", edit_preset:"Edit Preset", save_changes:"Save",
+        cycle_active:"Inject Today", cycle_rest:"Rest", cycle_done:"Done ✓", cycle_day_of:"day {d}/{t}"
     },
     fr: {
         setup_title:"Connexion Database", setup_connect:"Se connecter", status_checking:"Vérification...", status_connected:"Connecté", status_disconnected:"Déconnecté",
@@ -381,7 +388,9 @@ const translations = {
         see_all:"Voir tout", no_events:"Aucun événement", offline_queued:"Sauvé hors-ligne — sera synchronisé à la reconnexion", offline_synced:"Données hors-ligne synchronisées !",
         cal_mon:"Lun", cal_tue:"Mar", cal_wed:"Mer", cal_thu:"Jeu", cal_fri:"Ven", cal_sat:"Sam", cal_sun:"Dim",
         site_names:{"Right Abdomen (Upper)":"Abdomen D (Haut)","Right Abdomen (Lower)":"Abdomen D (Bas)","Left Abdomen (Upper)":"Abdomen G (Haut)","Left Abdomen (Lower)":"Abdomen G (Bas)","Right Flank":"Flanc Droit","Left Flank":"Flanc Gauche","Right Thigh":"Cuisse Droite","Left Thigh":"Cuisse Gauche","Right Deltoid":"Deltoïde D","Left Deltoid":"Deltoïde G","Right Buttock":"Fessier D","Left Buttock":"Fessier G","Other":"Autre"},
-        bac_water_title:"Bac Water", bac_water_btn:"+ Nouvelle ouverture aujourd'hui", bac_water_none:"Aucune ouverture enregistrée.", bac_water_opened_on:"Ouvert le", bac_water_elapsed:"Jours écoulés", bac_water_remaining:"{n}j restants", bac_water_expired:"EXPIRÉ", bac_water_confirm:"Enregistrer une nouvelle ouverture de Bac Water aujourd'hui ({date}) ?", bac_water_toast:"Bac Water enregistré !"
+        bac_water_title:"Bac Water", bac_water_btn:"+ Nouvelle ouverture aujourd'hui", bac_water_none:"Aucune ouverture enregistrée.", bac_water_opened_on:"Ouvert le", bac_water_elapsed:"Jours écoulés", bac_water_remaining:"{n}j restants", bac_water_expired:"EXPIRÉ", bac_water_confirm:"Enregistrer une nouvelle ouverture de Bac Water aujourd'hui ({date}) ?", bac_water_toast:"Bac Water enregistré !",
+        cycle_label:"Cycle (ex: 5/2)", cycle_hint:"Jours actifs / jours de repos", edit_preset:"Modifier le preset", save_changes:"Enregistrer",
+        cycle_active:"Injecter aujourd'hui", cycle_rest:"Repos", cycle_done:"Fait ✓", cycle_day_of:"jour {d}/{t}"
     }
 };
 
@@ -432,8 +441,50 @@ function parseDosage(raw) {
     return { value: parseFloat(raw) || 0, unit: raw.toLowerCase().includes('mcg') ? 'mcg' : 'mg' };
 }
 function dosageToMg(raw) { const d = parseDosage(raw); return d.unit === 'mcg' ? d.value / 1000 : d.value; }
+
+// ===================== CYCLE LOGIC =====================
+function getCycleStatus(preset) {
+    if (!preset.cycle || preset.cycle.trim() === "") return null;
+    const parts = preset.cycle.split("/");
+    if (parts.length !== 2) return null;
+    const activeDays = Number(parts[0]), restDays = Number(parts[1]);
+    if (!activeDays || !restDays) return null;
+    const pepName = preset.peptide.toLowerCase().trim();
+    const today = new Date(); today.setHours(0,0,0,0);
+    const injTimes = history.filter(h => h.peptide.toLowerCase().trim() === pepName).map(h => new Date(h.date).getTime());
+    if (!injTimes.length) return { status: "active", restDay: null, restTotal: restDays, activeDays };
+    const lastInj = new Date(Math.max(...injTimes)); lastInj.setHours(0,0,0,0);
+    const daysSince = Math.round((today.getTime() - lastInj.getTime()) / 86400000);
+    if (daysSince === 0) return { status: "done", restTotal: restDays, activeDays };
+    if (daysSince <= restDays) return { status: "rest", restDay: daysSince, restTotal: restDays, activeDays };
+    return { status: "active", restDay: null, restTotal: restDays, activeDays };
+}
+function cycleBadgeHTML(cs) {
+    if (!cs) return "";
+    if (cs.status === "active") return "<span class=\"inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-2 py-0.5 rounded-full\">🟢 "+t("cycle_active")+"</span>";
+    if (cs.status === "done") return "<span class=\"inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wider bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-2 py-0.5 rounded-full\">"+t("cycle_done")+"</span>";
+    const lbl = t("cycle_day_of").replace("{d}",cs.restDay).replace("{t}",cs.restTotal);
+    return "<span class=\"inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wider bg-slate-700/60 text-slate-400 border border-slate-600/40 px-2 py-0.5 rounded-full\">🔴 "+t("cycle_rest")+" "+lbl+"</span>";
+}
+function openEditPreset(p) {
+    document.getElementById("edit-preset-row").value = p.row;
+    document.getElementById("edit-preset-label").value = p.label;
+    document.getElementById("edit-preset-value").value = p.value;
+    document.getElementById("edit-preset-unit").value = p.unit;
+    document.getElementById("edit-preset-ui").value = p.ui || "";
+    document.getElementById("edit-preset-frequency").value = p.frequency || "";
+    document.getElementById("edit-preset-cycle").value = p.cycle || "";
+    document.getElementById("edit-preset-modal").classList.remove("hidden");
+}
+function closeEditPreset() { document.getElementById("edit-preset-modal").classList.add("hidden"); }
+async function saveEditPreset() {
+    const row = parseInt(document.getElementById("edit-preset-row").value);
+    const data = { action:"updateConfig", row, label:document.getElementById("edit-preset-label").value, value:document.getElementById("edit-preset-value").value, unit:document.getElementById("edit-preset-unit").value, ui:document.getElementById("edit-preset-ui").value, frequency:document.getElementById("edit-preset-frequency").value||0, cycle:document.getElementById("edit-preset-cycle").value||"" };
+    const res = await api(data);
+    if (res && res.success) { closeEditPreset(); showToast(t("save_changes")+" ✓"); loadAllData(); }
+}
+
 function getHalfLife(peptideName) {
-    const norm = peptideName.toLowerCase().trim();
     const inLib = peptideLibrary.find(p => p.name.toLowerCase().trim() === norm);
     if (inLib && inLib.halfLife > 0) { let h = parseFloat(inLib.halfLife); if (inLib.hlUnit === 'days') h *= 24; return h; }
     return DEFAULT_HALF_LIVES[norm] || 0;
@@ -474,7 +525,7 @@ async function api(data) {
         const res = await fetch(APP_URL, { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'text/plain;charset=utf-8' } });
         return await res.json();
     } catch(e) {
-        const writeActions = ['logInjection','saveConfig','savePeptide','deleteLog','deleteConfig','deletePeptide','saveBacWater'];
+        const writeActions = ['logInjection','saveConfig','updateConfig','savePeptide','deleteLog','deleteConfig','deletePeptide','saveBacWater'];
         if (writeActions.includes(data.action)) {
             addToOfflineQueue(data);
             showToast(t('offline_queued'), 'error', 4000);
@@ -726,13 +777,17 @@ async function confirmOpenBacWater() {
 function renderQuickLogs() {
     const cont = document.getElementById('dash-quick-log-container');
     if (!cont) return;
-    cont.innerHTML = presets.map(p => `
-        <button onclick="openFullSiteModal('preset', ${JSON.stringify(p).replace(/"/g, '&quot;')})" class="glass-card p-4 rounded-2xl text-left border border-white/5 active:scale-95 transition flex flex-col justify-between">
+    cont.innerHTML = presets.map(p => {
+        const cs = getCycleStatus(p);
+        const badge = cycleBadgeHTML(cs);
+        const isRest = cs && cs.status === 'rest';
+        return `<button onclick="openFullSiteModal('preset', ${JSON.stringify(p).replace(/"/g, '&quot;')})" class="glass-card p-4 rounded-2xl text-left active:scale-95 transition flex flex-col justify-between ${isRest ? 'opacity-50 border border-red-900/20' : 'border border-white/5'}">
             <p class="font-black text-[9px] uppercase tracking-wider text-indigo-300 mb-1 opacity-70">${p.label}</p>
-            <p class="font-bold text-sm truncate">${p.peptide}</p>
-            ${p.ui ? `<p class="text-[10px] font-mono text-emerald-400 mt-1 bg-emerald-900/30 inline-block px-1.5 py-0.5 rounded border border-emerald-500/20 self-start">${p.ui} UI</p>` : ''}
-        </button>
-    `).join('');
+            <p class="font-bold text-sm truncate mb-1">${p.peptide}</p>
+            <p class="font-mono text-xs text-white/60">${p.value}${p.unit}</p>
+            <div class="mt-2 flex flex-wrap gap-1">${p.ui ? '<span class="text-[9px] font-mono text-emerald-400 bg-emerald-900/30 px-1.5 py-0.5 rounded border border-emerald-500/20">'+p.ui+' UI</span>' : ''}${badge}</div>
+        </button>`;
+    }).join('');
 }
 
 // ===================== LEVEL CHART =====================
@@ -878,14 +933,27 @@ function renderPeptideList() {
 }
 function renderPresetsList() {
     const preList = document.getElementById('presets-list');
-    if (preList) preList.innerHTML = presets.map(p => `
-        <div class="flex justify-between items-center glass-card p-4 rounded-2xl mb-2">
-            <div>
-                <p class="text-sm font-bold">${p.label}</p>
-                <p class="text-[10px] text-slate-500">${p.peptide} • ${p.value}${p.unit}${p.ui ? ` <span class="text-emerald-400 font-mono">(${p.ui} UI)</span>` : ''}${p.frequency > 0 ? ` (Q${p.frequency}d)` : ''}</p>
+    if (!preList) return;
+    preList.innerHTML = presets.map(p => {
+        const cs = getCycleStatus(p);
+        const badge = cycleBadgeHTML(cs);
+        const cycleInfo = p.cycle ? ` • cycle ${p.cycle}` : (p.frequency > 0 ? ` (Q${p.frequency}d)` : '');
+        return `<div class="glass-card p-4 rounded-2xl mb-2">
+            <div class="flex justify-between items-start">
+                <div class="flex-1 min-w-0 mr-2">
+                    <div class="flex items-center gap-2 flex-wrap mb-1">
+                        <p class="text-sm font-bold">${p.label}</p>
+                        ${badge}
+                    </div>
+                    <p class="text-[10px] text-slate-500">${p.peptide} • ${p.value}${p.unit}${p.ui ? ' <span class="text-emerald-400 font-mono">('+p.ui+' UI)</span>' : ''}${cycleInfo}</p>
+                </div>
+                <div class="flex gap-2 shrink-0">
+                    <button onclick="openEditPreset(${JSON.stringify(p).replace(/"/g, '&quot;')})" class="text-indigo-400 font-bold text-[10px] uppercase tracking-widest border border-indigo-500/30 px-3 py-1.5 rounded-xl hover:bg-indigo-500/10 transition-colors">✏️</button>
+                    <button onclick="deletePreset(${p.row})" class="text-red-500 font-bold p-2">✕</button>
+                </div>
             </div>
-            <button onclick="deletePreset(${p.row})" class="text-red-500 font-bold p-2">✕</button>
-        </div>`).join('');
+        </div>`;
+    }).join('');
 }
 function renderHistory() {
     const filterEl = document.getElementById('history-filter');
@@ -1037,11 +1105,37 @@ document.getElementById('peptide-add-form').onsubmit = async e => {
 
 document.getElementById('config-form').onsubmit = async e => {
     e.preventDefault();
-    const res = await api({ action: 'saveConfig', label: document.getElementById('conf-label').value, peptide: document.getElementById('conf-peptide-select').value, value: document.getElementById('conf-val').value, unit: document.getElementById('conf-unit').value, frequency: document.getElementById('conf-frequency').value, ui: document.getElementById('conf-ui').value });
+    const res = await api({ action: 'saveConfig', label: document.getElementById('conf-label').value, peptide: document.getElementById('conf-peptide-select').value, value: document.getElementById('conf-val').value, unit: document.getElementById('conf-unit').value, frequency: document.getElementById('conf-frequency').value, ui: document.getElementById('conf-ui').value, cycle: document.getElementById('conf-cycle').value || '' });
     if (res && res.success) { showToast(t('toast_logged')); loadAllData(); e.target.reset(); }
 };
 
 if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(err => console.error(err)));
 </script>
+
+<!-- MODAL: EDIT PRESET -->
+<div id="edit-preset-modal" class="fixed inset-0 z-[120] bg-slate-900/95 backdrop-blur-md hidden flex flex-col items-center justify-center p-4">
+    <div class="glass-card w-full max-w-sm p-6 rounded-3xl space-y-4 text-white shadow-2xl animate-bounce-in">
+        <h3 class="text-sm font-black text-indigo-300 uppercase tracking-widest text-center" data-t="edit_preset">Edit Preset</h3>
+        <input type="hidden" id="edit-preset-row">
+        <input type="text" id="edit-preset-label" class="input-field" placeholder="Label">
+        <div class="flex gap-2">
+            <input type="number" id="edit-preset-value" placeholder="Dose" step="any" class="input-field flex-1">
+            <select id="edit-preset-unit" class="bg-slate-700 text-white rounded-xl px-3 font-bold"><option>mcg</option><option>mg</option></select>
+        </div>
+        <input type="number" id="edit-preset-ui" placeholder="Syringe units (optional)" class="input-field">
+        <div class="space-y-1">
+            <label class="text-[10px] uppercase font-bold text-slate-500">Frequency (days)</label>
+            <input type="number" id="edit-preset-frequency" placeholder="0 = no schedule" class="input-field">
+        </div>
+        <div class="space-y-1">
+            <label class="text-[10px] uppercase font-bold text-slate-500" data-t="cycle_label">Cycle (e.g. 5/2)</label>
+            <input type="text" id="edit-preset-cycle" placeholder="5/2 — optional" class="input-field">
+        </div>
+        <div class="flex gap-2 pt-2">
+            <button onclick="closeEditPreset()" class="flex-1 py-3 text-slate-500 font-bold bg-slate-800 rounded-2xl" data-t="cancel">Cancel</button>
+            <button onclick="saveEditPreset()" class="flex-1 py-3 btn-primary text-white font-bold rounded-2xl" data-t="save_changes">Save</button>
+        </div>
+    </div>
+</div>
 </body>
 </html>
