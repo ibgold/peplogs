@@ -485,6 +485,7 @@ async function saveEditPreset() {
 }
 
 function getHalfLife(peptideName) {
+    const norm = peptideName.toLowerCase().trim();
     const inLib = peptideLibrary.find(p => p.name.toLowerCase().trim() === norm);
     if (inLib && inLib.halfLife > 0) { let h = parseFloat(inLib.halfLife); if (inLib.hlUnit === 'days') h *= 24; return h; }
     return DEFAULT_HALF_LIVES[norm] || 0;
