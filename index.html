@@ -169,8 +169,13 @@
                     <p id="log-ui-reminder" class="text-[11px] font-bold text-emerald-400 mt-2 ml-2 hidden bg-emerald-900/30 inline-block px-2 py-1 rounded-lg border border-emerald-500/30"></p>
                 </div>
                 <div class="flex gap-2">
-                    <input type="number" id="log-dosage" placeholder="Dose" step="any" class="input-field">
-                    <select id="log-unit" class="bg-slate-700 text-white rounded-xl px-3 font-bold"><option>mcg</option><option>mg</option></select>
+                    <input type="number" id="log-dosage" placeholder="Dose" step="any" class="input-field" oninput="updateLogUICalc()" onchange="updateLogUICalc()">
+                    <select id="log-unit" class="bg-slate-700 text-white rounded-xl px-3 font-bold" onchange="updateLogUICalc()"><option>mcg</option><option>mg</option></select>
+                </div>
+                <div id="log-ui-calc" class="hidden text-center py-2 px-4 rounded-xl bg-indigo-900/30 border border-indigo-500/30">
+                    <span class="text-[10px] uppercase font-bold text-slate-500 tracking-widest">Syringe</span>
+                    <span id="log-ui-calc-value" class="text-xl font-black text-indigo-300 mx-3">--</span>
+                    <span class="text-[10px] uppercase font-bold text-slate-500 tracking-widest">UI</span>
                 </div>
                 <button type="button" onclick="openFullSiteModal('manual')" class="input-field text-left flex justify-between items-center bg-slate-800/40">
                     <span id="log-site-label" data-t="select_site">Select site...</span>
@@ -301,6 +306,40 @@
                 </button>
             </section>
 
+            <!-- Reconstitutions -->
+            <section class="glass-card p-6 rounded-3xl border border-violet-500/10">
+                <h2 class="text-sm font-bold text-violet-300 uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                    <span data-t="recon_title">Reconstitutions</span>
+                </h2>
+                <div id="active-recons-list" class="space-y-3 mb-5"></div>
+                <details class="mb-5">
+                    <summary class="text-[10px] uppercase font-bold text-slate-500 tracking-widest cursor-pointer select-none mb-3" data-t="recon_new">New Reconstitution</summary>
+                    <form id="recon-form" class="space-y-3 mt-3">
+                        <select id="recon-peptide" class="input-field" required></select>
+                        <div class="flex gap-2">
+                            <div class="flex-1 space-y-1">
+                                <label class="text-[10px] uppercase font-bold text-slate-500" data-t="recon_vial_mg">Vial (mg)</label>
+                                <input type="number" id="recon-vial-mg" step="any" placeholder="10" class="input-field" oninput="updateReconCalcPreview()" required>
+                            </div>
+                            <div class="flex-1 space-y-1">
+                                <label class="text-[10px] uppercase font-bold text-slate-500" data-t="recon_bac_ml">BAC Water (ml)</label>
+                                <input type="number" id="recon-bac-ml" step="any" placeholder="2" class="input-field" oninput="updateReconCalcPreview()" required>
+                            </div>
+                        </div>
+                        <div id="recon-calc-preview" class="hidden text-center py-2 px-4 rounded-xl bg-violet-900/30 border border-violet-500/30">
+                            <span class="text-[10px] uppercase font-bold text-slate-500 tracking-widest">1 UI = </span>
+                            <span id="recon-calc-value" class="text-xl font-black text-violet-300 mx-1">--</span>
+                            <span class="text-[10px] uppercase font-bold text-slate-500 tracking-widest">mcg</span>
+                        </div>
+                        <input type="datetime-local" id="recon-date" class="input-field" style="color-scheme:dark;">
+                        <input type="text" id="recon-notes" class="input-field" data-t="recon_notes" placeholder="Notes (optional)">
+                        <button type="submit" class="btn-primary w-full py-3 rounded-xl font-bold uppercase text-xs" data-t="recon_new">Save</button>
+                    </form>
+                </details>
+                <div id="recon-history-list" class="space-y-2"></div>
+            </section>
+
             <button onclick="resetApp()" class="w-full py-4 text-red-400 text-xs font-bold border border-red-900/30 rounded-2xl mt-4 bg-red-900/10" data-t="disconnect_btn">Disconnect Database</button>
         </div>
 
@@ -372,7 +411,11 @@ const translations = {
         site_names:{"Right Abdomen (Upper)":"R Abdomen (U)","Right Abdomen (Lower)":"R Abdomen (L)","Left Abdomen (Upper)":"L Abdomen (U)","Left Abdomen (Lower)":"L Abdomen (L)","Right Flank":"Right Flank","Left Flank":"Left Flank","Right Thigh":"Right Thigh","Left Thigh":"Left Thigh","Right Deltoid":"Right Deltoid","Left Deltoid":"Left Deltoid","Right Buttock":"Right Buttock","Left Buttock":"Left Buttock","Other":"Other"},
         bac_water_title:"Bac Water", bac_water_btn:"+ New opening today", bac_water_none:"No opening recorded.", bac_water_opened_on:"Opened on", bac_water_elapsed:"Days elapsed", bac_water_remaining:"{n}d remaining", bac_water_expired:"EXPIRED", bac_water_confirm:"Record a new Bac Water opening today ({date})?", bac_water_toast:"Bac Water recorded!",
         cycle_label:"Cycle (e.g. 5/2)", cycle_hint:"Active days / Rest days", edit_preset:"Edit Preset", save_changes:"Save",
-        cycle_active:"Inject Today", cycle_rest:"Rest", cycle_done:"Done ✓", cycle_day_of:"day {d}/{t}"
+        cycle_active:"Inject Today", cycle_rest:"Rest", cycle_done:"Done ✓", cycle_day_of:"day {d}/{t}",
+        recon_title:"Reconstitutions", recon_new:"New Reconstitution", recon_vial_mg:"Vial (mg)", recon_bac_ml:"BAC Water (ml)",
+        recon_conc:"Concentration", recon_active:"Active", recon_history:"History", recon_terminate:"Terminate",
+        recon_confirm_close:"Mark this reconstitution as terminated?", recon_toast:"Reconstitution saved!", recon_closed_toast:"Reconstitution terminated.",
+        recon_none:"No active reconstitution for this peptide.", recon_notes:"Notes (optional)"
     },
     fr: {
         setup_title:"Connexion Database", setup_connect:"Se connecter", status_checking:"Vérification...", status_connected:"Connecté", status_disconnected:"Déconnecté",
@@ -390,7 +433,11 @@ const translations = {
         site_names:{"Right Abdomen (Upper)":"Abdomen D (Haut)","Right Abdomen (Lower)":"Abdomen D (Bas)","Left Abdomen (Upper)":"Abdomen G (Haut)","Left Abdomen (Lower)":"Abdomen G (Bas)","Right Flank":"Flanc Droit","Left Flank":"Flanc Gauche","Right Thigh":"Cuisse Droite","Left Thigh":"Cuisse Gauche","Right Deltoid":"Deltoïde D","Left Deltoid":"Deltoïde G","Right Buttock":"Fessier D","Left Buttock":"Fessier G","Other":"Autre"},
         bac_water_title:"Bac Water", bac_water_btn:"+ Nouvelle ouverture aujourd'hui", bac_water_none:"Aucune ouverture enregistrée.", bac_water_opened_on:"Ouvert le", bac_water_elapsed:"Jours écoulés", bac_water_remaining:"{n}j restants", bac_water_expired:"EXPIRÉ", bac_water_confirm:"Enregistrer une nouvelle ouverture de Bac Water aujourd'hui ({date}) ?", bac_water_toast:"Bac Water enregistré !",
         cycle_label:"Cycle (ex: 5/2)", cycle_hint:"Jours actifs / jours de repos", edit_preset:"Modifier le preset", save_changes:"Enregistrer",
-        cycle_active:"Injecter aujourd'hui", cycle_rest:"Repos", cycle_done:"Fait ✓", cycle_day_of:"jour {d}/{t}"
+        cycle_active:"Injecter aujourd'hui", cycle_rest:"Repos", cycle_done:"Fait ✓", cycle_day_of:"jour {d}/{t}",
+        recon_title:"Reconstitutions", recon_new:"Nouvelle reconstitution", recon_vial_mg:"Fiole (mg)", recon_bac_ml:"BAC Water (ml)",
+        recon_conc:"Concentration", recon_active:"Active", recon_history:"Historique", recon_terminate:"Terminer",
+        recon_confirm_close:"Marquer cette reconstitution comme terminée ?", recon_toast:"Reconstitution enregistrée !", recon_closed_toast:"Reconstitution terminée.",
+        recon_none:"Aucune reconstitution active pour ce peptide.", recon_notes:"Notes (optionnel)"
     }
 };
 
@@ -404,6 +451,7 @@ let calendarDate = new Date();
 let historyView = 'list';
 let nextInjIndex = 0;
 let bacWaterOpenedAt = null;
+let reconstitutions = [];
 const BAC_WATER_LIMIT_DAYS = 60;
 const DEFAULT_HALF_LIVES = { tirzepatide: 120, retatrutide: 144 };
 let preferredSites = JSON.parse(localStorage.getItem('pref_sites')) || ['Right Abdomen (Lower)', 'Left Abdomen (Lower)'];
@@ -415,6 +463,9 @@ const CACHE_KEY = 'pep_offline_cache';
 const QUEUE_KEY = 'pep_offline_queue';
 function saveToCache(data) { try { localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), ...data })); } catch(e) {} }
 function loadFromCache() { try { const r = localStorage.getItem(CACHE_KEY); return r ? JSON.parse(r) : null; } catch(e) { return null; } }
+function calcMcgPerUI(recon) { if (!recon || !recon.bacWaterMl || !recon.vialMg) return null; return (parseFloat(recon.vialMg) * 1000) / (parseFloat(recon.bacWaterMl) * 100); }
+function getActiveRecon(pepName) { return reconstitutions.find(r => r.peptide.toLowerCase().trim() === pepName.toLowerCase().trim() && !r.closedAt) || null; }
+function mcgToUI(mcgVal, recon) { const mpu = calcMcgPerUI(recon); return mpu ? (mcgVal / mpu) : null; }
 function getOfflineQueue() { try { const r = localStorage.getItem(QUEUE_KEY); return r ? JSON.parse(r) : []; } catch(e) { return []; } }
 function saveOfflineQueue(q) { try { localStorage.setItem(QUEUE_KEY, JSON.stringify(q)); } catch(e) {} }
 function addToOfflineQueue(data) { const q = getOfflineQueue(); q.push({ data, ts: Date.now() }); saveOfflineQueue(q); }
@@ -532,7 +583,7 @@ async function api(data) {
             showToast(t('offline_queued'), 'error', 4000);
             if (data.action === 'logInjection') {
                 history.push({ row: -Date.now(), date: data.timestampMs ? new Date(Number(data.timestampMs)).toISOString() : new Date().toISOString(), peptide: data.peptide, dosage: data.dosage, site: data.site, notes: data.notes || '' });
-                saveToCache({ history, presets, peptides: peptideLibrary, bacWater: bacWaterOpenedAt });
+                saveToCache({ history, presets, peptides: peptideLibrary, bacWater: bacWaterOpenedAt, reconstitutions });
                 renderUI();
             }
             return { success: true, offline: true };
@@ -583,6 +634,7 @@ async function loadAllData() {
         history = cached.history || [];
         peptideLibrary = cached.peptides || [];
         bacWaterOpenedAt = cached.bacWater || null;
+        reconstitutions = cached.reconstitutions || [];
         renderUI();
     }
     try {
@@ -593,7 +645,8 @@ async function loadAllData() {
             history = res.history || [];
             peptideLibrary = res.peptides || [];
             bacWaterOpenedAt = res.bacWater || null;
-            saveToCache({ history, presets, peptides: peptideLibrary, bacWater: bacWaterOpenedAt });
+            reconstitutions = res.reconstitutions || [];
+            saveToCache({ history, presets, peptides: peptideLibrary, bacWater: bacWaterOpenedAt, reconstitutions });
             nextInjIndex = 0;
             renderUI();
         }
@@ -612,13 +665,14 @@ function renderUI() {
     renderHistory();
     renderDashboard();
     renderBacWater();
+    renderReconstitutions();
     const levelTab = document.getElementById('tab-levels');
     if (levelTab && levelTab.classList.contains('active')) updateLevelChart();
     if (historyView === 'calendar') renderCalendar();
 }
 
 function populatePeptideSelects() {
-    const selects = [document.getElementById('log-peptide'), document.getElementById('level-peptide-filter'), document.getElementById('conf-peptide-select')];
+    const selects = [document.getElementById('log-peptide'), document.getElementById('level-peptide-filter'), document.getElementById('conf-peptide-select'), document.getElementById('recon-peptide')];
     const names = new Set([...presets.map(p => p.peptide), ...peptideLibrary.map(p => p.name), ...history.map(h => h.peptide)]);
     const sorted = Array.from(names).filter(n => n).sort();
     selects.forEach(s => {
@@ -639,6 +693,7 @@ function updatePeptideReminder() {
     const pepObj = peptideLibrary.find(p => p.name === select.value);
     if (pepObj && pepObj.ui) { reminder.innerText = t('ui_reminder').replace('{ui}', pepObj.ui); reminder.classList.remove('hidden'); }
     else reminder.classList.add('hidden');
+    updateLogUICalc();
 }
 
 // ===================== DASHBOARD =====================
@@ -768,7 +823,7 @@ async function confirmOpenBacWater() {
     const res = await api({ action: 'saveBacWater', openedAt: nowIso });
     if (res && res.success) {
         bacWaterOpenedAt = nowIso;
-        saveToCache({ history, presets, peptides: peptideLibrary, bacWater: bacWaterOpenedAt });
+        saveToCache({ history, presets, peptides: peptideLibrary, bacWater: bacWaterOpenedAt, reconstitutions });
         renderBacWater();
         showToast(t('bac_water_toast'));
     }
@@ -782,11 +837,17 @@ function renderQuickLogs() {
         const cs = getCycleStatus(p);
         const badge = cycleBadgeHTML(cs);
         const isRest = cs && cs.status === 'rest';
+        const recon = getActiveRecon(p.peptide);
+        const mcgVal = p.unit === 'mg' ? parseFloat(p.value) * 1000 : parseFloat(p.value);
+        const uiVal = recon ? mcgToUI(mcgVal, recon) : null;
+        const uiDisplay = uiVal !== null
+            ? '<span class="text-[9px] font-mono text-violet-300 bg-violet-900/30 px-1.5 py-0.5 rounded border border-violet-500/20">'+uiVal.toFixed(1)+' UI</span>'
+            : (p.ui ? '<span class="text-[9px] font-mono text-emerald-400 bg-emerald-900/30 px-1.5 py-0.5 rounded border border-emerald-500/20">'+p.ui+' UI</span>' : '');
         return `<button onclick="openFullSiteModal('preset', ${JSON.stringify(p).replace(/"/g, '&quot;')})" class="glass-card p-4 rounded-2xl text-left active:scale-95 transition flex flex-col justify-between ${isRest ? 'opacity-50 border border-red-900/20' : 'border border-white/5'}">
             <p class="font-black text-[9px] uppercase tracking-wider text-indigo-300 mb-1 opacity-70">${p.label}</p>
             <p class="font-bold text-sm truncate mb-1">${p.peptide}</p>
             <p class="font-mono text-xs text-white/60">${p.value}${p.unit}</p>
-            <div class="mt-2 flex flex-wrap gap-1">${p.ui ? '<span class="text-[9px] font-mono text-emerald-400 bg-emerald-900/30 px-1.5 py-0.5 rounded border border-emerald-500/20">'+p.ui+' UI</span>' : ''}${badge}</div>
+            <div class="mt-2 flex flex-wrap gap-1">${uiDisplay}${badge}</div>
         </button>`;
     }).join('');
 }
@@ -893,7 +954,7 @@ async function finalizeQuickLog(site, preset) {
     const tsMs = Date.now();
     const dosageStr = `${preset.value} ${preset.unit}`;
     history.push({ row: -tsMs, date: new Date(tsMs).toISOString(), peptide: preset.peptide, dosage: dosageStr, site, notes: '' });
-    saveToCache({ history, presets, peptides: peptideLibrary, bacWater: bacWaterOpenedAt });
+    saveToCache({ history, presets, peptides: peptideLibrary, bacWater: bacWaterOpenedAt, reconstitutions });
     renderUI();
     showToast(`${t('toast_logged')} ${preset.peptide}`);
     const res = await api({ action: 'logInjection', peptide: preset.peptide, dosage: dosageStr, site, timestampMs: tsMs });
@@ -1058,6 +1119,102 @@ function deleteWithUndo(row) {
     setTimeout(async () => { if (!cancelled) { const res = await api({ action: 'deleteLog', row }); if (res && res.success) loadAllData(); } }, 3500);
 }
 
+// ===================== RECONSTITUTIONS =====================
+function renderReconstitutions() {
+    const activeList = document.getElementById('active-recons-list');
+    const histList = document.getElementById('recon-history-list');
+    if (!activeList || !histList) return;
+
+    const active = reconstitutions.filter(r => !r.closedAt);
+    const closed = reconstitutions.filter(r => r.closedAt).sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    activeList.innerHTML = active.length === 0
+        ? '<p class="text-sm text-slate-500 italic text-center py-2">' + t('recon_none') + '</p>'
+        : active.map(r => {
+            const mpu = calcMcgPerUI(r);
+            const concStr = mpu ? mpu.toFixed(1) + ' mcg/UI' : '?';
+            const dateStr = new Date(r.date).toLocaleDateString(currentLang === 'fr' ? 'fr-FR' : 'en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+            return `<div class="bg-violet-900/20 border border-violet-500/30 p-4 rounded-2xl">
+                <div class="flex justify-between items-start mb-2">
+                    <div>
+                        <p class="font-black text-sm text-violet-200">${r.peptide}</p>
+                        <p class="text-[10px] text-slate-500 mt-0.5">${dateStr} • ${r.vialMg}mg / ${r.bacWaterMl}ml</p>
+                    </div>
+                    <span class="text-[9px] font-black uppercase tracking-widest bg-violet-500/20 text-violet-300 px-2 py-1 rounded-full border border-violet-500/30">● ${t('recon_active')}</span>
+                </div>
+                <div class="flex justify-between items-center mt-3 pt-3 border-t border-violet-500/20">
+                    <div>
+                        <p class="text-[9px] uppercase font-bold text-slate-500 tracking-widest">${t('recon_conc')}</p>
+                        <p class="text-lg font-black text-violet-300">${concStr}</p>
+                    </div>
+                    <button onclick="terminateRecon(${r.row})" class="text-[10px] font-bold uppercase tracking-widest border border-red-900/40 text-red-400 bg-red-900/10 px-3 py-2 rounded-xl hover:bg-red-900/20 transition-colors">${t('recon_terminate')}</button>
+                </div>
+                ${r.notes ? '<p class="text-[10px] text-slate-500 mt-2 italic">' + r.notes + '</p>' : ''}
+            </div>`;
+        }).join('');
+
+    histList.innerHTML = closed.length === 0 ? '' :
+        '<p class="text-[10px] uppercase font-bold text-slate-500 tracking-widest mb-2 mt-2">' + t('recon_history') + '</p>' +
+        closed.map(r => {
+            const mpu = calcMcgPerUI(r);
+            const dateStr = new Date(r.date).toLocaleDateString(currentLang === 'fr' ? 'fr-FR' : 'en-US', { day: 'numeric', month: 'short' });
+            const closedStr = new Date(r.closedAt).toLocaleDateString(currentLang === 'fr' ? 'fr-FR' : 'en-US', { day: 'numeric', month: 'short' });
+            return `<div class="flex justify-between items-center glass-card p-3 rounded-xl opacity-60">
+                <div>
+                    <p class="text-xs font-bold">${r.peptide}</p>
+                    <p class="text-[9px] text-slate-500">${dateStr} → ${closedStr} • ${r.vialMg}mg/${r.bacWaterMl}ml${mpu ? ' • ' + mpu.toFixed(1) + ' mcg/UI' : ''}</p>
+                </div>
+            </div>`;
+        }).join('');
+}
+
+function updateReconCalcPreview() {
+    const mg = parseFloat(document.getElementById('recon-vial-mg').value);
+    const ml = parseFloat(document.getElementById('recon-bac-ml').value);
+    const preview = document.getElementById('recon-calc-preview');
+    const val = document.getElementById('recon-calc-value');
+    if (mg > 0 && ml > 0) {
+        const mpu = (mg * 1000) / (ml * 100);
+        val.innerText = mpu.toFixed(1);
+        preview.classList.remove('hidden');
+    } else {
+        preview.classList.add('hidden');
+    }
+}
+
+function updateLogUICalc() {
+    const dose = parseFloat(document.getElementById('log-dosage').value);
+    const unit = document.getElementById('log-unit').value;
+    const pep = document.getElementById('log-peptide').value;
+    const calcBox = document.getElementById('log-ui-calc');
+    const calcVal = document.getElementById('log-ui-calc-value');
+    if (!dose || !pep) { calcBox.classList.add('hidden'); return; }
+    const recon = getActiveRecon(pep);
+    if (!recon) { calcBox.classList.add('hidden'); return; }
+    const mcgVal = unit === 'mg' ? dose * 1000 : dose;
+    const ui = mcgToUI(mcgVal, recon);
+    if (ui !== null) {
+        calcVal.innerText = ui.toFixed(1);
+        calcBox.classList.remove('hidden');
+    } else {
+        calcBox.classList.add('hidden');
+    }
+}
+
+async function terminateRecon(row) {
+    if (!confirm(t('recon_confirm_close'))) return;
+    const res = await api({ action: 'closeReconstitution', row, closedAt: new Date().toISOString() });
+    if (res && res.success) {
+        const r = reconstitutions.find(x => x.row === row);
+        if (r) r.closedAt = new Date().toISOString();
+        saveToCache({ history, presets, peptides: peptideLibrary, bacWater: bacWaterOpenedAt, reconstitutions });
+        renderReconstitutions();
+        renderQuickLogs();
+        showToast(t('recon_closed_toast'));
+        loadAllData();
+    }
+}
+
 // ===================== MISC =====================
 function saveUrl() { const url = document.getElementById('setup-url').value.trim(); if (url) { localStorage.setItem('pep_url', url); location.reload(); } }
 function resetApp() { if (confirm(t('confirm_disconnect'))) { localStorage.removeItem('pep_url'); location.reload(); } }
@@ -1108,6 +1265,25 @@ document.getElementById('config-form').onsubmit = async e => {
     e.preventDefault();
     const res = await api({ action: 'saveConfig', label: document.getElementById('conf-label').value, peptide: document.getElementById('conf-peptide-select').value, value: document.getElementById('conf-val').value, unit: document.getElementById('conf-unit').value, frequency: document.getElementById('conf-frequency').value, ui: document.getElementById('conf-ui').value, cycle: document.getElementById('conf-cycle').value || '' });
     if (res && res.success) { showToast(t('toast_logged')); loadAllData(); e.target.reset(); }
+};
+
+document.getElementById('recon-form').onsubmit = async e => {
+    e.preventDefault();
+    const dateVal = document.getElementById('recon-date').value;
+    const res = await api({
+        action: 'saveReconstitution',
+        peptide: document.getElementById('recon-peptide').value,
+        vialMg: document.getElementById('recon-vial-mg').value,
+        bacWaterMl: document.getElementById('recon-bac-ml').value,
+        notes: document.getElementById('recon-notes').value || '',
+        date: dateVal ? new Date(dateVal).toISOString() : new Date().toISOString()
+    });
+    if (res && res.success) {
+        showToast(t('recon_toast'));
+        loadAllData();
+        e.target.reset();
+        document.getElementById('recon-calc-preview').classList.add('hidden');
+    }
 };
 
 if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(err => console.error(err)));
