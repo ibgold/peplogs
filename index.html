@@ -46,6 +46,10 @@
         .nav-pill { color: #94a3b8; transition: all 0.3s; display: flex; align-items: center; justify-content: center; border-radius: 0.75rem; font-size: 10px; font-weight: 700; text-transform: uppercase; }
         .nav-pill.active { background: #6366f1 !important; color: white !important; box-shadow: 0 4px 12px rgba(99,102,241,0.25); }
         .body-zone { fill: rgba(148,163,184,0.1); stroke: rgba(255,255,255,0.2); stroke-width: 1; transition: all 0.2s; cursor: pointer; }
+        .body-zone.heat-hot { fill: rgba(239,68,68,0.55); }
+        .body-zone.heat-warm { fill: rgba(249,115,22,0.45); }
+        .body-zone.heat-mild { fill: rgba(234,179,8,0.30); }
+        .body-zone.heat-cool { fill: rgba(16,185,129,0.20); }
         .body-zone.selected { fill: #6366f1; stroke: white; }
         .body-zone.suggested { stroke: #6366f1; stroke-width: 2; stroke-dasharray: 4; animation: pulse-stroke 2s infinite; }
         @keyframes pulse-stroke { 0%, 100% { stroke-opacity: 0.4; } 50% { stroke-opacity: 1; } }
@@ -254,6 +258,15 @@
                 <div id="preferred-sites-grid" class="grid grid-cols-2 gap-2"></div>
             </section>
 
+            <!-- Reminders -->
+            <section class="glass-card p-6 rounded-3xl">
+                <h2 class="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                    <span data-t="reminders_title">Reminders</span>
+                </h2>
+                <div id="reminders-config"></div>
+            </section>
+
             <!-- Peptide Library -->
             <section class="glass-card p-6 rounded-3xl">
                 <h2 class="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-4 text-center" data-t="library_title">Peptide Library</h2>
@@ -366,6 +379,12 @@
                 <path d="M132,265 L145,420 L112,420 L105,265 Z" class="body-zone" id="zone-right-thigh" onclick="selectZone('Right Thigh')"/>
             </svg>
         </div>
+        <div class="flex justify-center items-center gap-3 text-[8px] uppercase font-bold tracking-widest text-slate-400 -mt-3">
+            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full" style="background:rgba(239,68,68,0.75)"></span><span data-t="heat_recent">Recent</span></span>
+            <span class="w-2.5 h-2.5 rounded-full" style="background:rgba(249,115,22,0.7)"></span>
+            <span class="w-2.5 h-2.5 rounded-full" style="background:rgba(234,179,8,0.7)"></span>
+            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full" style="background:rgba(16,185,129,0.7)"></span><span data-t="heat_rested">Rested</span></span>
+        </div>
         <div class="w-full space-y-3">
             <div id="selected-zone-name" class="text-center text-indigo-300 font-black text-lg h-8">--</div>
             <div class="grid grid-cols-2 gap-2 overflow-y-auto max-h-32 p-2" id="site-buttons-container"></div>
@@ -415,7 +434,8 @@ const translations = {
         recon_title:"Reconstitutions", recon_new:"New Reconstitution", recon_vial_mg:"Vial (mg)", recon_bac_ml:"BAC Water (ml)",
         recon_conc:"Concentration", recon_active:"Active", recon_history:"History", recon_terminate:"Terminate",
         recon_confirm_close:"Mark this reconstitution as terminated?", recon_toast:"Reconstitution saved!", recon_closed_toast:"Reconstitution terminated.",
-        recon_none:"No active reconstitution for this peptide.", recon_notes:"Notes (optional)"
+        recon_none:"No active reconstitution for this peptide.", recon_notes:"Notes (optional)",
+        reminders_title:"Reminders", reminders_on:"Reminders on", reminders_off:"Reminders off", reminders_enable:"Enable", reminders_disable:"Disable", reminders_time:"Reminder time", reminders_sub:"Notified on each scheduled injection day", reminders_unsupported:"Notifications not supported on this device.", reminders_ios:"⚠️ On iPhone, reminders only appear when you open the app.", reminders_on_toast:"Reminders enabled ✓", reminders_off_toast:"Reminders disabled", reminders_denied:"Permission denied", reminder_body:"Injection scheduled today", reminder_due_title:"Injection due", heat_recent:"Recent", heat_rested:"Rested"
     },
     fr: {
         setup_title:"Connexion Database", setup_connect:"Se connecter", status_checking:"Vérification...", status_connected:"Connecté", status_disconnected:"Déconnecté",
@@ -437,7 +457,8 @@ const translations = {
         recon_title:"Reconstitutions", recon_new:"Nouvelle reconstitution", recon_vial_mg:"Fiole (mg)", recon_bac_ml:"BAC Water (ml)",
         recon_conc:"Concentration", recon_active:"Active", recon_history:"Historique", recon_terminate:"Terminer",
         recon_confirm_close:"Marquer cette reconstitution comme terminée ?", recon_toast:"Reconstitution enregistrée !", recon_closed_toast:"Reconstitution terminée.",
-        recon_none:"Aucune reconstitution active pour ce peptide.", recon_notes:"Notes (optionnel)"
+        recon_none:"Aucune reconstitution active pour ce peptide.", recon_notes:"Notes (optionnel)",
+        reminders_title:"Rappels", reminders_on:"Rappels activés", reminders_off:"Rappels désactivés", reminders_enable:"Activer", reminders_disable:"Désactiver", reminders_time:"Heure du rappel", reminders_sub:"Notif le jour de chaque injection prévue", reminders_unsupported:"Notifications non supportées sur cet appareil.", reminders_ios:"⚠️ Sur iPhone, le rappel n'apparaît qu'à l'ouverture de l'app.", reminders_on_toast:"Rappels activés ✓", reminders_off_toast:"Rappels désactivés", reminders_denied:"Permission refusée", reminder_body:"Injection prévue aujourd'hui", reminder_due_title:"Injection à faire", heat_recent:"Récent", heat_rested:"Reposé"
     }
 };
 
@@ -666,6 +687,8 @@ async function loadAllData() {
             saveToCache({ history, presets, peptides: peptideLibrary, bacWater: bacWaterOpenedAt, reconstitutions });
             nextInjIndex = 0;
             renderUI();
+            scheduleReminders();
+            checkDueReminderOnOpen();
         }
     } catch(e) { console.error(e); }
     finally { if (dot) dot.classList.remove('animate-spin'); }
@@ -683,6 +706,7 @@ function renderUI() {
     renderDashboard();
     renderBacWater();
     renderReconstitutions();
+    renderRemindersConfig();
     const levelTab = document.getElementById('tab-levels');
     if (levelTab && levelTab.classList.contains('active')) updateLevelChart();
     if (historyView === 'calendar') renderCalendar();
@@ -938,6 +962,7 @@ function openFullSiteModal(type, extraData = null) {
     let sugId = '';
     for (const [id, label] of Object.entries(translations[currentLang].site_names)) { if (label === sug) { sugId = id; break; } }
     if (sugId && SITE_IDS[sugId]) { const sugEl = document.getElementById(SITE_IDS[sugId]); if (sugEl) sugEl.classList.add('suggested'); }
+    applySiteHeatmap();
     const siteBtnsCont = document.getElementById('site-buttons-container');
     if (siteBtnsCont) siteBtnsCont.innerHTML = ['Right Buttock', 'Left Buttock', 'Other'].map(s => `<button onclick="selectZone('${s}')" class="bg-slate-800 p-2 rounded-xl text-[10px] font-bold text-white border border-slate-700" id="btn-${SITE_IDS[s]}">${translations[currentLang].site_names[s]}</button>`).join('');
     const modal = document.getElementById('site-modal');
@@ -1240,6 +1265,153 @@ function saveUrl() { const url = document.getElementById('setup-url').value.trim
 function resetApp() { if (confirm(t('confirm_disconnect'))) { localStorage.removeItem('pep_url'); location.reload(); } }
 async function deletePreset(row) { if (confirm(t('confirm_del_preset'))) { const p = presets.find(x => x.row === row); const res = await api({ action: 'deleteConfig', row, verifyLabel: p ? p.label : '', verifyPeptide: p ? p.peptide : '' }); if (onStale(res)) return; if (res && res.success) loadAllData(); } }
 async function deletePeptide(row) { if (confirm(t('confirm_del_library'))) { const p = peptideLibrary.find(x => x.row === row); const res = await api({ action: 'deletePeptide', row, verifyName: p ? p.name : '' }); if (onStale(res)) return; if (res && res.success) loadAllData(); } }
+
+// ===================== HEATMAP DES SITES =====================
+// Colore les zones du schéma corporel selon l'ancienneté de la dernière injection.
+function siteHeatClass(daysSince) {
+    if (daysSince === null) return '';        // jamais utilisée → neutre
+    if (daysSince <= 2) return 'heat-hot';    // très récent → éviter
+    if (daysSince <= 5) return 'heat-warm';
+    if (daysSince <= 10) return 'heat-mild';
+    return 'heat-cool';                        // reposé (>10j) → idéal
+}
+function applySiteHeatmap() {
+    const now = Date.now();
+    const lastBySite = {};
+    history.forEach(h => {
+        const tms = new Date(h.date).getTime();
+        if (!lastBySite[h.site] || tms > lastBySite[h.site]) lastBySite[h.site] = tms;
+    });
+    Object.entries(SITE_IDS).forEach(([site, id]) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.classList.remove('heat-hot', 'heat-warm', 'heat-mild', 'heat-cool');
+        const last = lastBySite[site];
+        const daysSince = last ? Math.floor((now - last) / 86400000) : null;
+        const cls = siteHeatClass(daysSince);
+        if (cls) el.classList.add(cls);
+    });
+}
+
+// ===================== RAPPELS / NOTIFICATIONS =====================
+const REMINDERS_KEY = 'pep_reminders_enabled';
+const REMINDER_TIME_KEY = 'pep_reminder_time';
+function remindersEnabled() { return localStorage.getItem(REMINDERS_KEY) === '1'; }
+function getReminderTime() { return localStorage.getItem(REMINDER_TIME_KEY) || '09:00'; }
+function triggersSupported() { return 'TimestampTrigger' in window; }
+
+// Liste les occurrences d'injections planifiées (presets avec frequency) jusqu'à daysAhead jours.
+function computeUpcomingInjections(daysAhead) {
+    const out = [];
+    const now = Date.now();
+    presets.filter(p => p.frequency > 0).forEach(p => {
+        const pepLogs = history.filter(h => h.peptide.toLowerCase().trim() === p.peptide.toLowerCase().trim());
+        if (!pepLogs.length) return;
+        const last = new Date(Math.max(...pepLogs.map(l => new Date(l.date).getTime())));
+        const next = new Date(last);
+        for (let i = 0; i < 60; i++) {
+            next.setDate(next.getDate() + parseInt(p.frequency));
+            if (next.getTime() > now + daysAhead * 86400000) break;
+            out.push({ date: new Date(next), peptide: p.peptide, label: p.label });
+        }
+    });
+    return out;
+}
+
+async function clearScheduledReminders(prefix) {
+    if (!('serviceWorker' in navigator)) return;
+    try {
+        const reg = await navigator.serviceWorker.ready;
+        const existing = await reg.getNotifications({ includeTriggered: true });
+        existing.filter(n => n.tag && n.tag.indexOf(prefix) === 0).forEach(n => n.close());
+    } catch (e) {}
+}
+
+// (Re)programme une notif par injection prévue, le jour J à l'heure choisie.
+async function scheduleReminders() {
+    if (!('Notification' in window) || Notification.permission !== 'granted' || !remindersEnabled()) return;
+    if (!('serviceWorker' in navigator)) return;
+    await clearScheduledReminders('pep-inj-');
+    if (!triggersSupported()) return; // iOS : pas de planification → repli à l'ouverture
+    let reg;
+    try { reg = await navigator.serviceWorker.ready; } catch (e) { return; }
+    const parts = getReminderTime().split(':');
+    const hh = parseInt(parts[0]) || 9, mm = parseInt(parts[1]) || 0;
+    const upcoming = computeUpcomingInjections(30);
+    for (const inj of upcoming) {
+        const when = new Date(inj.date); when.setHours(hh, mm, 0, 0);
+        if (when.getTime() <= Date.now()) continue; // passé : géré par le repli
+        const tag = 'pep-inj-' + inj.peptide + '-' + when.getFullYear() + '-' + (when.getMonth() + 1) + '-' + when.getDate();
+        try {
+            await reg.showNotification('💉 ' + inj.peptide, {
+                body: t('reminder_body') + (inj.label ? ' — ' + inj.label : ''),
+                tag, icon: 'logo.png', badge: 'logo.png',
+                showTrigger: new TimestampTrigger(when.getTime()),
+                data: { url: './' }
+            });
+        } catch (e) { console.warn('reminder schedule failed', e); }
+    }
+}
+
+// Repli (app ouverte / iOS) : si une injection est en retard ou prévue aujourd'hui, notif immédiate (1×/jour).
+function checkDueReminderOnOpen() {
+    if (!('Notification' in window) || Notification.permission !== 'granted' || !remindersEnabled()) return;
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const due = computeUpcomingInjections(1).filter(i => { const d = new Date(i.date); d.setHours(0, 0, 0, 0); return d.getTime() <= today.getTime(); });
+    if (!due.length) return;
+    const todayKey = new Date().toDateString();
+    if (localStorage.getItem('pep_open_notif_day') === todayKey) return;
+    localStorage.setItem('pep_open_notif_day', todayKey);
+    const names = Array.from(new Set(due.map(i => i.peptide))).join(', ');
+    if (!('serviceWorker' in navigator)) return;
+    navigator.serviceWorker.ready.then(reg => reg.showNotification('💉 ' + t('reminder_due_title'), {
+        body: names, tag: 'pep-due-open', icon: 'logo.png', data: { url: './' }
+    })).catch(() => {});
+}
+
+async function enableReminders() {
+    if (!('Notification' in window)) { showToast(t('reminders_unsupported'), 'error'); return; }
+    let perm;
+    try { perm = await Notification.requestPermission(); } catch (e) { perm = Notification.permission; }
+    if (perm === 'granted') {
+        localStorage.setItem(REMINDERS_KEY, '1');
+        await scheduleReminders();
+        checkDueReminderOnOpen();
+        showToast(t('reminders_on_toast'));
+    } else {
+        showToast(t('reminders_denied'), 'error');
+    }
+    renderRemindersConfig();
+}
+function disableReminders() {
+    localStorage.setItem(REMINDERS_KEY, '0');
+    clearScheduledReminders('pep-');
+    renderRemindersConfig();
+    showToast(t('reminders_off_toast'));
+}
+function setReminderTime(v) { localStorage.setItem(REMINDER_TIME_KEY, v || '09:00'); if (remindersEnabled()) scheduleReminders(); }
+
+function renderRemindersConfig() {
+    const cont = document.getElementById('reminders-config');
+    if (!cont) return;
+    if (!('Notification' in window)) { cont.innerHTML = `<p class="text-sm text-slate-500 italic">${t('reminders_unsupported')}</p>`; return; }
+    const enabled = remindersEnabled() && Notification.permission === 'granted';
+    const iosWarn = !triggersSupported() ? `<p class="text-[10px] text-orange-400/80 mt-3">${t('reminders_ios')}</p>` : '';
+    cont.innerHTML = `
+        <div class="flex items-center justify-between mb-4">
+            <div class="mr-2">
+                <p class="text-sm font-bold">${enabled ? t('reminders_on') : t('reminders_off')}</p>
+                <p class="text-[10px] text-slate-500">${t('reminders_sub')}</p>
+            </div>
+            <button onclick="${enabled ? 'disableReminders()' : 'enableReminders()'}" class="shrink-0 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest ${enabled ? 'bg-red-900/20 text-red-400 border border-red-900/40' : 'btn-primary text-white'}">${enabled ? t('reminders_disable') : t('reminders_enable')}</button>
+        </div>
+        <div class="flex items-center justify-between ${enabled ? '' : 'opacity-40 pointer-events-none'}">
+            <label class="text-xs font-bold text-slate-400">${t('reminders_time')}</label>
+            <input type="time" value="${getReminderTime()}" onchange="setReminderTime(this.value)" class="bg-slate-800 text-white rounded-xl px-3 py-2 border border-slate-700 outline-none" style="color-scheme:dark;">
+        </div>
+        ${iosWarn}
+    `;
+}
 
 // ===================== PWA =====================
 let deferredPrompt;
