@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pep-log-v2'; // J'ai incrémenté la version pour forcer la mise à jour
+const CACHE_NAME = 'pep-log-v3'; // J'ai incrémenté la version pour forcer la mise à jour
 const ASSETS = [
   './index.html',
   './manifest.json',
@@ -63,5 +63,19 @@ self.addEventListener('fetch', (event) => {
         // Si le réseau échoue, on regarde dans le cache
         return caches.match(event.request);
       })
+  );
+});
+
+// 4. Clic sur une notification de rappel → ouvre / met au premier plan l'app
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const url = (event.notification.data && event.notification.data.url) || './';
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
+      for (const client of list) {
+        if ('focus' in client) return client.focus();
+      }
+      if (clients.openWindow) return clients.openWindow(url);
+    })
   );
 });
