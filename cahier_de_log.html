@@ -46,6 +46,10 @@
         .nav-pill { color: #94a3b8; transition: all 0.3s; display: flex; align-items: center; justify-content: center; border-radius: 0.75rem; font-size: 10px; font-weight: 700; text-transform: uppercase; }
         .nav-pill.active { background: #6366f1 !important; color: white !important; box-shadow: 0 4px 12px rgba(99,102,241,0.25); }
         .body-zone { fill: rgba(148,163,184,0.1); stroke: rgba(255,255,255,0.2); stroke-width: 1; transition: all 0.2s; cursor: pointer; }
+        .body-zone.heat-hot { fill: rgba(239,68,68,0.55); }
+        .body-zone.heat-warm { fill: rgba(249,115,22,0.45); }
+        .body-zone.heat-mild { fill: rgba(234,179,8,0.30); }
+        .body-zone.heat-cool { fill: rgba(16,185,129,0.20); }
         .body-zone.selected { fill: #6366f1; stroke: white; }
         .body-zone.suggested { stroke: #6366f1; stroke-width: 2; stroke-dasharray: 4; animation: pulse-stroke 2s infinite; }
         @keyframes pulse-stroke { 0%, 100% { stroke-opacity: 0.4; } 50% { stroke-opacity: 1; } }
@@ -169,8 +173,13 @@
                     <p id="log-ui-reminder" class="text-[11px] font-bold text-emerald-400 mt-2 ml-2 hidden bg-emerald-900/30 inline-block px-2 py-1 rounded-lg border border-emerald-500/30"></p>
                 </div>
                 <div class="flex gap-2">
-                    <input type="number" id="log-dosage" placeholder="Dose" step="any" class="input-field">
-                    <select id="log-unit" class="bg-slate-700 text-white rounded-xl px-3 font-bold"><option>mcg</option><option>mg</option></select>
+                    <input type="number" id="log-dosage" placeholder="Dose" step="any" class="input-field" oninput="updateLogUICalc()" onchange="updateLogUICalc()">
+                    <select id="log-unit" class="bg-slate-700 text-white rounded-xl px-3 font-bold" onchange="updateLogUICalc()"><option>mcg</option><option>mg</option></select>
+                </div>
+                <div id="log-ui-calc" class="hidden text-center py-2 px-4 rounded-xl bg-indigo-900/30 border border-indigo-500/30">
+                    <span class="text-[10px] uppercase font-bold text-slate-500 tracking-widest">Syringe</span>
+                    <span id="log-ui-calc-value" class="text-xl font-black text-indigo-300 mx-3">--</span>
+                    <span class="text-[10px] uppercase font-bold text-slate-500 tracking-widest">UI</span>
                 </div>
                 <button type="button" onclick="openFullSiteModal('manual')" class="input-field text-left flex justify-between items-center bg-slate-800/40">
                     <span id="log-site-label" data-t="select_site">Select site...</span>
@@ -249,6 +258,15 @@
                 <div id="preferred-sites-grid" class="grid grid-cols-2 gap-2"></div>
             </section>
 
+            <!-- Reminders -->
+            <section class="glass-card p-6 rounded-3xl">
+                <h2 class="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                    <span data-t="reminders_title">Reminders</span>
+                </h2>
+                <div id="reminders-config"></div>
+            </section>
+
             <!-- Peptide Library -->
             <section class="glass-card p-6 rounded-3xl">
                 <h2 class="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-4 text-center" data-t="library_title">Peptide Library</h2>
@@ -279,6 +297,11 @@
                         <label class="text-[10px] uppercase font-bold text-slate-500">Frequency (days)</label>
                         <input type="number" id="conf-frequency" placeholder="0 = no schedule" class="input-field">
                     </div>
+                    <div class="space-y-1">
+                        <label class="text-[10px] uppercase font-bold text-slate-500" data-t="cycle_label">Cycle (e.g. 5/2)</label>
+                        <input type="text" id="conf-cycle" placeholder="5/2 — optional" class="input-field" pattern="^\d+/\d+$">
+                        <p class="text-[10px] text-slate-500 ml-1" data-t="cycle_hint">Active days / Rest days. Overrides frequency.</p>
+                    </div>
                     <button type="submit" class="btn-primary w-full py-3 rounded-xl font-bold uppercase text-sm">Save Preset</button>
                 </form>
             </section>
@@ -288,12 +311,46 @@
             <section class="glass-card p-6 rounded-3xl border border-cyan-500/10">
                 <h2 class="text-sm font-bold text-cyan-300 uppercase tracking-wider mb-4 flex items-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
-                    Bac Water
+                    <span data-t="bac_water_title">Bac Water</span>
                 </h2>
                 <div id="bac-water-display" class="mb-4 min-h-[60px]"></div>
                 <button onclick="confirmOpenBacWater()" class="w-full py-3 rounded-xl font-bold uppercase text-xs border border-cyan-500/40 bg-cyan-500/10 text-cyan-300 hover:bg-cyan-500/20 transition-colors">
-                    + Nouvelle ouverture aujourd'hui
+                    <span data-t="bac_water_btn">+ Nouvelle ouverture aujourd'hui</span>
                 </button>
+            </section>
+
+            <!-- Reconstitutions -->
+            <section class="glass-card p-6 rounded-3xl border border-violet-500/10">
+                <h2 class="text-sm font-bold text-violet-300 uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                    <span data-t="recon_title">Reconstitutions</span>
+                </h2>
+                <div id="active-recons-list" class="space-y-3 mb-5"></div>
+                <details class="mb-5">
+                    <summary class="text-[10px] uppercase font-bold text-slate-500 tracking-widest cursor-pointer select-none mb-3" data-t="recon_new">New Reconstitution</summary>
+                    <form id="recon-form" class="space-y-3 mt-3">
+                        <select id="recon-peptide" class="input-field" required></select>
+                        <div class="flex gap-2">
+                            <div class="flex-1 space-y-1">
+                                <label class="text-[10px] uppercase font-bold text-slate-500" data-t="recon_vial_mg">Vial (mg)</label>
+                                <input type="number" id="recon-vial-mg" step="any" placeholder="10" class="input-field" oninput="updateReconCalcPreview()" required>
+                            </div>
+                            <div class="flex-1 space-y-1">
+                                <label class="text-[10px] uppercase font-bold text-slate-500" data-t="recon_bac_ml">BAC Water (ml)</label>
+                                <input type="number" id="recon-bac-ml" step="any" placeholder="2" class="input-field" oninput="updateReconCalcPreview()" required>
+                            </div>
+                        </div>
+                        <div id="recon-calc-preview" class="hidden text-center py-2 px-4 rounded-xl bg-violet-900/30 border border-violet-500/30">
+                            <span class="text-[10px] uppercase font-bold text-slate-500 tracking-widest">1 UI = </span>
+                            <span id="recon-calc-value" class="text-xl font-black text-violet-300 mx-1">--</span>
+                            <span class="text-[10px] uppercase font-bold text-slate-500 tracking-widest">mcg</span>
+                        </div>
+                        <input type="datetime-local" id="recon-date" class="input-field" style="color-scheme:dark;">
+                        <input type="text" id="recon-notes" class="input-field" data-t="recon_notes" placeholder="Notes (optional)">
+                        <button type="submit" class="btn-primary w-full py-3 rounded-xl font-bold uppercase text-xs" data-t="recon_new">Save</button>
+                    </form>
+                </details>
+                <div id="recon-history-list" class="space-y-2"></div>
             </section>
 
             <button onclick="resetApp()" class="w-full py-4 text-red-400 text-xs font-bold border border-red-900/30 rounded-2xl mt-4 bg-red-900/10" data-t="disconnect_btn">Disconnect Database</button>
@@ -321,6 +378,12 @@
                 <path d="M68,265 L55,420 L88,420 L95,265 Z" class="body-zone" id="zone-left-thigh" onclick="selectZone('Left Thigh')"/>
                 <path d="M132,265 L145,420 L112,420 L105,265 Z" class="body-zone" id="zone-right-thigh" onclick="selectZone('Right Thigh')"/>
             </svg>
+        </div>
+        <div class="flex justify-center items-center gap-3 text-[8px] uppercase font-bold tracking-widest text-slate-400 -mt-3">
+            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full" style="background:rgba(239,68,68,0.75)"></span><span data-t="heat_recent">Recent</span></span>
+            <span class="w-2.5 h-2.5 rounded-full" style="background:rgba(249,115,22,0.7)"></span>
+            <span class="w-2.5 h-2.5 rounded-full" style="background:rgba(234,179,8,0.7)"></span>
+            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full" style="background:rgba(16,185,129,0.7)"></span><span data-t="heat_rested">Rested</span></span>
         </div>
         <div class="w-full space-y-3">
             <div id="selected-zone-name" class="text-center text-indigo-300 font-black text-lg h-8">--</div>
@@ -364,7 +427,15 @@ const translations = {
         log_for_this_day:"Log for this day", ui_placeholder_lib:"Vial Units (Optional)", ui_placeholder_quick:"Syringe Units (Optional)", ui_reminder:"Reminder: {ui} UI",
         see_all:"See all", no_events:"No events", offline_queued:"Saved offline — will sync when reconnected", offline_synced:"Offline data synced!",
         cal_mon:"Mon", cal_tue:"Tue", cal_wed:"Wed", cal_thu:"Thu", cal_fri:"Fri", cal_sat:"Sat", cal_sun:"Sun",
-        site_names:{"Right Abdomen (Upper)":"R Abdomen (U)","Right Abdomen (Lower)":"R Abdomen (L)","Left Abdomen (Upper)":"L Abdomen (U)","Left Abdomen (Lower)":"L Abdomen (L)","Right Flank":"Right Flank","Left Flank":"Left Flank","Right Thigh":"Right Thigh","Left Thigh":"Left Thigh","Right Deltoid":"Right Deltoid","Left Deltoid":"Left Deltoid","Right Buttock":"Right Buttock","Left Buttock":"Left Buttock","Other":"Other"}
+        site_names:{"Right Abdomen (Upper)":"R Abdomen (U)","Right Abdomen (Lower)":"R Abdomen (L)","Left Abdomen (Upper)":"L Abdomen (U)","Left Abdomen (Lower)":"L Abdomen (L)","Right Flank":"Right Flank","Left Flank":"Left Flank","Right Thigh":"Right Thigh","Left Thigh":"Left Thigh","Right Deltoid":"Right Deltoid","Left Deltoid":"Left Deltoid","Right Buttock":"Right Buttock","Left Buttock":"Left Buttock","Other":"Other"},
+        bac_water_title:"Bac Water", bac_water_btn:"+ New opening today", bac_water_none:"No opening recorded.", bac_water_opened_on:"Opened on", bac_water_elapsed:"Days elapsed", bac_water_remaining:"{n}d remaining", bac_water_expired:"EXPIRED", bac_water_confirm:"Record a new Bac Water opening today ({date})?", bac_water_toast:"Bac Water recorded!",
+        cycle_label:"Cycle (e.g. 5/2)", cycle_hint:"Active days / Rest days", edit_preset:"Edit Preset", save_changes:"Save",
+        cycle_active:"Inject Today", cycle_rest:"Rest", cycle_done:"Done ✓", cycle_day_of:"day {d}/{t}",
+        recon_title:"Reconstitutions", recon_new:"New Reconstitution", recon_vial_mg:"Vial (mg)", recon_bac_ml:"BAC Water (ml)",
+        recon_conc:"Concentration", recon_active:"Active", recon_history:"History", recon_terminate:"Terminate",
+        recon_confirm_close:"Mark this reconstitution as terminated?", recon_toast:"Reconstitution saved!", recon_closed_toast:"Reconstitution terminated.",
+        recon_none:"No active reconstitution for this peptide.", recon_notes:"Notes (optional)",
+        reminders_title:"Reminders", reminders_on:"Reminders on", reminders_off:"Reminders off", reminders_enable:"Enable", reminders_disable:"Disable", reminders_time:"Reminder time", reminders_sub:"Notified on each scheduled injection day", reminders_unsupported:"Notifications not supported on this device.", reminders_ios:"⚠️ On iPhone, reminders only appear when you open the app.", reminders_on_toast:"Reminders enabled ✓", reminders_off_toast:"Reminders disabled", reminders_denied:"Permission denied", reminder_body:"Injection scheduled today", reminder_due_title:"Injection due", heat_recent:"Recent", heat_rested:"Rested"
     },
     fr: {
         setup_title:"Connexion Database", setup_connect:"Se connecter", status_checking:"Vérification...", status_connected:"Connecté", status_disconnected:"Déconnecté",
@@ -379,7 +450,15 @@ const translations = {
         log_for_this_day:"Loger pour ce jour", ui_placeholder_lib:"Unités de la fiole (Optionnel)", ui_placeholder_quick:"Unités seringue (Optionnel)", ui_reminder:"Rappel fiole : {ui} UI",
         see_all:"Voir tout", no_events:"Aucun événement", offline_queued:"Sauvé hors-ligne — sera synchronisé à la reconnexion", offline_synced:"Données hors-ligne synchronisées !",
         cal_mon:"Lun", cal_tue:"Mar", cal_wed:"Mer", cal_thu:"Jeu", cal_fri:"Ven", cal_sat:"Sam", cal_sun:"Dim",
-        site_names:{"Right Abdomen (Upper)":"Abdomen D (Haut)","Right Abdomen (Lower)":"Abdomen D (Bas)","Left Abdomen (Upper)":"Abdomen G (Haut)","Left Abdomen (Lower)":"Abdomen G (Bas)","Right Flank":"Flanc Droit","Left Flank":"Flanc Gauche","Right Thigh":"Cuisse Droite","Left Thigh":"Cuisse Gauche","Right Deltoid":"Deltoïde D","Left Deltoid":"Deltoïde G","Right Buttock":"Fessier D","Left Buttock":"Fessier G","Other":"Autre"}
+        site_names:{"Right Abdomen (Upper)":"Abdomen D (Haut)","Right Abdomen (Lower)":"Abdomen D (Bas)","Left Abdomen (Upper)":"Abdomen G (Haut)","Left Abdomen (Lower)":"Abdomen G (Bas)","Right Flank":"Flanc Droit","Left Flank":"Flanc Gauche","Right Thigh":"Cuisse Droite","Left Thigh":"Cuisse Gauche","Right Deltoid":"Deltoïde D","Left Deltoid":"Deltoïde G","Right Buttock":"Fessier D","Left Buttock":"Fessier G","Other":"Autre"},
+        bac_water_title:"Bac Water", bac_water_btn:"+ Nouvelle ouverture aujourd'hui", bac_water_none:"Aucune ouverture enregistrée.", bac_water_opened_on:"Ouvert le", bac_water_elapsed:"Jours écoulés", bac_water_remaining:"{n}j restants", bac_water_expired:"EXPIRÉ", bac_water_confirm:"Enregistrer une nouvelle ouverture de Bac Water aujourd'hui ({date}) ?", bac_water_toast:"Bac Water enregistré !",
+        cycle_label:"Cycle (ex: 5/2)", cycle_hint:"Jours actifs / jours de repos", edit_preset:"Modifier le preset", save_changes:"Enregistrer",
+        cycle_active:"Injecter aujourd'hui", cycle_rest:"Repos", cycle_done:"Fait ✓", cycle_day_of:"jour {d}/{t}",
+        recon_title:"Reconstitutions", recon_new:"Nouvelle reconstitution", recon_vial_mg:"Fiole (mg)", recon_bac_ml:"BAC Water (ml)",
+        recon_conc:"Concentration", recon_active:"Active", recon_history:"Historique", recon_terminate:"Terminer",
+        recon_confirm_close:"Marquer cette reconstitution comme terminée ?", recon_toast:"Reconstitution enregistrée !", recon_closed_toast:"Reconstitution terminée.",
+        recon_none:"Aucune reconstitution active pour ce peptide.", recon_notes:"Notes (optionnel)",
+        reminders_title:"Rappels", reminders_on:"Rappels activés", reminders_off:"Rappels désactivés", reminders_enable:"Activer", reminders_disable:"Désactiver", reminders_time:"Heure du rappel", reminders_sub:"Notif le jour de chaque injection prévue", reminders_unsupported:"Notifications non supportées sur cet appareil.", reminders_ios:"⚠️ Sur iPhone, le rappel n'apparaît qu'à l'ouverture de l'app.", reminders_on_toast:"Rappels activés ✓", reminders_off_toast:"Rappels désactivés", reminders_denied:"Permission refusée", reminder_body:"Injection prévue aujourd'hui", reminder_due_title:"Injection à faire", heat_recent:"Récent", heat_rested:"Reposé"
     }
 };
 
@@ -393,6 +472,7 @@ let calendarDate = new Date();
 let historyView = 'list';
 let nextInjIndex = 0;
 let bacWaterOpenedAt = null;
+let reconstitutions = [];
 const BAC_WATER_LIMIT_DAYS = 60;
 const DEFAULT_HALF_LIVES = { tirzepatide: 120, retatrutide: 144 };
 let preferredSites = JSON.parse(localStorage.getItem('pref_sites')) || ['Right Abdomen (Lower)', 'Left Abdomen (Lower)'];
@@ -404,6 +484,9 @@ const CACHE_KEY = 'pep_offline_cache';
 const QUEUE_KEY = 'pep_offline_queue';
 function saveToCache(data) { try { localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), ...data })); } catch(e) {} }
 function loadFromCache() { try { const r = localStorage.getItem(CACHE_KEY); return r ? JSON.parse(r) : null; } catch(e) { return null; } }
+function calcMcgPerUI(recon) { if (!recon || !recon.bacWaterMl || !recon.vialMg) return null; return (parseFloat(recon.vialMg) * 1000) / (parseFloat(recon.bacWaterMl) * 100); }
+function getActiveRecon(pepName) { return reconstitutions.find(r => r.peptide.toLowerCase().trim() === pepName.toLowerCase().trim() && !r.closedAt) || null; }
+function mcgToUI(mcgVal, recon) { const mpu = calcMcgPerUI(recon); return mpu ? (mcgVal / mpu) : null; }
 function getOfflineQueue() { try { const r = localStorage.getItem(QUEUE_KEY); return r ? JSON.parse(r) : []; } catch(e) { return []; } }
 function saveOfflineQueue(q) { try { localStorage.setItem(QUEUE_KEY, JSON.stringify(q)); } catch(e) {} }
 function addToOfflineQueue(data) { const q = getOfflineQueue(); q.push({ data, ts: Date.now() }); saveOfflineQueue(q); }
@@ -424,12 +507,62 @@ async function flushOfflineQueue() {
 
 // ===================== HELPERS =====================
 function t(key) { return translations[currentLang][key] || key; }
+// Échappe toute valeur saisie par l'utilisateur avant injection via innerHTML (anti-XSS / anti-rendu cassé)
+function esc(v) {
+    if (v === null || v === undefined) return '';
+    return String(v).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+}
 function parseDosage(raw) {
     if (typeof raw === 'number') return { value: raw, unit: 'mg' };
     if (!raw || typeof raw !== 'string') return { value: 0, unit: 'mg' };
     return { value: parseFloat(raw) || 0, unit: raw.toLowerCase().includes('mcg') ? 'mcg' : 'mg' };
 }
 function dosageToMg(raw) { const d = parseDosage(raw); return d.unit === 'mcg' ? d.value / 1000 : d.value; }
+
+// ===================== CYCLE LOGIC =====================
+function getCycleStatus(preset) {
+    if (!preset.cycle || preset.cycle.trim() === "") return null;
+    const parts = preset.cycle.split("/");
+    if (parts.length !== 2) return null;
+    const activeDays = Number(parts[0]), restDays = Number(parts[1]);
+    if (!activeDays || !restDays) return null;
+    const pepName = preset.peptide.toLowerCase().trim();
+    const today = new Date(); today.setHours(0,0,0,0);
+    const injTimes = history.filter(h => h.peptide.toLowerCase().trim() === pepName).map(h => new Date(h.date).getTime());
+    if (!injTimes.length) return { status: "active", restDay: null, restTotal: restDays, activeDays };
+    const lastInj = new Date(Math.max(...injTimes)); lastInj.setHours(0,0,0,0);
+    const daysSince = Math.round((today.getTime() - lastInj.getTime()) / 86400000);
+    if (daysSince === 0) return { status: "done", restTotal: restDays, activeDays };
+    if (daysSince <= restDays) return { status: "rest", restDay: daysSince, restTotal: restDays, activeDays };
+    return { status: "active", restDay: null, restTotal: restDays, activeDays };
+}
+function cycleBadgeHTML(cs) {
+    if (!cs) return "";
+    if (cs.status === "active") return "<span class=\"inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-2 py-0.5 rounded-full\">🟢 "+t("cycle_active")+"</span>";
+    if (cs.status === "done") return "<span class=\"inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wider bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-2 py-0.5 rounded-full\">"+t("cycle_done")+"</span>";
+    const lbl = t("cycle_day_of").replace("{d}",cs.restDay).replace("{t}",cs.restTotal);
+    return "<span class=\"inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wider bg-slate-700/60 text-slate-400 border border-slate-600/40 px-2 py-0.5 rounded-full\">🔴 "+t("cycle_rest")+" "+lbl+"</span>";
+}
+function openEditPreset(p) {
+    document.getElementById("edit-preset-row").value = p.row;
+    document.getElementById("edit-preset-label").value = p.label;
+    document.getElementById("edit-preset-value").value = p.value;
+    document.getElementById("edit-preset-unit").value = p.unit;
+    document.getElementById("edit-preset-ui").value = p.ui || "";
+    document.getElementById("edit-preset-frequency").value = p.frequency || "";
+    document.getElementById("edit-preset-cycle").value = p.cycle || "";
+    document.getElementById("edit-preset-modal").classList.remove("hidden");
+}
+function closeEditPreset() { document.getElementById("edit-preset-modal").classList.add("hidden"); }
+async function saveEditPreset() {
+    const row = parseInt(document.getElementById("edit-preset-row").value);
+    const pObj = presets.find(x => x.row === row);
+    const data = { action:"updateConfig", row, verifyPeptide: pObj ? pObj.peptide : '', label:document.getElementById("edit-preset-label").value, value:document.getElementById("edit-preset-value").value, unit:document.getElementById("edit-preset-unit").value, ui:document.getElementById("edit-preset-ui").value, frequency:document.getElementById("edit-preset-frequency").value||0, cycle:document.getElementById("edit-preset-cycle").value||"" };
+    const res = await api(data);
+    if (onStale(res)) { closeEditPreset(); return; }
+    if (res && res.success) { closeEditPreset(); showToast(t("save_changes")+" ✓"); loadAllData(); }
+}
+
 function getHalfLife(peptideName) {
     const norm = peptideName.toLowerCase().trim();
     const inLib = peptideLibrary.find(p => p.name.toLowerCase().trim() === norm);
@@ -472,13 +605,13 @@ async function api(data) {
         const res = await fetch(APP_URL, { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'text/plain;charset=utf-8' } });
         return await res.json();
     } catch(e) {
-        const writeActions = ['logInjection','saveConfig','savePeptide','deleteLog','deleteConfig','deletePeptide','saveBacWater'];
+        const writeActions = ['logInjection','saveConfig','updateConfig','savePeptide','deleteLog','deleteConfig','deletePeptide','saveBacWater'];
         if (writeActions.includes(data.action)) {
             addToOfflineQueue(data);
             showToast(t('offline_queued'), 'error', 4000);
             if (data.action === 'logInjection') {
                 history.push({ row: -Date.now(), date: data.timestampMs ? new Date(Number(data.timestampMs)).toISOString() : new Date().toISOString(), peptide: data.peptide, dosage: data.dosage, site: data.site, notes: data.notes || '' });
-                saveToCache({ history, presets, peptides: peptideLibrary, bacWater: bacWaterOpenedAt });
+                saveToCache({ history, presets, peptides: peptideLibrary, bacWater: bacWaterOpenedAt, reconstitutions });
                 renderUI();
             }
             return { success: true, offline: true };
@@ -486,6 +619,16 @@ async function api(data) {
         showToast(t('toast_error'), 'error');
         return { success: false, error: e.message };
     }
+}
+
+// Si le serveur refuse car la ligne ne correspond plus (modif depuis un autre appareil), on rafraîchit au lieu de corrompre.
+function onStale(res) {
+    if (res && res.stale) {
+        showToast(currentLang === 'fr' ? 'Données modifiées ailleurs — actualisation…' : 'Data changed elsewhere — refreshing…', 'error', 4000);
+        loadAllData();
+        return true;
+    }
+    return false;
 }
 
 // ===================== TOAST =====================
@@ -529,6 +672,7 @@ async function loadAllData() {
         history = cached.history || [];
         peptideLibrary = cached.peptides || [];
         bacWaterOpenedAt = cached.bacWater || null;
+        reconstitutions = cached.reconstitutions || [];
         renderUI();
     }
     try {
@@ -539,9 +683,12 @@ async function loadAllData() {
             history = res.history || [];
             peptideLibrary = res.peptides || [];
             bacWaterOpenedAt = res.bacWater || null;
-            saveToCache({ history, presets, peptides: peptideLibrary, bacWater: bacWaterOpenedAt });
+            reconstitutions = res.reconstitutions || [];
+            saveToCache({ history, presets, peptides: peptideLibrary, bacWater: bacWaterOpenedAt, reconstitutions });
             nextInjIndex = 0;
             renderUI();
+            scheduleReminders();
+            checkDueReminderOnOpen();
         }
     } catch(e) { console.error(e); }
     finally { if (dot) dot.classList.remove('animate-spin'); }
@@ -558,13 +705,15 @@ function renderUI() {
     renderHistory();
     renderDashboard();
     renderBacWater();
+    renderReconstitutions();
+    renderRemindersConfig();
     const levelTab = document.getElementById('tab-levels');
     if (levelTab && levelTab.classList.contains('active')) updateLevelChart();
     if (historyView === 'calendar') renderCalendar();
 }
 
 function populatePeptideSelects() {
-    const selects = [document.getElementById('log-peptide'), document.getElementById('level-peptide-filter'), document.getElementById('conf-peptide-select')];
+    const selects = [document.getElementById('log-peptide'), document.getElementById('level-peptide-filter'), document.getElementById('conf-peptide-select'), document.getElementById('recon-peptide')];
     const names = new Set([...presets.map(p => p.peptide), ...peptideLibrary.map(p => p.name), ...history.map(h => h.peptide)]);
     const sorted = Array.from(names).filter(n => n).sort();
     selects.forEach(s => {
@@ -585,6 +734,7 @@ function updatePeptideReminder() {
     const pepObj = peptideLibrary.find(p => p.name === select.value);
     if (pepObj && pepObj.ui) { reminder.innerText = t('ui_reminder').replace('{ui}', pepObj.ui); reminder.classList.remove('hidden'); }
     else reminder.classList.add('hidden');
+    updateLogUICalc();
 }
 
 // ===================== DASHBOARD =====================
@@ -627,11 +777,11 @@ function renderDashboard() {
             const total = predictions.length;
             const isOverdue = next.date < new Date();
             const dateStr = next.date.toLocaleDateString(currentLang === 'fr' ? 'fr-FR' : 'en-US', { weekday: 'short', day: 'numeric', month: 'short' });
-            const presetJson = JSON.stringify(next.preset).replace(/"/g, '&quot;');
+            const presetJson = esc(JSON.stringify(next.preset));
             nextCont.innerHTML = `
                 <div class="flex justify-between items-center">
                     <div class="flex-1 min-w-0 mr-2">
-                        <p class="text-xl font-black truncate ${isOverdue ? 'text-red-400' : 'text-white'}">${next.peptide}</p>
+                        <p class="text-xl font-black truncate ${isOverdue ? 'text-red-400' : 'text-white'}">${esc(next.peptide)}</p>
                         <p class="text-xs font-bold opacity-60">${dateStr}${isOverdue ? ' <span class="text-red-400">' + (currentLang === 'fr' ? '(RETARD)' : '(OVERDUE)') + '</span>' : ''}</p>
                     </div>
                     <button onclick="logForDayWithPreset('${next.date.toISOString()}', ${presetJson})" class="bg-indigo-500 px-4 py-2 rounded-xl text-[10px] font-black uppercase shrink-0">Log</button>
@@ -657,8 +807,8 @@ function renderDashboard() {
         const sortedRecent = [...history].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 3);
         recentCont.innerHTML = sortedRecent.map(h => `
             <div class="flex justify-between items-center border-b border-white/5 pb-2">
-                <div><p class="text-xs font-bold">${h.peptide}</p><p class="text-[9px] opacity-50 uppercase">${new Date(h.date).toLocaleDateString()}</p></div>
-                <p class="text-[10px] font-mono text-indigo-300">${h.dosage}</p>
+                <div><p class="text-xs font-bold">${esc(h.peptide)}</p><p class="text-[9px] opacity-50 uppercase">${new Date(h.date).toLocaleDateString()}</p></div>
+                <p class="text-[10px] font-mono text-indigo-300">${esc(h.dosage)}</p>
             </div>`).join('') || '<p class="text-center py-4 text-xs opacity-40 italic">--</p>';
     }
 }
@@ -670,7 +820,7 @@ function renderBacWater() {
     const el = document.getElementById('bac-water-display');
     if (!el) return;
     if (!bacWaterOpenedAt) {
-        el.innerHTML = '<p class="text-sm text-slate-500 italic">Aucune ouverture enregistrée.</p>';
+        el.innerHTML = '<p class="text-sm text-slate-500 italic">' + t('bac_water_none') + '</p>';
         return;
     }
     const openDate = new Date(bacWaterOpenedAt);
@@ -685,16 +835,16 @@ function renderBacWater() {
     else if (daysLeft <= 20) { barColor = 'bg-yellow-500'; textColor = 'text-yellow-400'; }
 
     const dateStr = openDate.toLocaleDateString(currentLang === 'fr' ? 'fr-FR' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' });
-    const statusLabel = isExpired ? (currentLang === 'fr' ? 'EXPIRÉ' : 'EXPIRED') : (daysLeft + 'j restants');
+    const statusLabel = isExpired ? t('bac_water_expired') : t('bac_water_remaining').replace('{n}', daysLeft);
 
     el.innerHTML = `
         <div class="space-y-3">
             <div class="flex justify-between items-baseline">
-                <span class="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Ouvert le</span>
+                <span class="text-[10px] text-slate-500 uppercase font-bold tracking-widest">${t('bac_water_opened_on')}</span>
                 <span class="text-sm font-black text-white">${dateStr}</span>
             </div>
             <div class="flex justify-between items-baseline">
-                <span class="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Jours écoulés</span>
+                <span class="text-[10px] text-slate-500 uppercase font-bold tracking-widest">${t('bac_water_elapsed')}</span>
                 <span class="text-2xl font-black ${textColor}">${daysElapsed} <span class="text-xs font-bold opacity-60">/ ${BAC_WATER_LIMIT_DAYS}j</span></span>
             </div>
             <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
@@ -709,14 +859,14 @@ function renderBacWater() {
 
 async function confirmOpenBacWater() {
     const today = new Date().toLocaleDateString(currentLang === 'fr' ? 'fr-FR' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' });
-    if (!confirm("Enregistrer une nouvelle ouverture de Bac Water aujourd'hui (" + today + ") ?")) return;
+    if (!confirm(t('bac_water_confirm').replace('{date}', today))) return;
     const nowIso = new Date().toISOString();
     const res = await api({ action: 'saveBacWater', openedAt: nowIso });
     if (res && res.success) {
         bacWaterOpenedAt = nowIso;
-        saveToCache({ history, presets, peptides: peptideLibrary, bacWater: bacWaterOpenedAt });
+        saveToCache({ history, presets, peptides: peptideLibrary, bacWater: bacWaterOpenedAt, reconstitutions });
         renderBacWater();
-        showToast('Bac Water enregistré !');
+        showToast(t('bac_water_toast'));
     }
 }
 
@@ -724,13 +874,23 @@ async function confirmOpenBacWater() {
 function renderQuickLogs() {
     const cont = document.getElementById('dash-quick-log-container');
     if (!cont) return;
-    cont.innerHTML = presets.map(p => `
-        <button onclick="openFullSiteModal('preset', ${JSON.stringify(p).replace(/"/g, '&quot;')})" class="glass-card p-4 rounded-2xl text-left border border-white/5 active:scale-95 transition flex flex-col justify-between">
-            <p class="font-black text-[9px] uppercase tracking-wider text-indigo-300 mb-1 opacity-70">${p.label}</p>
-            <p class="font-bold text-sm truncate">${p.peptide}</p>
-            ${p.ui ? `<p class="text-[10px] font-mono text-emerald-400 mt-1 bg-emerald-900/30 inline-block px-1.5 py-0.5 rounded border border-emerald-500/20 self-start">${p.ui} UI</p>` : ''}
-        </button>
-    `).join('');
+    cont.innerHTML = presets.map(p => {
+        const cs = getCycleStatus(p);
+        const badge = cycleBadgeHTML(cs);
+        const isRest = cs && cs.status === 'rest';
+        const recon = getActiveRecon(p.peptide);
+        const mcgVal = p.unit === 'mg' ? parseFloat(p.value) * 1000 : parseFloat(p.value);
+        const uiVal = recon ? mcgToUI(mcgVal, recon) : null;
+        const uiDisplay = uiVal !== null
+            ? '<span class="text-[9px] font-mono text-violet-300 bg-violet-900/30 px-1.5 py-0.5 rounded border border-violet-500/20">'+uiVal.toFixed(1)+' UI</span>'
+            : (p.ui ? '<span class="text-[9px] font-mono text-emerald-400 bg-emerald-900/30 px-1.5 py-0.5 rounded border border-emerald-500/20">'+esc(p.ui)+' UI</span>' : '');
+        return `<button onclick="openFullSiteModal('preset', ${esc(JSON.stringify(p))})" class="glass-card p-4 rounded-2xl text-left active:scale-95 transition flex flex-col justify-between ${isRest ? 'opacity-50 border border-red-900/20' : 'border border-white/5'}">
+            <p class="font-black text-[9px] uppercase tracking-wider text-indigo-300 mb-1 opacity-70">${esc(p.label)}</p>
+            <p class="font-bold text-sm truncate mb-1">${esc(p.peptide)}</p>
+            <p class="font-mono text-xs text-white/60">${esc(p.value)}${esc(p.unit)}</p>
+            <div class="mt-2 flex flex-wrap gap-1">${uiDisplay}${badge}</div>
+        </button>`;
+    }).join('');
 }
 
 // ===================== LEVEL CHART =====================
@@ -770,9 +930,14 @@ function updateLevelChart() {
         data: { labels, datasets: [{ data: dataPoints, borderColor: '#6366f1', borderWidth: 2, backgroundColor: 'rgba(99,102,241,0.1)', fill: true, tension: 0.3, pointRadius: 0 }] },
         options: { responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { color: '#64748b', font: { size: 9 }, autoSkip: true, maxTicksLimit: 8 }, grid: { display: false } }, y: { beginAtZero: true, ticks: { color: '#64748b', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.03)' } } }, plugins: { legend: { display: false }, zoom: { zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' }, pan: { enabled: true, mode: 'x' } } } }
     });
-    const tIdx = labels.indexOf(t('today'));
+    // Niveau actuel calculé à l'instant présent (pas au point de grille le plus proche du graphe)
+    let currentLevel = 0;
+    pepLogs.forEach(log => {
+        const lDate = new Date(log.date).getTime();
+        if (lDate <= nowTime) currentLevel += dosageToMg(log.dosage) * Math.pow(Math.E, -k * ((nowTime - lDate) / 3600000));
+    });
     const currentLevelEl = document.getElementById('stat-current-level');
-    if (currentLevelEl) currentLevelEl.innerText = (tIdx !== -1 ? dataPoints[tIdx] : 0).toFixed(2);
+    if (currentLevelEl) currentLevelEl.innerText = currentLevel.toFixed(2);
     const fourteenDaysAgo = nowTime - 14 * 24 * 3600000;
     let peakVal = 0, peakTs = nowTime;
     for (let i = 0; i < pointTimestamps.length; i++) {
@@ -802,6 +967,7 @@ function openFullSiteModal(type, extraData = null) {
     let sugId = '';
     for (const [id, label] of Object.entries(translations[currentLang].site_names)) { if (label === sug) { sugId = id; break; } }
     if (sugId && SITE_IDS[sugId]) { const sugEl = document.getElementById(SITE_IDS[sugId]); if (sugEl) sugEl.classList.add('suggested'); }
+    applySiteHeatmap();
     const siteBtnsCont = document.getElementById('site-buttons-container');
     if (siteBtnsCont) siteBtnsCont.innerHTML = ['Right Buttock', 'Left Buttock', 'Other'].map(s => `<button onclick="selectZone('${s}')" class="bg-slate-800 p-2 rounded-xl text-[10px] font-bold text-white border border-slate-700" id="btn-${SITE_IDS[s]}">${translations[currentLang].site_names[s]}</button>`).join('');
     const modal = document.getElementById('site-modal');
@@ -835,7 +1001,7 @@ async function finalizeQuickLog(site, preset) {
     const tsMs = Date.now();
     const dosageStr = `${preset.value} ${preset.unit}`;
     history.push({ row: -tsMs, date: new Date(tsMs).toISOString(), peptide: preset.peptide, dosage: dosageStr, site, notes: '' });
-    saveToCache({ history, presets, peptides: peptideLibrary, bacWater: bacWaterOpenedAt });
+    saveToCache({ history, presets, peptides: peptideLibrary, bacWater: bacWaterOpenedAt, reconstitutions });
     renderUI();
     showToast(`${t('toast_logged')} ${preset.peptide}`);
     const res = await api({ action: 'logInjection', peptide: preset.peptide, dosage: dosageStr, site, timestampMs: tsMs });
@@ -869,21 +1035,34 @@ function renderPeptideList() {
     const pepList = document.getElementById('peptide-list');
     if (pepList) pepList.innerHTML = peptideLibrary.map(p => `
         <div class="glass-card px-3 py-1.5 rounded-full text-[10px] flex items-center gap-2 border-slate-700">
-            <span>${p.name} (${p.halfLife}${p.hlUnit === 'days' ? 'd' : 'h'})</span>
-            ${p.ui ? `<span class="text-emerald-400 font-mono">${p.ui} UI</span>` : ''}
+            <span>${esc(p.name)} (${esc(p.halfLife)}${p.hlUnit === 'days' ? 'd' : 'h'})</span>
+            ${p.ui ? `<span class="text-emerald-400 font-mono">${esc(p.ui)} UI</span>` : ''}
             <button onclick="deletePeptide(${p.row})" class="text-slate-500 ml-1">✕</button>
         </div>`).join('');
 }
 function renderPresetsList() {
     const preList = document.getElementById('presets-list');
-    if (preList) preList.innerHTML = presets.map(p => `
-        <div class="flex justify-between items-center glass-card p-4 rounded-2xl mb-2">
-            <div>
-                <p class="text-sm font-bold">${p.label}</p>
-                <p class="text-[10px] text-slate-500">${p.peptide} • ${p.value}${p.unit}${p.ui ? ` <span class="text-emerald-400 font-mono">(${p.ui} UI)</span>` : ''}${p.frequency > 0 ? ` (Q${p.frequency}d)` : ''}</p>
+    if (!preList) return;
+    preList.innerHTML = presets.map(p => {
+        const cs = getCycleStatus(p);
+        const badge = cycleBadgeHTML(cs);
+        const cycleInfo = p.cycle ? ` • cycle ${esc(p.cycle)}` : (p.frequency > 0 ? ` (Q${esc(p.frequency)}d)` : '');
+        return `<div class="glass-card p-4 rounded-2xl mb-2">
+            <div class="flex justify-between items-start">
+                <div class="flex-1 min-w-0 mr-2">
+                    <div class="flex items-center gap-2 flex-wrap mb-1">
+                        <p class="text-sm font-bold">${esc(p.label)}</p>
+                        ${badge}
+                    </div>
+                    <p class="text-[10px] text-slate-500">${esc(p.peptide)} • ${esc(p.value)}${esc(p.unit)}${p.ui ? ' <span class="text-emerald-400 font-mono">('+esc(p.ui)+' UI)</span>' : ''}${cycleInfo}</p>
+                </div>
+                <div class="flex gap-2 shrink-0">
+                    <button onclick="openEditPreset(${esc(JSON.stringify(p))})" class="text-indigo-400 font-bold text-[10px] uppercase tracking-widest border border-indigo-500/30 px-3 py-1.5 rounded-xl hover:bg-indigo-500/10 transition-colors">✏️</button>
+                    <button onclick="deletePreset(${p.row})" class="text-red-500 font-bold p-2">✕</button>
+                </div>
             </div>
-            <button onclick="deletePreset(${p.row})" class="text-red-500 font-bold p-2">✕</button>
-        </div>`).join('');
+        </div>`;
+    }).join('');
 }
 function renderHistory() {
     const filterEl = document.getElementById('history-filter');
@@ -894,8 +1073,8 @@ function renderHistory() {
     if (listEl) listEl.innerHTML = sorted.filter(h => h.peptide.toLowerCase().includes(filter) || h.site.toLowerCase().includes(filter)).map(h => `
         <div class="glass-card p-4 rounded-2xl flex justify-between items-center shadow-sm" id="history-row-${h.row}">
             <div>
-                <p class="font-bold text-sm">${h.peptide} <span class="text-indigo-400 ml-2 font-mono">${h.dosage}</span></p>
-                <p class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">${translations[currentLang].site_names[h.site] || h.site} • ${new Date(h.date).toLocaleDateString()}</p>
+                <p class="font-bold text-sm">${esc(h.peptide)} <span class="text-indigo-400 ml-2 font-mono">${esc(h.dosage)}</span></p>
+                <p class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">${esc(translations[currentLang].site_names[h.site] || h.site)} • ${new Date(h.date).toLocaleDateString()}</p>
             </div>
             <button onclick="deleteWithUndo(${h.row})" class="text-slate-600 hover:text-red-500 p-2">✕</button>
         </div>`).join('');
@@ -959,11 +1138,11 @@ function showDayDetails(date, dayHistory, dayPred) {
     let html = '';
     if (dayHistory.length > 0) {
         html += `<p class="text-[10px] uppercase font-black text-slate-500 mb-2">${t('tab_history')}</p>`;
-        dayHistory.forEach(h => { html += `<div class="bg-slate-800/50 p-3 rounded-xl border border-indigo-500/20 mb-2"><p class="font-bold text-sm">${h.peptide} <span class="text-indigo-400 font-mono">${h.dosage}</span></p></div>`; });
+        dayHistory.forEach(h => { html += `<div class="bg-slate-800/50 p-3 rounded-xl border border-indigo-500/20 mb-2"><p class="font-bold text-sm">${esc(h.peptide)} <span class="text-indigo-400 font-mono">${esc(h.dosage)}</span></p></div>`; });
     }
     if (dayPred.length > 0) {
         html += `<p class="text-[10px] uppercase font-black text-slate-500 mt-4 mb-2">${currentLang === 'fr' ? 'Suggéré' : 'Suggested'}</p>`;
-        dayPred.forEach(p => { html += `<button onclick="logForDayWithPreset('${date.toISOString()}', ${JSON.stringify(p.preset).replace(/"/g, '&quot;')})" class="w-full text-left bg-indigo-500/10 p-3 rounded-xl border border-indigo-500/40 mb-2"><p class="font-bold text-sm text-indigo-300">${p.peptide}</p></button>`; });
+        dayPred.forEach(p => { html += `<button onclick="logForDayWithPreset('${date.toISOString()}', ${esc(JSON.stringify(p.preset))})" class="w-full text-left bg-indigo-500/10 p-3 rounded-xl border border-indigo-500/40 mb-2"><p class="font-bold text-sm text-indigo-300">${esc(p.peptide)}</p></button>`; });
     }
     content.innerHTML = html || `<div class="text-center py-8 opacity-40">-- ${t('no_events')} --</div>`;
     logBtn.onclick = () => { switchView('log'); const timeInp = document.getElementById('log-time'); if (timeInp) timeInp.value = date.toISOString().slice(0, 16); closeDayDetails(); };
@@ -983,15 +1162,292 @@ function logForDayWithPreset(dateIso, preset) {
 
 function deleteWithUndo(row) {
     let cancelled = false;
+    const item = history.find(h => h.row === row);
     showToast(t('delete_undo'), 'error', 4000, { label: t('undo'), callback: () => { cancelled = true; } });
-    setTimeout(async () => { if (!cancelled) { const res = await api({ action: 'deleteLog', row }); if (res && res.success) loadAllData(); } }, 3500);
+    setTimeout(async () => {
+        if (cancelled) return;
+        // Retrait optimiste après expiration du délai d'annulation
+        history = history.filter(h => h.row !== row);
+        saveToCache({ history, presets, peptides: peptideLibrary, bacWater: bacWaterOpenedAt, reconstitutions });
+        renderUI();
+        const res = await api({ action: 'deleteLog', row, verifyDate: item ? item.date : '', verifyPeptide: item ? item.peptide : '' });
+        if (onStale(res)) return;
+        if (res && res.success) { if (!res.offline) loadAllData(); }
+        else { showToast(t('toast_error'), 'error'); loadAllData(); }
+    }, 3500);
+}
+
+// ===================== RECONSTITUTIONS =====================
+function renderReconstitutions() {
+    const activeList = document.getElementById('active-recons-list');
+    const histList = document.getElementById('recon-history-list');
+    if (!activeList || !histList) return;
+
+    const active = reconstitutions.filter(r => !r.closedAt);
+    const closed = reconstitutions.filter(r => r.closedAt).sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    activeList.innerHTML = active.length === 0
+        ? '<p class="text-sm text-slate-500 italic text-center py-2">' + t('recon_none') + '</p>'
+        : active.map(r => {
+            const mpu = calcMcgPerUI(r);
+            const concStr = mpu ? mpu.toFixed(1) + ' mcg/UI' : '?';
+            const dateStr = new Date(r.date).toLocaleDateString(currentLang === 'fr' ? 'fr-FR' : 'en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+            return `<div class="bg-violet-900/20 border border-violet-500/30 p-4 rounded-2xl">
+                <div class="flex justify-between items-start mb-2">
+                    <div>
+                        <p class="font-black text-sm text-violet-200">${esc(r.peptide)}</p>
+                        <p class="text-[10px] text-slate-500 mt-0.5">${dateStr} • ${esc(r.vialMg)}mg / ${esc(r.bacWaterMl)}ml</p>
+                    </div>
+                    <span class="text-[9px] font-black uppercase tracking-widest bg-violet-500/20 text-violet-300 px-2 py-1 rounded-full border border-violet-500/30">● ${t('recon_active')}</span>
+                </div>
+                <div class="flex justify-between items-center mt-3 pt-3 border-t border-violet-500/20">
+                    <div>
+                        <p class="text-[9px] uppercase font-bold text-slate-500 tracking-widest">${t('recon_conc')}</p>
+                        <p class="text-lg font-black text-violet-300">${concStr}</p>
+                    </div>
+                    <button onclick="terminateRecon(${r.row})" class="text-[10px] font-bold uppercase tracking-widest border border-red-900/40 text-red-400 bg-red-900/10 px-3 py-2 rounded-xl hover:bg-red-900/20 transition-colors">${t('recon_terminate')}</button>
+                </div>
+                ${r.notes ? '<p class="text-[10px] text-slate-500 mt-2 italic">' + esc(r.notes) + '</p>' : ''}
+            </div>`;
+        }).join('');
+
+    histList.innerHTML = closed.length === 0 ? '' :
+        '<p class="text-[10px] uppercase font-bold text-slate-500 tracking-widest mb-2 mt-2">' + t('recon_history') + '</p>' +
+        closed.map(r => {
+            const mpu = calcMcgPerUI(r);
+            const dateStr = new Date(r.date).toLocaleDateString(currentLang === 'fr' ? 'fr-FR' : 'en-US', { day: 'numeric', month: 'short' });
+            const closedStr = new Date(r.closedAt).toLocaleDateString(currentLang === 'fr' ? 'fr-FR' : 'en-US', { day: 'numeric', month: 'short' });
+            return `<div class="flex justify-between items-center glass-card p-3 rounded-xl opacity-60">
+                <div>
+                    <p class="text-xs font-bold">${esc(r.peptide)}</p>
+                    <p class="text-[9px] text-slate-500">${dateStr} → ${closedStr} • ${esc(r.vialMg)}mg/${esc(r.bacWaterMl)}ml${mpu ? ' • ' + mpu.toFixed(1) + ' mcg/UI' : ''}</p>
+                </div>
+            </div>`;
+        }).join('');
+}
+
+function updateReconCalcPreview() {
+    const mg = parseFloat(document.getElementById('recon-vial-mg').value);
+    const ml = parseFloat(document.getElementById('recon-bac-ml').value);
+    const preview = document.getElementById('recon-calc-preview');
+    const val = document.getElementById('recon-calc-value');
+    if (mg > 0 && ml > 0) {
+        const mpu = (mg * 1000) / (ml * 100);
+        val.innerText = mpu.toFixed(1);
+        preview.classList.remove('hidden');
+    } else {
+        preview.classList.add('hidden');
+    }
+}
+
+function updateLogUICalc() {
+    const dose = parseFloat(document.getElementById('log-dosage').value);
+    const unit = document.getElementById('log-unit').value;
+    const pep = document.getElementById('log-peptide').value;
+    const calcBox = document.getElementById('log-ui-calc');
+    const calcVal = document.getElementById('log-ui-calc-value');
+    if (!dose || !pep) { calcBox.classList.add('hidden'); return; }
+    const recon = getActiveRecon(pep);
+    if (!recon) { calcBox.classList.add('hidden'); return; }
+    const mcgVal = unit === 'mg' ? dose * 1000 : dose;
+    const ui = mcgToUI(mcgVal, recon);
+    if (ui !== null) {
+        calcVal.innerText = ui.toFixed(1);
+        calcBox.classList.remove('hidden');
+    } else {
+        calcBox.classList.add('hidden');
+    }
+}
+
+async function terminateRecon(row) {
+    if (!confirm(t('recon_confirm_close'))) return;
+    const rObj = reconstitutions.find(x => x.row === row);
+    const res = await api({ action: 'closeReconstitution', row, closedAt: new Date().toISOString(), verifyDate: rObj ? rObj.date : '', verifyPeptide: rObj ? rObj.peptide : '' });
+    if (onStale(res)) return;
+    if (res && res.success) {
+        const r = reconstitutions.find(x => x.row === row);
+        if (r) r.closedAt = new Date().toISOString();
+        saveToCache({ history, presets, peptides: peptideLibrary, bacWater: bacWaterOpenedAt, reconstitutions });
+        renderReconstitutions();
+        renderQuickLogs();
+        showToast(t('recon_closed_toast'));
+        loadAllData();
+    }
 }
 
 // ===================== MISC =====================
 function saveUrl() { const url = document.getElementById('setup-url').value.trim(); if (url) { localStorage.setItem('pep_url', url); location.reload(); } }
 function resetApp() { if (confirm(t('confirm_disconnect'))) { localStorage.removeItem('pep_url'); location.reload(); } }
-async function deletePreset(row) { if (confirm(t('confirm_del_preset'))) { const res = await api({ action: 'deleteConfig', row }); if (res && res.success) loadAllData(); } }
-async function deletePeptide(row) { if (confirm(t('confirm_del_library'))) { const res = await api({ action: 'deletePeptide', row }); if (res && res.success) loadAllData(); } }
+async function deletePreset(row) {
+    if (!confirm(t('confirm_del_preset'))) return;
+    const p = presets.find(x => x.row === row);
+    // Retrait optimiste : l'UI s'actualise tout de suite (marche aussi hors-ligne)
+    presets = presets.filter(x => x.row !== row);
+    saveToCache({ history, presets, peptides: peptideLibrary, bacWater: bacWaterOpenedAt, reconstitutions });
+    renderUI();
+    const res = await api({ action: 'deleteConfig', row, verifyLabel: p ? p.label : '', verifyPeptide: p ? p.peptide : '' });
+    if (onStale(res)) return;                                   // refus serveur → loadAllData restaure la vérité
+    if (res && res.success) { if (!res.offline) loadAllData(); } // succès en ligne → resync des index de lignes
+    else { showToast(t('toast_error'), 'error'); loadAllData(); } // échec → on remet l'état serveur
+}
+async function deletePeptide(row) {
+    if (!confirm(t('confirm_del_library'))) return;
+    const p = peptideLibrary.find(x => x.row === row);
+    peptideLibrary = peptideLibrary.filter(x => x.row !== row);
+    saveToCache({ history, presets, peptides: peptideLibrary, bacWater: bacWaterOpenedAt, reconstitutions });
+    renderUI();
+    const res = await api({ action: 'deletePeptide', row, verifyName: p ? p.name : '' });
+    if (onStale(res)) return;
+    if (res && res.success) { if (!res.offline) loadAllData(); }
+    else { showToast(t('toast_error'), 'error'); loadAllData(); }
+}
+
+// ===================== HEATMAP DES SITES =====================
+// Colore les zones du schéma corporel selon l'ancienneté de la dernière injection.
+function siteHeatClass(daysSince) {
+    if (daysSince === null) return '';        // jamais utilisée → neutre
+    if (daysSince <= 2) return 'heat-hot';    // très récent → éviter
+    if (daysSince <= 5) return 'heat-warm';
+    if (daysSince <= 10) return 'heat-mild';
+    return 'heat-cool';                        // reposé (>10j) → idéal
+}
+function applySiteHeatmap() {
+    const now = Date.now();
+    const lastBySite = {};
+    history.forEach(h => {
+        const tms = new Date(h.date).getTime();
+        if (!lastBySite[h.site] || tms > lastBySite[h.site]) lastBySite[h.site] = tms;
+    });
+    Object.entries(SITE_IDS).forEach(([site, id]) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.classList.remove('heat-hot', 'heat-warm', 'heat-mild', 'heat-cool');
+        const last = lastBySite[site];
+        const daysSince = last ? Math.floor((now - last) / 86400000) : null;
+        const cls = siteHeatClass(daysSince);
+        if (cls) el.classList.add(cls);
+    });
+}
+
+// ===================== RAPPELS / NOTIFICATIONS =====================
+const REMINDERS_KEY = 'pep_reminders_enabled';
+const REMINDER_TIME_KEY = 'pep_reminder_time';
+function remindersEnabled() { return localStorage.getItem(REMINDERS_KEY) === '1'; }
+function getReminderTime() { return localStorage.getItem(REMINDER_TIME_KEY) || '09:00'; }
+function triggersSupported() { return 'TimestampTrigger' in window; }
+
+// Liste les occurrences d'injections planifiées (presets avec frequency) jusqu'à daysAhead jours.
+function computeUpcomingInjections(daysAhead) {
+    const out = [];
+    const now = Date.now();
+    presets.filter(p => p.frequency > 0).forEach(p => {
+        const pepLogs = history.filter(h => h.peptide.toLowerCase().trim() === p.peptide.toLowerCase().trim());
+        if (!pepLogs.length) return;
+        const last = new Date(Math.max(...pepLogs.map(l => new Date(l.date).getTime())));
+        const next = new Date(last);
+        for (let i = 0; i < 60; i++) {
+            next.setDate(next.getDate() + parseInt(p.frequency));
+            if (next.getTime() > now + daysAhead * 86400000) break;
+            out.push({ date: new Date(next), peptide: p.peptide, label: p.label });
+        }
+    });
+    return out;
+}
+
+async function clearScheduledReminders(prefix) {
+    if (!('serviceWorker' in navigator)) return;
+    try {
+        const reg = await navigator.serviceWorker.ready;
+        const existing = await reg.getNotifications({ includeTriggered: true });
+        existing.filter(n => n.tag && n.tag.indexOf(prefix) === 0).forEach(n => n.close());
+    } catch (e) {}
+}
+
+// (Re)programme une notif par injection prévue, le jour J à l'heure choisie.
+async function scheduleReminders() {
+    if (!('Notification' in window) || Notification.permission !== 'granted' || !remindersEnabled()) return;
+    if (!('serviceWorker' in navigator)) return;
+    await clearScheduledReminders('pep-inj-');
+    if (!triggersSupported()) return; // iOS : pas de planification → repli à l'ouverture
+    let reg;
+    try { reg = await navigator.serviceWorker.ready; } catch (e) { return; }
+    const parts = getReminderTime().split(':');
+    const hh = parseInt(parts[0]) || 9, mm = parseInt(parts[1]) || 0;
+    const upcoming = computeUpcomingInjections(30);
+    for (const inj of upcoming) {
+        const when = new Date(inj.date); when.setHours(hh, mm, 0, 0);
+        if (when.getTime() <= Date.now()) continue; // passé : géré par le repli
+        const tag = 'pep-inj-' + inj.peptide + '-' + when.getFullYear() + '-' + (when.getMonth() + 1) + '-' + when.getDate();
+        try {
+            await reg.showNotification('💉 ' + inj.peptide, {
+                body: t('reminder_body') + (inj.label ? ' — ' + inj.label : ''),
+                tag, icon: 'logo.png', badge: 'logo.png',
+                showTrigger: new TimestampTrigger(when.getTime()),
+                data: { url: './' }
+            });
+        } catch (e) { console.warn('reminder schedule failed', e); }
+    }
+}
+
+// Repli (app ouverte / iOS) : si une injection est en retard ou prévue aujourd'hui, notif immédiate (1×/jour).
+function checkDueReminderOnOpen() {
+    if (!('Notification' in window) || Notification.permission !== 'granted' || !remindersEnabled()) return;
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const due = computeUpcomingInjections(1).filter(i => { const d = new Date(i.date); d.setHours(0, 0, 0, 0); return d.getTime() <= today.getTime(); });
+    if (!due.length) return;
+    const todayKey = new Date().toDateString();
+    if (localStorage.getItem('pep_open_notif_day') === todayKey) return;
+    localStorage.setItem('pep_open_notif_day', todayKey);
+    const names = Array.from(new Set(due.map(i => i.peptide))).join(', ');
+    if (!('serviceWorker' in navigator)) return;
+    navigator.serviceWorker.ready.then(reg => reg.showNotification('💉 ' + t('reminder_due_title'), {
+        body: names, tag: 'pep-due-open', icon: 'logo.png', data: { url: './' }
+    })).catch(() => {});
+}
+
+async function enableReminders() {
+    if (!('Notification' in window)) { showToast(t('reminders_unsupported'), 'error'); return; }
+    let perm;
+    try { perm = await Notification.requestPermission(); } catch (e) { perm = Notification.permission; }
+    if (perm === 'granted') {
+        localStorage.setItem(REMINDERS_KEY, '1');
+        await scheduleReminders();
+        checkDueReminderOnOpen();
+        showToast(t('reminders_on_toast'));
+    } else {
+        showToast(t('reminders_denied'), 'error');
+    }
+    renderRemindersConfig();
+}
+function disableReminders() {
+    localStorage.setItem(REMINDERS_KEY, '0');
+    clearScheduledReminders('pep-');
+    renderRemindersConfig();
+    showToast(t('reminders_off_toast'));
+}
+function setReminderTime(v) { localStorage.setItem(REMINDER_TIME_KEY, v || '09:00'); if (remindersEnabled()) scheduleReminders(); }
+
+function renderRemindersConfig() {
+    const cont = document.getElementById('reminders-config');
+    if (!cont) return;
+    if (!('Notification' in window)) { cont.innerHTML = `<p class="text-sm text-slate-500 italic">${t('reminders_unsupported')}</p>`; return; }
+    const enabled = remindersEnabled() && Notification.permission === 'granted';
+    const iosWarn = !triggersSupported() ? `<p class="text-[10px] text-orange-400/80 mt-3">${t('reminders_ios')}</p>` : '';
+    cont.innerHTML = `
+        <div class="flex items-center justify-between mb-4">
+            <div class="mr-2">
+                <p class="text-sm font-bold">${enabled ? t('reminders_on') : t('reminders_off')}</p>
+                <p class="text-[10px] text-slate-500">${t('reminders_sub')}</p>
+            </div>
+            <button onclick="${enabled ? 'disableReminders()' : 'enableReminders()'}" class="shrink-0 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest ${enabled ? 'bg-red-900/20 text-red-400 border border-red-900/40' : 'btn-primary text-white'}">${enabled ? t('reminders_disable') : t('reminders_enable')}</button>
+        </div>
+        <div class="flex items-center justify-between ${enabled ? '' : 'opacity-40 pointer-events-none'}">
+            <label class="text-xs font-bold text-slate-400">${t('reminders_time')}</label>
+            <input type="time" value="${getReminderTime()}" onchange="setReminderTime(this.value)" class="bg-slate-800 text-white rounded-xl px-3 py-2 border border-slate-700 outline-none" style="color-scheme:dark;">
+        </div>
+        ${iosWarn}
+    `;
+}
 
 // ===================== PWA =====================
 let deferredPrompt;
@@ -1035,11 +1491,56 @@ document.getElementById('peptide-add-form').onsubmit = async e => {
 
 document.getElementById('config-form').onsubmit = async e => {
     e.preventDefault();
-    const res = await api({ action: 'saveConfig', label: document.getElementById('conf-label').value, peptide: document.getElementById('conf-peptide-select').value, value: document.getElementById('conf-val').value, unit: document.getElementById('conf-unit').value, frequency: document.getElementById('conf-frequency').value, ui: document.getElementById('conf-ui').value });
+    const res = await api({ action: 'saveConfig', label: document.getElementById('conf-label').value, peptide: document.getElementById('conf-peptide-select').value, value: document.getElementById('conf-val').value, unit: document.getElementById('conf-unit').value, frequency: document.getElementById('conf-frequency').value, ui: document.getElementById('conf-ui').value, cycle: document.getElementById('conf-cycle').value || '' });
     if (res && res.success) { showToast(t('toast_logged')); loadAllData(); e.target.reset(); }
+};
+
+document.getElementById('recon-form').onsubmit = async e => {
+    e.preventDefault();
+    const dateVal = document.getElementById('recon-date').value;
+    const res = await api({
+        action: 'saveReconstitution',
+        peptide: document.getElementById('recon-peptide').value,
+        vialMg: document.getElementById('recon-vial-mg').value,
+        bacWaterMl: document.getElementById('recon-bac-ml').value,
+        notes: document.getElementById('recon-notes').value || '',
+        date: dateVal ? new Date(dateVal).toISOString() : new Date().toISOString()
+    });
+    if (res && res.success) {
+        showToast(t('recon_toast'));
+        loadAllData();
+        e.target.reset();
+        document.getElementById('recon-calc-preview').classList.add('hidden');
+    }
 };
 
 if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(err => console.error(err)));
 </script>
+
+<!-- MODAL: EDIT PRESET -->
+<div id="edit-preset-modal" class="fixed inset-0 z-[120] bg-slate-900/95 backdrop-blur-md hidden flex flex-col items-center justify-center p-4">
+    <div class="glass-card w-full max-w-sm p-6 rounded-3xl space-y-4 text-white shadow-2xl animate-bounce-in">
+        <h3 class="text-sm font-black text-indigo-300 uppercase tracking-widest text-center" data-t="edit_preset">Edit Preset</h3>
+        <input type="hidden" id="edit-preset-row">
+        <input type="text" id="edit-preset-label" class="input-field" placeholder="Label">
+        <div class="flex gap-2">
+            <input type="number" id="edit-preset-value" placeholder="Dose" step="any" class="input-field flex-1">
+            <select id="edit-preset-unit" class="bg-slate-700 text-white rounded-xl px-3 font-bold"><option>mcg</option><option>mg</option></select>
+        </div>
+        <input type="number" id="edit-preset-ui" placeholder="Syringe units (optional)" class="input-field">
+        <div class="space-y-1">
+            <label class="text-[10px] uppercase font-bold text-slate-500">Frequency (days)</label>
+            <input type="number" id="edit-preset-frequency" placeholder="0 = no schedule" class="input-field">
+        </div>
+        <div class="space-y-1">
+            <label class="text-[10px] uppercase font-bold text-slate-500" data-t="cycle_label">Cycle (e.g. 5/2)</label>
+            <input type="text" id="edit-preset-cycle" placeholder="5/2 — optional" class="input-field">
+        </div>
+        <div class="flex gap-2 pt-2">
+            <button onclick="closeEditPreset()" class="flex-1 py-3 text-slate-500 font-bold bg-slate-800 rounded-2xl" data-t="cancel">Cancel</button>
+            <button onclick="saveEditPreset()" class="flex-1 py-3 btn-primary text-white font-bold rounded-2xl" data-t="save_changes">Save</button>
+        </div>
+    </div>
+</div>
 </body>
 </html>
