@@ -930,9 +930,14 @@ function updateLevelChart() {
         data: { labels, datasets: [{ data: dataPoints, borderColor: '#6366f1', borderWidth: 2, backgroundColor: 'rgba(99,102,241,0.1)', fill: true, tension: 0.3, pointRadius: 0 }] },
         options: { responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { color: '#64748b', font: { size: 9 }, autoSkip: true, maxTicksLimit: 8 }, grid: { display: false } }, y: { beginAtZero: true, ticks: { color: '#64748b', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.03)' } } }, plugins: { legend: { display: false }, zoom: { zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' }, pan: { enabled: true, mode: 'x' } } } }
     });
-    const tIdx = labels.indexOf(t('today'));
+    // Niveau actuel calculé à l'instant présent (pas au point de grille le plus proche du graphe)
+    let currentLevel = 0;
+    pepLogs.forEach(log => {
+        const lDate = new Date(log.date).getTime();
+        if (lDate <= nowTime) currentLevel += dosageToMg(log.dosage) * Math.pow(Math.E, -k * ((nowTime - lDate) / 3600000));
+    });
     const currentLevelEl = document.getElementById('stat-current-level');
-    if (currentLevelEl) currentLevelEl.innerText = (tIdx !== -1 ? dataPoints[tIdx] : 0).toFixed(2);
+    if (currentLevelEl) currentLevelEl.innerText = currentLevel.toFixed(2);
     const fourteenDaysAgo = nowTime - 14 * 24 * 3600000;
     let peakVal = 0, peakTs = nowTime;
     for (let i = 0; i < pointTimestamps.length; i++) {
@@ -1157,9 +1162,19 @@ function logForDayWithPreset(dateIso, preset) {
 
 function deleteWithUndo(row) {
     let cancelled = false;
-    showToast(t('delete_undo'), 'error', 4000, { label: t('undo'), callback: () => { cancelled = true; } });
     const item = history.find(h => h.row === row);
-    setTimeout(async () => { if (!cancelled) { const res = await api({ action: 'deleteLog', row, verifyDate: item ? item.date : '', verifyPeptide: item ? item.peptide : '' }); if (onStale(res)) return; if (res && res.success) loadAllData(); } }, 3500);
+    showToast(t('delete_undo'), 'error', 4000, { label: t('undo'), callback: () => { cancelled = true; } });
+    setTimeout(async () => {
+        if (cancelled) return;
+        // Retrait optimiste après expiration du délai d'annulation
+        history = history.filter(h => h.row !== row);
+        saveToCache({ history, presets, peptides: peptideLibrary, bacWater: bacWaterOpenedAt, reconstitutions });
+        renderUI();
+        const res = await api({ action: 'deleteLog', row, verifyDate: item ? item.date : '', verifyPeptide: item ? item.peptide : '' });
+        if (onStale(res)) return;
+        if (res && res.success) { if (!res.offline) loadAllData(); }
+        else { showToast(t('toast_error'), 'error'); loadAllData(); }
+    }, 3500);
 }
 
 // ===================== RECONSTITUTIONS =====================
@@ -1263,8 +1278,29 @@ async function terminateRecon(row) {
 // ===================== MISC =====================
 function saveUrl() { const url = document.getElementById('setup-url').value.trim(); if (url) { localStorage.setItem('pep_url', url); location.reload(); } }
 function resetApp() { if (confirm(t('confirm_disconnect'))) { localStorage.removeItem('pep_url'); location.reload(); } }
-async function deletePreset(row) { if (confirm(t('confirm_del_preset'))) { const p = presets.find(x => x.row === row); const res = await api({ action: 'deleteConfig', row, verifyLabel: p ? p.label : '', verifyPeptide: p ? p.peptide : '' }); if (onStale(res)) return; if (res && res.success) loadAllData(); } }
-async function deletePeptide(row) { if (confirm(t('confirm_del_library'))) { const p = peptideLibrary.find(x => x.row === row); const res = await api({ action: 'deletePeptide', row, verifyName: p ? p.name : '' }); if (onStale(res)) return; if (res && res.success) loadAllData(); } }
+async function deletePreset(row) {
+    if (!confirm(t('confirm_del_preset'))) return;
+    const p = presets.find(x => x.row === row);
+    // Retrait optimiste : l'UI s'actualise tout de suite (marche aussi hors-ligne)
+    presets = presets.filter(x => x.row !== row);
+    saveToCache({ history, presets, peptides: peptideLibrary, bacWater: bacWaterOpenedAt, reconstitutions });
+    renderUI();
+    const res = await api({ action: 'deleteConfig', row, verifyLabel: p ? p.label : '', verifyPeptide: p ? p.peptide : '' });
+    if (onStale(res)) return;                                   // refus serveur → loadAllData restaure la vérité
+    if (res && res.success) { if (!res.offline) loadAllData(); } // succès en ligne → resync des index de lignes
+    else { showToast(t('toast_error'), 'error'); loadAllData(); } // échec → on remet l'état serveur
+}
+async function deletePeptide(row) {
+    if (!confirm(t('confirm_del_library'))) return;
+    const p = peptideLibrary.find(x => x.row === row);
+    peptideLibrary = peptideLibrary.filter(x => x.row !== row);
+    saveToCache({ history, presets, peptides: peptideLibrary, bacWater: bacWaterOpenedAt, reconstitutions });
+    renderUI();
+    const res = await api({ action: 'deletePeptide', row, verifyName: p ? p.name : '' });
+    if (onStale(res)) return;
+    if (res && res.success) { if (!res.offline) loadAllData(); }
+    else { showToast(t('toast_error'), 'error'); loadAllData(); }
+}
 
 // ===================== HEATMAP DES SITES =====================
 // Colore les zones du schéma corporel selon l'ancienneté de la dernière injection.
@@ -1435,6 +1471,25 @@ window.onload = () => {
         switchView('dash');
         setInterval(checkStatus, 30000);
         window.addEventListener('online', () => { flushOfflineQueue().then(() => { if (!getOfflineQueue().length) showToast(t('offline_synced')); }); });
+
+        // Rafraîchit les données quand l'app repasse au premier plan (retour d'arrière-plan,
+        // autre onglet, autre appareil, ou modif manuelle du Sheet). Throttle anti double-chargement.
+        let lastAutoRefresh = Date.now();
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState !== 'visible') return;
+            const now = Date.now();
+            if (now - lastAutoRefresh < 3000) return;
+            lastAutoRefresh = now;
+            loadAllData();
+        });
+
+        // Tap sur le point de statut = rafraîchissement manuel forcé
+        const statusDot = document.getElementById('status-dot');
+        if (statusDot) {
+            statusDot.style.cursor = 'pointer';
+            statusDot.title = currentLang === 'fr' ? 'Rafraîchir' : 'Refresh';
+            statusDot.addEventListener('click', () => { lastAutoRefresh = Date.now(); loadAllData(); });
+        }
     }
 };
 
