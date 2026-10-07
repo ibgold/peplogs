@@ -1,6 +1,7 @@
-const CACHE_NAME = 'pep-log-v3'; // J'ai incrémenté la version pour forcer la mise à jour
+const CACHE_NAME = 'pep-log-v4'; // J'ai incrémenté la version pour forcer la mise à jour
 const ASSETS = [
   './index.html',
+  './planning.js',
   './manifest.json',
   './logo.png', // Ajout du logo au cache pour le mode hors-ligne
   'https://cdn.tailwindcss.com',
@@ -15,9 +16,12 @@ self.addEventListener('install', (event) => {
   self.skipWaiting(); // Force le nouveau SW à s'activer immédiatement
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      // On utilise addAll pour les fichiers locaux, et on gère les erreurs pour les CDNs externes
-      // (parfois les CDNs bloquent les requêtes opaques en cache strict)
-      return cache.addAll(ASSETS).catch(err => console.warn("Erreur cache assets:", err));
+      // Cache the complete local app before activation; a CDN failure must not discard it.
+      const local = ASSETS.filter(url => url.startsWith('./'));
+      const external = ASSETS.filter(url => !url.startsWith('./'));
+      return cache.addAll(local).then(() => Promise.all(
+        external.map(url => cache.add(url).catch(err => console.warn('Optional asset unavailable:', url, err)))
+      ));
     })
   );
 });
