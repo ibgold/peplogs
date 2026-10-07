@@ -411,6 +411,7 @@
     </div>
 </div>
 
+<script src="./planning.js"></script>
 <script>
 // ===================== TRANSLATIONS =====================
 const translations = {
@@ -429,7 +430,7 @@ const translations = {
         cal_mon:"Mon", cal_tue:"Tue", cal_wed:"Wed", cal_thu:"Thu", cal_fri:"Fri", cal_sat:"Sat", cal_sun:"Sun",
         site_names:{"Right Abdomen (Upper)":"R Abdomen (U)","Right Abdomen (Lower)":"R Abdomen (L)","Left Abdomen (Upper)":"L Abdomen (U)","Left Abdomen (Lower)":"L Abdomen (L)","Right Flank":"Right Flank","Left Flank":"Left Flank","Right Thigh":"Right Thigh","Left Thigh":"Left Thigh","Right Deltoid":"Right Deltoid","Left Deltoid":"Left Deltoid","Right Buttock":"Right Buttock","Left Buttock":"Left Buttock","Other":"Other"},
         bac_water_title:"Bac Water", bac_water_btn:"+ New opening today", bac_water_none:"No opening recorded.", bac_water_opened_on:"Opened on", bac_water_elapsed:"Days elapsed", bac_water_remaining:"{n}d remaining", bac_water_expired:"EXPIRED", bac_water_confirm:"Record a new Bac Water opening today ({date})?", bac_water_toast:"Bac Water recorded!",
-        cycle_label:"Cycle (e.g. 5/2)", cycle_hint:"Active days / Rest days", edit_preset:"Edit Preset", save_changes:"Save",
+        cycle_label:"Cycle (e.g. 5/2)", cycle_hint:"Active/rest days, starting from the first recorded injection of this peptide. Replaces frequency; one scheduled day per active day.", edit_preset:"Edit Preset", save_changes:"Save",
         cycle_active:"Inject Today", cycle_rest:"Rest", cycle_done:"Done ✓", cycle_day_of:"day {d}/{t}",
         recon_title:"Reconstitutions", recon_new:"New Reconstitution", recon_vial_mg:"Vial (mg)", recon_bac_ml:"BAC Water (ml)",
         recon_conc:"Concentration", recon_active:"Active", recon_history:"History", recon_terminate:"Terminate",
@@ -452,7 +453,7 @@ const translations = {
         cal_mon:"Lun", cal_tue:"Mar", cal_wed:"Mer", cal_thu:"Jeu", cal_fri:"Ven", cal_sat:"Sam", cal_sun:"Dim",
         site_names:{"Right Abdomen (Upper)":"Abdomen D (Haut)","Right Abdomen (Lower)":"Abdomen D (Bas)","Left Abdomen (Upper)":"Abdomen G (Haut)","Left Abdomen (Lower)":"Abdomen G (Bas)","Right Flank":"Flanc Droit","Left Flank":"Flanc Gauche","Right Thigh":"Cuisse Droite","Left Thigh":"Cuisse Gauche","Right Deltoid":"Deltoïde D","Left Deltoid":"Deltoïde G","Right Buttock":"Fessier D","Left Buttock":"Fessier G","Other":"Autre"},
         bac_water_title:"Bac Water", bac_water_btn:"+ Nouvelle ouverture aujourd'hui", bac_water_none:"Aucune ouverture enregistrée.", bac_water_opened_on:"Ouvert le", bac_water_elapsed:"Jours écoulés", bac_water_remaining:"{n}j restants", bac_water_expired:"EXPIRÉ", bac_water_confirm:"Enregistrer une nouvelle ouverture de Bac Water aujourd'hui ({date}) ?", bac_water_toast:"Bac Water enregistré !",
-        cycle_label:"Cycle (ex: 5/2)", cycle_hint:"Jours actifs / jours de repos", edit_preset:"Modifier le preset", save_changes:"Enregistrer",
+        cycle_label:"Cycle (ex: 5/2)", cycle_hint:"Jours actifs/repos, à partir de la première injection enregistrée de ce peptide. Remplace la fréquence ; une échéance par jour actif.", edit_preset:"Modifier le preset", save_changes:"Enregistrer",
         cycle_active:"Injecter aujourd'hui", cycle_rest:"Repos", cycle_done:"Fait ✓", cycle_day_of:"jour {d}/{t}",
         recon_title:"Reconstitutions", recon_new:"Nouvelle reconstitution", recon_vial_mg:"Fiole (mg)", recon_bac_ml:"BAC Water (ml)",
         recon_conc:"Concentration", recon_active:"Active", recon_history:"Historique", recon_terminate:"Terminer",
@@ -480,29 +481,82 @@ const ALL_SITES = ['Right Abdomen (Upper)','Right Abdomen (Lower)','Left Abdomen
 const SITE_IDS = {'Right Abdomen (Upper)':'zone-right-abdomen-upper','Right Abdomen (Lower)':'zone-right-abdomen-lower','Left Abdomen (Upper)':'zone-left-abdomen-upper','Left Abdomen (Lower)':'zone-left-abdomen-lower','Right Flank':'zone-right-flank','Left Flank':'zone-left-flank','Right Thigh':'zone-right-thigh','Left Thigh':'zone-left-thigh','Right Deltoid':'zone-right-deltoid','Left Deltoid':'zone-left-deltoid','Right Buttock':'zone-right-buttock','Left Buttock':'zone-left-buttock','Other':'zone-other'};
 
 // ===================== OFFLINE CACHE =====================
-const CACHE_KEY = 'pep_offline_cache';
-const QUEUE_KEY = 'pep_offline_queue';
+// Keep each database's local data and pending writes separate.
+const CACHE_KEY = 'pep_offline_cache:' + (APP_URL || 'unconnected');
+const QUEUE_KEY = 'pep_offline_queue:' + (APP_URL || 'unconnected');
+if (APP_URL) {
+    for (const [oldKey, key] of [['pep_offline_cache', CACHE_KEY], ['pep_offline_queue', QUEUE_KEY]]) {
+        const old = localStorage.getItem(oldKey);
+        if (old && !localStorage.getItem(key)) {
+            localStorage.setItem(key, old);
+            localStorage.removeItem(oldKey);
+        }
+    }
+}
+let syncPromise = null, writePromise = Promise.resolve(), loadPromise = null, dataRevision = 0;
+function operationId() { return globalThis.crypto?.randomUUID?.() || Date.now() + '-' + Math.random().toString(36).slice(2); }
+function cacheState() { saveToCache({ history, presets, peptides: peptideLibrary, bacWater: bacWaterOpenedAt, reconstitutions }); }
+function pendingRowGuard(row) {
+    if (row > 1) return true;
+    showToast(currentLang === 'fr' ? 'Synchronise cette nouvelle entrée avant de la modifier ou supprimer.' : 'Sync this new entry before editing or deleting it.', 'error');
+    return false;
+}
 function saveToCache(data) { try { localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), ...data })); } catch(e) {} }
 function loadFromCache() { try { const r = localStorage.getItem(CACHE_KEY); return r ? JSON.parse(r) : null; } catch(e) { return null; } }
 function calcMcgPerUI(recon) { if (!recon || !recon.bacWaterMl || !recon.vialMg) return null; return (parseFloat(recon.vialMg) * 1000) / (parseFloat(recon.bacWaterMl) * 100); }
 function getActiveRecon(pepName) { return reconstitutions.find(r => r.peptide.toLowerCase().trim() === pepName.toLowerCase().trim() && !r.closedAt) || null; }
 function mcgToUI(mcgVal, recon) { const mpu = calcMcgPerUI(recon); return mpu ? (mcgVal / mpu) : null; }
 function getOfflineQueue() { try { const r = localStorage.getItem(QUEUE_KEY); return r ? JSON.parse(r) : []; } catch(e) { return []; } }
-function saveOfflineQueue(q) { try { localStorage.setItem(QUEUE_KEY, JSON.stringify(q)); } catch(e) {} }
-function addToOfflineQueue(data) { const q = getOfflineQueue(); q.push({ data, ts: Date.now() }); saveOfflineQueue(q); }
-async function flushOfflineQueue() {
-    const queue = getOfflineQueue();
-    if (!queue.length) return;
-    const remaining = [];
-    for (const item of queue) {
-        try {
-            const res = await fetch(APP_URL, { method: 'POST', body: JSON.stringify(item.data), headers: { 'Content-Type': 'text/plain;charset=utf-8' } });
-            const json = await res.json();
-            if (!json.success) remaining.push(item);
-        } catch(e) { remaining.push(item); break; }
+function saveOfflineQueue(q) { localStorage.setItem(QUEUE_KEY, JSON.stringify(q)); }
+function addToOfflineQueue(data) {
+    const q = getOfflineQueue();
+    const item = { id: operationId(), data, ts: Date.now(), localRow: -(Date.now() * 1000 + Math.floor(Math.random() * 1000)) };
+    q.push(item);
+    saveOfflineQueue(q); // Never report success if local persistence fails.
+    return item;
+}
+function applyPending(item) {
+    const d = item.data, row = item.localRow || -item.ts, id = item.id || String(item.ts);
+    const add = (list, value) => { if (!list.some(x => x._operationId === id)) list.push({ ...value, row, _operationId: id }); };
+    const matches = x => x.row === Number(d.row) && (!d.verifyPeptide || x.peptide === d.verifyPeptide)
+        && (!d.verifyLabel || x.label === d.verifyLabel) && (!d.verifyName || x.name === d.verifyName)
+        && (!d.verifyDate || new Date(x.date).getTime() === new Date(d.verifyDate).getTime());
+    if (d.action === 'logInjection') add(history, { date: new Date(Number(d.timestampMs || item.ts)).toISOString(), peptide: d.peptide, dosage: d.dosage, site: d.site, notes: d.notes || '' });
+    if (d.action === 'saveConfig') add(presets, { ...d, site: d.site || 'Ask' });
+    if (d.action === 'savePeptide') add(peptideLibrary, { name: d.name, halfLife: d.halfLife, hlUnit: d.hlUnit, ui: d.ui });
+    if (d.action === 'saveReconstitution') add(reconstitutions, { ...d, date: d.date || new Date(item.ts).toISOString(), closedAt: '' });
+    if (d.action === 'saveBacWater') bacWaterOpenedAt = d.openedAt;
+    if (d.action === 'updateConfig') {
+        const p = presets.find(matches);
+        if (p) for (const key of ['label', 'value', 'unit', 'frequency', 'ui', 'cycle']) if (d[key] !== undefined) p[key] = d[key];
     }
-    saveOfflineQueue(remaining);
-    if (remaining.length < queue.length) loadAllData();
+    if (d.action === 'closeReconstitution') { const r = reconstitutions.find(matches); if (r) r.closedAt = d.closedAt; }
+    if (d.action === 'deleteLog') history = history.filter(x => !matches(x));
+    if (d.action === 'deleteConfig') presets = presets.filter(x => !matches(x));
+    if (d.action === 'deletePeptide') peptideLibrary = peptideLibrary.filter(x => !matches(x));
+}
+function flushOfflineQueue() {
+    if (syncPromise) return syncPromise;
+    syncPromise = (async () => {
+        const queue = getOfflineQueue();
+        for (const item of queue) {
+            try {
+                const res = await fetch(APP_URL, { method: 'POST', body: JSON.stringify(item.data), headers: { 'Content-Type': 'text/plain;charset=utf-8' } });
+                const json = await res.json();
+                if (!json.success) {
+                    showToast(currentLang === 'fr' ? 'Synchronisation bloquée : une opération a été refusée. Les saisies restent en attente.' : 'Sync blocked: an operation was rejected. Pending entries have been kept.', 'error', 6000);
+                    break; // Preserve order, the failed item, and every unattempted item.
+                }
+                // Remove only the acknowledged item, preserving writes added during this request.
+                const same = x => item.id ? x.id === item.id : x.ts === item.ts && JSON.stringify(x.data) === JSON.stringify(item.data);
+                const current = getOfflineQueue(), index = current.findIndex(same);
+                if (index !== -1) current.splice(index, 1);
+                saveOfflineQueue(current);
+                dataRevision++;
+            } catch(e) { break; }
+        }
+    })().finally(() => { syncPromise = null; });
+    return syncPromise;
 }
 
 // ===================== HELPERS =====================
@@ -521,20 +575,17 @@ function dosageToMg(raw) { const d = parseDosage(raw); return d.unit === 'mcg' ?
 
 // ===================== CYCLE LOGIC =====================
 function getCycleStatus(preset) {
-    if (!preset.cycle || preset.cycle.trim() === "") return null;
-    const parts = preset.cycle.split("/");
-    if (parts.length !== 2) return null;
-    const activeDays = Number(parts[0]), restDays = Number(parts[1]);
-    if (!activeDays || !restDays) return null;
-    const pepName = preset.peptide.toLowerCase().trim();
-    const today = new Date(); today.setHours(0,0,0,0);
-    const injTimes = history.filter(h => h.peptide.toLowerCase().trim() === pepName).map(h => new Date(h.date).getTime());
-    if (!injTimes.length) return { status: "active", restDay: null, restTotal: restDays, activeDays };
-    const lastInj = new Date(Math.max(...injTimes)); lastInj.setHours(0,0,0,0);
-    const daysSince = Math.round((today.getTime() - lastInj.getTime()) / 86400000);
-    if (daysSince === 0) return { status: "done", restTotal: restDays, activeDays };
-    if (daysSince <= restDays) return { status: "rest", restDay: daysSince, restTotal: restDays, activeDays };
-    return { status: "active", restDay: null, restTotal: restDays, activeDays };
+    return PepPlanning.cycleStatus(preset, history);
+}
+function validSchedule(data) {
+    if (String(data.cycle || '').trim()) return !!PepPlanning.parseCycle(data.cycle);
+    const frequency = Number(data.frequency || 0);
+    return Number.isSafeInteger(frequency) && frequency >= 0;
+}
+function validateSchedule(data) {
+    if (validSchedule(data)) return true;
+    showToast(currentLang === 'fr' ? 'Cycle : jours entiers actifs/repos (ex. 5/2). Fréquence : nombre entier de jours.' : 'Cycle: whole active/rest days (e.g. 5/2). Frequency: whole days.', 'error');
+    return false;
 }
 function cycleBadgeHTML(cs) {
     if (!cs) return "";
@@ -544,6 +595,7 @@ function cycleBadgeHTML(cs) {
     return "<span class=\"inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wider bg-slate-700/60 text-slate-400 border border-slate-600/40 px-2 py-0.5 rounded-full\">🔴 "+t("cycle_rest")+" "+lbl+"</span>";
 }
 function openEditPreset(p) {
+    if (!pendingRowGuard(p.row)) return;
     document.getElementById("edit-preset-row").value = p.row;
     document.getElementById("edit-preset-label").value = p.label;
     document.getElementById("edit-preset-value").value = p.value;
@@ -558,6 +610,7 @@ async function saveEditPreset() {
     const row = parseInt(document.getElementById("edit-preset-row").value);
     const pObj = presets.find(x => x.row === row);
     const data = { action:"updateConfig", row, verifyPeptide: pObj ? pObj.peptide : '', label:document.getElementById("edit-preset-label").value, value:document.getElementById("edit-preset-value").value, unit:document.getElementById("edit-preset-unit").value, ui:document.getElementById("edit-preset-ui").value, frequency:document.getElementById("edit-preset-frequency").value||0, cycle:document.getElementById("edit-preset-cycle").value||"" };
+    if (!validateSchedule(data)) return;
     const res = await api(data);
     if (onStale(res)) { closeEditPreset(); return; }
     if (res && res.success) { closeEditPreset(); showToast(t("save_changes")+" ✓"); loadAllData(); }
@@ -600,25 +653,40 @@ function setDisconnectedStatus() {
 }
 
 // ===================== API =====================
-async function api(data) {
-    try {
-        const res = await fetch(APP_URL, { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'text/plain;charset=utf-8' } });
-        return await res.json();
-    } catch(e) {
-        const writeActions = ['logInjection','saveConfig','updateConfig','savePeptide','deleteLog','deleteConfig','deletePeptide','saveBacWater'];
-        if (writeActions.includes(data.action)) {
-            addToOfflineQueue(data);
+function api(data) {
+    if (data.action === 'logInjection' && !data.timestampMs) data = { ...data, timestampMs: Date.now() };
+    const run = async () => {
+        if (data.row !== undefined && !pendingRowGuard(Number(data.row))) return { success: false };
+        let queued;
+        const enqueue = () => {
+            queued = addToOfflineQueue(data);
+            applyPending(queued);
+            dataRevision++;
+            cacheState();
+            renderUI();
             showToast(t('offline_queued'), 'error', 4000);
-            if (data.action === 'logInjection') {
-                history.push({ row: -Date.now(), date: data.timestampMs ? new Date(Number(data.timestampMs)).toISOString() : new Date().toISOString(), peptide: data.peptide, dosage: data.dosage, site: data.site, notes: data.notes || '' });
-                saveToCache({ history, presets, peptides: peptideLibrary, bacWater: bacWaterOpenedAt, reconstitutions });
-                renderUI();
-            }
             return { success: true, offline: true };
+        };
+        try {
+            // Never let a new write overtake older pending operations.
+            if (syncPromise) await syncPromise;
+            if (getOfflineQueue().length) return enqueue();
+            let result;
+            try {
+                const res = await fetch(APP_URL, { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'text/plain;charset=utf-8' } });
+                result = await res.json();
+            } catch(e) { return enqueue(); }
+            if (result.success) dataRevision++;
+            else if (!result.stale) showToast(t('toast_error'), 'error');
+            return result;
+        } catch(e) {
+            showToast(currentLang === 'fr' ? 'Enregistrement local impossible. Garde cette saisie ouverte et réessaie.' : 'Could not save locally. Keep this entry open and retry.', 'error', 6000);
+            return { success: false, error: e.message };
         }
-        showToast(t('toast_error'), 'error');
-        return { success: false, error: e.message };
-    }
+    };
+    const result = writePromise.then(run);
+    writePromise = result.catch(() => {});
+    return result;
 }
 
 // Si le serveur refuse car la ligne ne correspond plus (modif depuis un autre appareil), on rafraîchit au lieu de corrompre.
@@ -662,7 +730,12 @@ function switchView(view) {
 }
 
 // ===================== LOAD DATA =====================
-async function loadAllData() {
+function loadAllData() {
+    if (loadPromise) return loadPromise;
+    loadPromise = loadDataSnapshot().finally(() => { loadPromise = null; });
+    return loadPromise;
+}
+async function loadDataSnapshot() {
     if (!APP_URL) return;
     const dot = document.getElementById('status-dot');
     if (dot) dot.classList.add('animate-spin');
@@ -675,15 +748,21 @@ async function loadAllData() {
         reconstitutions = cached.reconstitutions || [];
         renderUI();
     }
+    getOfflineQueue().forEach(applyPending);
+    if (getOfflineQueue().length) renderUI();
     try {
+        await writePromise;
         await flushOfflineQueue();
+        const revision = dataRevision;
         const res = await fetch(`${APP_URL}?action=getAllData`).then(r => r.json());
+        if (revision !== dataRevision) return loadDataSnapshot();
         if (res && res.success) {
             presets = res.presets || [];
             history = res.history || [];
             peptideLibrary = res.peptides || [];
             bacWaterOpenedAt = res.bacWater || null;
             reconstitutions = res.reconstitutions || [];
+            getOfflineQueue().forEach(applyPending);
             saveToCache({ history, presets, peptides: peptideLibrary, bacWater: bacWaterOpenedAt, reconstitutions });
             nextInjIndex = 0;
             renderUI();
@@ -756,18 +835,7 @@ function renderDashboard() {
     const weekEl = document.getElementById('dash-week-inj');
     if (weekEl) weekEl.innerText = history.filter(h => (now - new Date(h.date).getTime()) <= 7 * 24 * 3600000).length;
 
-    // Build predictions
-    const predictions = [];
-    presets.filter(p => p.frequency > 0).forEach(p => {
-        const pepLogs = history.filter(h => h.peptide.toLowerCase().trim() === p.peptide.toLowerCase().trim());
-        if (pepLogs.length > 0) {
-            const lastLog = new Date(Math.max(...pepLogs.map(l => new Date(l.date).getTime())));
-            const next = new Date(lastLog);
-            next.setDate(next.getDate() + parseInt(p.frequency));
-            predictions.push({ date: next, peptide: p.peptide, preset: p });
-        }
-    });
-    predictions.sort((a, b) => a.date - b.date);
+    const predictions = presets.map(p => PepPlanning.next(p, history)).filter(Boolean).sort((a, b) => a.date - b.date);
 
     const nextCont = document.getElementById('dash-next-inj-content');
     if (nextCont) {
@@ -775,7 +843,7 @@ function renderDashboard() {
             nextInjIndex = Math.max(0, Math.min(nextInjIndex, predictions.length - 1));
             const next = predictions[nextInjIndex];
             const total = predictions.length;
-            const isOverdue = next.date < new Date();
+            const isOverdue = PepPlanning.dayNumber(next.date) < PepPlanning.dayNumber(new Date());
             const dateStr = next.date.toLocaleDateString(currentLang === 'fr' ? 'fr-FR' : 'en-US', { weekday: 'short', day: 'numeric', month: 'short' });
             const presetJson = esc(JSON.stringify(next.preset));
             nextCont.innerHTML = `
@@ -1000,12 +1068,10 @@ async function finalizeQuickLog(site, preset) {
     closeModal();
     const tsMs = Date.now();
     const dosageStr = `${preset.value} ${preset.unit}`;
-    history.push({ row: -tsMs, date: new Date(tsMs).toISOString(), peptide: preset.peptide, dosage: dosageStr, site, notes: '' });
-    saveToCache({ history, presets, peptides: peptideLibrary, bacWater: bacWaterOpenedAt, reconstitutions });
-    renderUI();
-    showToast(`${t('toast_logged')} ${preset.peptide}`);
     const res = await api({ action: 'logInjection', peptide: preset.peptide, dosage: dosageStr, site, timestampMs: tsMs });
-    if (res && res.success && !res.offline) loadAllData();
+    if (res && res.success) {
+        if (!res.offline) { showToast(`${t('toast_logged')} ${preset.peptide}`); await loadAllData(); }
+    }
 }
 
 // ===================== SUGGESTION =====================
@@ -1096,7 +1162,7 @@ function switchHistoryView(view) {
     document.getElementById('history-calendar-view').classList.toggle('hidden', view !== 'calendar');
     if (view === 'calendar') renderCalendar(); else renderHistory();
 }
-function changeMonth(delta) { calendarDate.setMonth(calendarDate.getMonth() + delta); renderCalendar(); }
+function changeMonth(delta) { calendarDate.setDate(1); calendarDate.setMonth(calendarDate.getMonth() + delta); renderCalendar(); }
 function renderCalendar() {
     const grid = document.getElementById('calendar-grid'), header = document.getElementById('calendar-month-year');
     if (!grid || !header) return;
@@ -1107,15 +1173,9 @@ function renderCalendar() {
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     for (let i = 0; i < firstDay; i++) grid.appendChild(document.createElement('div'));
     const todayStr = new Date().toDateString();
-    const predictions = [];
-    presets.filter(p => p.frequency > 0).forEach(p => {
-        const pepLogs = history.filter(h => h.peptide.toLowerCase().trim() === p.peptide.toLowerCase().trim());
-        if (pepLogs.length > 0) {
-            const lastLog = new Date(Math.max(...pepLogs.map(l => new Date(l.date).getTime())));
-            let next = new Date(lastLog);
-            for (let j = 0; j < 10; j++) { next.setDate(next.getDate() + parseInt(p.frequency)); predictions.push({ date: new Date(next), peptide: p.peptide, preset: p }); }
-        }
-    });
+    const predictions = presets.flatMap(p => PepPlanning.occurrences(p, history, {
+        from: new Date(year, month, 1), to: new Date(year, month + 1, 0)
+    }));
     for (let d = 1; d <= daysInMonth; d++) {
         const date = new Date(year, month, d);
         const dayEl = document.createElement('div');
@@ -1145,15 +1205,16 @@ function showDayDetails(date, dayHistory, dayPred) {
         dayPred.forEach(p => { html += `<button onclick="logForDayWithPreset('${date.toISOString()}', ${esc(JSON.stringify(p.preset))})" class="w-full text-left bg-indigo-500/10 p-3 rounded-xl border border-indigo-500/40 mb-2"><p class="font-bold text-sm text-indigo-300">${esc(p.peptide)}</p></button>`; });
     }
     content.innerHTML = html || `<div class="text-center py-8 opacity-40">-- ${t('no_events')} --</div>`;
-    logBtn.onclick = () => { switchView('log'); const timeInp = document.getElementById('log-time'); if (timeInp) timeInp.value = date.toISOString().slice(0, 16); closeDayDetails(); };
+    logBtn.onclick = () => { switchView('log'); const timeInp = document.getElementById('log-time'); if (timeInp) timeInp.value = localDateTime(date); closeDayDetails(); };
     modal.classList.remove('hidden');
 }
 function closeDayDetails() { const modal = document.getElementById('day-details-modal'); if (modal) modal.classList.add('hidden'); }
 
+function localDateTime(value) { const d = new Date(value); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16); }
 function logForDayWithPreset(dateIso, preset) {
     closeDayDetails(); switchView('log');
     const timeInp = document.getElementById('log-time'), pepInp = document.getElementById('log-peptide'), doseInp = document.getElementById('log-dosage'), unitInp = document.getElementById('log-unit');
-    if (timeInp) timeInp.value = dateIso.slice(0, 16);
+    if (timeInp) timeInp.value = localDateTime(dateIso);
     if (pepInp) { pepInp.value = preset.peptide; updatePeptideReminder(); }
     if (doseInp) doseInp.value = preset.value;
     if (unitInp) unitInp.value = preset.unit;
@@ -1161,15 +1222,12 @@ function logForDayWithPreset(dateIso, preset) {
 }
 
 function deleteWithUndo(row) {
+    if (!pendingRowGuard(row)) return;
     let cancelled = false;
     const item = history.find(h => h.row === row);
     showToast(t('delete_undo'), 'error', 4000, { label: t('undo'), callback: () => { cancelled = true; } });
     setTimeout(async () => {
         if (cancelled) return;
-        // Retrait optimiste après expiration du délai d'annulation
-        history = history.filter(h => h.row !== row);
-        saveToCache({ history, presets, peptides: peptideLibrary, bacWater: bacWaterOpenedAt, reconstitutions });
-        renderUI();
         const res = await api({ action: 'deleteLog', row, verifyDate: item ? item.date : '', verifyPeptide: item ? item.peptide : '' });
         if (onStale(res)) return;
         if (res && res.success) { if (!res.offline) loadAllData(); }
@@ -1260,6 +1318,7 @@ function updateLogUICalc() {
 }
 
 async function terminateRecon(row) {
+    if (!pendingRowGuard(row)) return;
     if (!confirm(t('recon_confirm_close'))) return;
     const rObj = reconstitutions.find(x => x.row === row);
     const res = await api({ action: 'closeReconstitution', row, closedAt: new Date().toISOString(), verifyDate: rObj ? rObj.date : '', verifyPeptide: rObj ? rObj.peptide : '' });
@@ -1279,23 +1338,18 @@ async function terminateRecon(row) {
 function saveUrl() { const url = document.getElementById('setup-url').value.trim(); if (url) { localStorage.setItem('pep_url', url); location.reload(); } }
 function resetApp() { if (confirm(t('confirm_disconnect'))) { localStorage.removeItem('pep_url'); location.reload(); } }
 async function deletePreset(row) {
+    if (!pendingRowGuard(row)) return;
     if (!confirm(t('confirm_del_preset'))) return;
     const p = presets.find(x => x.row === row);
-    // Retrait optimiste : l'UI s'actualise tout de suite (marche aussi hors-ligne)
-    presets = presets.filter(x => x.row !== row);
-    saveToCache({ history, presets, peptides: peptideLibrary, bacWater: bacWaterOpenedAt, reconstitutions });
-    renderUI();
     const res = await api({ action: 'deleteConfig', row, verifyLabel: p ? p.label : '', verifyPeptide: p ? p.peptide : '' });
     if (onStale(res)) return;                                   // refus serveur → loadAllData restaure la vérité
     if (res && res.success) { if (!res.offline) loadAllData(); } // succès en ligne → resync des index de lignes
     else { showToast(t('toast_error'), 'error'); loadAllData(); } // échec → on remet l'état serveur
 }
 async function deletePeptide(row) {
+    if (!pendingRowGuard(row)) return;
     if (!confirm(t('confirm_del_library'))) return;
     const p = peptideLibrary.find(x => x.row === row);
-    peptideLibrary = peptideLibrary.filter(x => x.row !== row);
-    saveToCache({ history, presets, peptides: peptideLibrary, bacWater: bacWaterOpenedAt, reconstitutions });
-    renderUI();
     const res = await api({ action: 'deletePeptide', row, verifyName: p ? p.name : '' });
     if (onStale(res)) return;
     if (res && res.success) { if (!res.offline) loadAllData(); }
@@ -1336,22 +1390,11 @@ function remindersEnabled() { return localStorage.getItem(REMINDERS_KEY) === '1'
 function getReminderTime() { return localStorage.getItem(REMINDER_TIME_KEY) || '09:00'; }
 function triggersSupported() { return 'TimestampTrigger' in window; }
 
-// Liste les occurrences d'injections planifiées (presets avec frequency) jusqu'à daysAhead jours.
+// Same calendar-day engine as the dashboard and calendar.
 function computeUpcomingInjections(daysAhead) {
-    const out = [];
-    const now = Date.now();
-    presets.filter(p => p.frequency > 0).forEach(p => {
-        const pepLogs = history.filter(h => h.peptide.toLowerCase().trim() === p.peptide.toLowerCase().trim());
-        if (!pepLogs.length) return;
-        const last = new Date(Math.max(...pepLogs.map(l => new Date(l.date).getTime())));
-        const next = new Date(last);
-        for (let i = 0; i < 60; i++) {
-            next.setDate(next.getDate() + parseInt(p.frequency));
-            if (next.getTime() > now + daysAhead * 86400000) break;
-            out.push({ date: new Date(next), peptide: p.peptide, label: p.label });
-        }
-    });
-    return out;
+    const now = new Date(), end = new Date(now);
+    end.setDate(end.getDate() + daysAhead);
+    return presets.flatMap(p => PepPlanning.occurrences(p, history, { from: now, to: end, now, includeOverdue: true }));
 }
 
 async function clearScheduledReminders(prefix) {
@@ -1372,7 +1415,7 @@ async function scheduleReminders() {
     let reg;
     try { reg = await navigator.serviceWorker.ready; } catch (e) { return; }
     const parts = getReminderTime().split(':');
-    const hh = parseInt(parts[0]) || 9, mm = parseInt(parts[1]) || 0;
+    const hh = Number(parts[0]), mm = Number(parts[1]);
     const upcoming = computeUpcomingInjections(30);
     for (const inj of upcoming) {
         const when = new Date(inj.date); when.setHours(hh, mm, 0, 0);
@@ -1470,7 +1513,7 @@ window.onload = () => {
         loadAllData();
         switchView('dash');
         setInterval(checkStatus, 30000);
-        window.addEventListener('online', () => { flushOfflineQueue().then(() => { if (!getOfflineQueue().length) showToast(t('offline_synced')); }); });
+        window.addEventListener('online', () => { loadAllData().then(() => { if (!getOfflineQueue().length) showToast(t('offline_synced')); }); });
 
         // Rafraîchit les données quand l'app repasse au premier plan (retour d'arrière-plan,
         // autre onglet, autre appareil, ou modif manuelle du Sheet). Throttle anti double-chargement.
@@ -1510,7 +1553,9 @@ document.getElementById('peptide-add-form').onsubmit = async e => {
 
 document.getElementById('config-form').onsubmit = async e => {
     e.preventDefault();
-    const res = await api({ action: 'saveConfig', label: document.getElementById('conf-label').value, peptide: document.getElementById('conf-peptide-select').value, value: document.getElementById('conf-val').value, unit: document.getElementById('conf-unit').value, frequency: document.getElementById('conf-frequency').value, ui: document.getElementById('conf-ui').value, cycle: document.getElementById('conf-cycle').value || '' });
+    const data = { action: 'saveConfig', label: document.getElementById('conf-label').value, peptide: document.getElementById('conf-peptide-select').value, value: document.getElementById('conf-val').value, unit: document.getElementById('conf-unit').value, frequency: document.getElementById('conf-frequency').value, ui: document.getElementById('conf-ui').value, cycle: document.getElementById('conf-cycle').value || '' };
+    if (!validateSchedule(data)) return;
+    const res = await api(data);
     if (res && res.success) { showToast(t('toast_logged')); loadAllData(); e.target.reset(); }
 };
 
@@ -1554,6 +1599,7 @@ if ('serviceWorker' in navigator) window.addEventListener('load', () => navigato
         <div class="space-y-1">
             <label class="text-[10px] uppercase font-bold text-slate-500" data-t="cycle_label">Cycle (e.g. 5/2)</label>
             <input type="text" id="edit-preset-cycle" placeholder="5/2 — optional" class="input-field">
+            <p class="text-[10px] text-slate-500" data-t="cycle_hint"></p>
         </div>
         <div class="flex gap-2 pt-2">
             <button onclick="closeEditPreset()" class="flex-1 py-3 text-slate-500 font-bold bg-slate-800 rounded-2xl" data-t="cancel">Cancel</button>
