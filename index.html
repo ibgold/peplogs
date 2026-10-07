@@ -467,7 +467,7 @@ const translations = {
 let currentLang = localStorage.getItem('pep_lang') || 'en';
 let APP_URL = localStorage.getItem('pep_url');
 let history = [], presets = [], peptideLibrary = [], chart = null;
-let pendingAction = null, selectedSite = '';
+let pendingAction = null, selectedSite = '', editingPresetTarget = null;
 let currentChartLabels = [];
 let calendarDate = new Date();
 let historyView = 'list';
@@ -510,15 +510,15 @@ function getOfflineQueue() { try { const r = localStorage.getItem(QUEUE_KEY); re
 function saveOfflineQueue(q) { localStorage.setItem(QUEUE_KEY, JSON.stringify(q)); }
 function addToOfflineQueue(data) {
     const q = getOfflineQueue();
-    const item = { id: operationId(), data, ts: Date.now(), localRow: -(Date.now() * 1000 + Math.floor(Math.random() * 1000)) };
+    const item = { id: data.requestId || operationId(), data, ts: Date.now(), localRow: -(Date.now() * 1000 + Math.floor(Math.random() * 1000)) };
     q.push(item);
     saveOfflineQueue(q); // Never report success if local persistence fails.
     return item;
 }
 function applyPending(item) {
     const d = item.data, row = item.localRow || -item.ts, id = item.id || String(item.ts);
-    const add = (list, value) => { if (!list.some(x => x._operationId === id)) list.push({ ...value, row, _operationId: id }); };
-    const matches = x => x.row === Number(d.row) && (!d.verifyPeptide || x.peptide === d.verifyPeptide)
+    const add = (list, value) => { if (!list.some(x => x._operationId === id || (d.requestId && x.id === d.requestId))) list.push({ ...value, row, id: d.requestId || '', version: 1, lastRequestId: d.requestId || '', _operationId: id }); };
+    const matches = x => (d.id ? x.id === d.id : x.row === Number(d.row)) && (!d.verifyPeptide || x.peptide === d.verifyPeptide)
         && (!d.verifyLabel || x.label === d.verifyLabel) && (!d.verifyName || x.name === d.verifyName)
         && (!d.verifyDate || new Date(x.date).getTime() === new Date(d.verifyDate).getTime());
     if (d.action === 'logInjection') add(history, { date: new Date(Number(d.timestampMs || item.ts)).toISOString(), peptide: d.peptide, dosage: d.dosage, site: d.site, notes: d.notes || '' });
@@ -526,14 +526,16 @@ function applyPending(item) {
     if (d.action === 'savePeptide') add(peptideLibrary, { name: d.name, halfLife: d.halfLife, hlUnit: d.hlUnit, ui: d.ui });
     if (d.action === 'saveReconstitution') add(reconstitutions, { ...d, date: d.date || new Date(item.ts).toISOString(), closedAt: '' });
     if (d.action === 'saveBacWater') bacWaterOpenedAt = d.openedAt;
+    const canApply = x => x && (!d.requestId || x.lastRequestId !== d.requestId) && (!d.id || Number(x.version) === Number(d.expectedVersion));
+    const advance = x => { if (d.id) { x.version = Number(d.expectedVersion) + 1; x.lastRequestId = d.requestId || ''; } };
     if (d.action === 'updateConfig') {
         const p = presets.find(matches);
-        if (p) for (const key of ['label', 'value', 'unit', 'frequency', 'ui', 'cycle']) if (d[key] !== undefined) p[key] = d[key];
+        if (canApply(p)) { for (const key of ['label', 'value', 'unit', 'frequency', 'ui', 'cycle']) if (d[key] !== undefined) p[key] = d[key]; advance(p); }
     }
-    if (d.action === 'closeReconstitution') { const r = reconstitutions.find(matches); if (r) r.closedAt = d.closedAt; }
-    if (d.action === 'deleteLog') history = history.filter(x => !matches(x));
-    if (d.action === 'deleteConfig') presets = presets.filter(x => !matches(x));
-    if (d.action === 'deletePeptide') peptideLibrary = peptideLibrary.filter(x => !matches(x));
+    if (d.action === 'closeReconstitution') { const r = reconstitutions.find(matches); if (canApply(r)) { r.closedAt = d.closedAt; advance(r); } }
+    if (d.action === 'deleteLog') history = history.filter(x => !(matches(x) && canApply(x)));
+    if (d.action === 'deleteConfig') presets = presets.filter(x => !(matches(x) && canApply(x)));
+    if (d.action === 'deletePeptide') peptideLibrary = peptideLibrary.filter(x => !(matches(x) && canApply(x)));
 }
 function flushOfflineQueue() {
     if (syncPromise) return syncPromise;
@@ -594,8 +596,10 @@ function cycleBadgeHTML(cs) {
     const lbl = t("cycle_day_of").replace("{d}",cs.restDay).replace("{t}",cs.restTotal);
     return "<span class=\"inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wider bg-slate-700/60 text-slate-400 border border-slate-600/40 px-2 py-0.5 rounded-full\">🔴 "+t("cycle_rest")+" "+lbl+"</span>";
 }
+function mutationTarget(item) { return item && item.id ? { id: item.id, expectedVersion: item.version } : {}; }
 function openEditPreset(p) {
     if (!pendingRowGuard(p.row)) return;
+    editingPresetTarget = { ...p };
     document.getElementById("edit-preset-row").value = p.row;
     document.getElementById("edit-preset-label").value = p.label;
     document.getElementById("edit-preset-value").value = p.value;
@@ -605,11 +609,11 @@ function openEditPreset(p) {
     document.getElementById("edit-preset-cycle").value = p.cycle || "";
     document.getElementById("edit-preset-modal").classList.remove("hidden");
 }
-function closeEditPreset() { document.getElementById("edit-preset-modal").classList.add("hidden"); }
+function closeEditPreset() { document.getElementById("edit-preset-modal").classList.add("hidden"); editingPresetTarget = null; }
 async function saveEditPreset() {
-    const row = parseInt(document.getElementById("edit-preset-row").value);
-    const pObj = presets.find(x => x.row === row);
-    const data = { action:"updateConfig", row, verifyPeptide: pObj ? pObj.peptide : '', label:document.getElementById("edit-preset-label").value, value:document.getElementById("edit-preset-value").value, unit:document.getElementById("edit-preset-unit").value, ui:document.getElementById("edit-preset-ui").value, frequency:document.getElementById("edit-preset-frequency").value||0, cycle:document.getElementById("edit-preset-cycle").value||"" };
+    const pObj = editingPresetTarget;
+    if (!pObj) return;
+    const data = { action:"updateConfig", row: pObj.row, ...mutationTarget(pObj), verifyPeptide: pObj ? pObj.peptide : '', label:document.getElementById("edit-preset-label").value, value:document.getElementById("edit-preset-value").value, unit:document.getElementById("edit-preset-unit").value, ui:document.getElementById("edit-preset-ui").value, frequency:document.getElementById("edit-preset-frequency").value||0, cycle:document.getElementById("edit-preset-cycle").value||"" };
     if (!validateSchedule(data)) return;
     const res = await api(data);
     if (onStale(res)) { closeEditPreset(); return; }
@@ -640,7 +644,7 @@ async function checkStatus() {
     try {
         const res = await fetch(`${APP_URL}?action=ping`).then(r => r.json());
         const dot = document.getElementById('status-dot'), txt = document.getElementById('status-text');
-        if (res && res.success) {
+        if (res && res.success && res.configured !== false) {
             if (dot) dot.className = 'w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]';
             if (txt) { txt.innerText = t('status_connected'); txt.className = 'text-green-500'; }
         } else setDisconnectedStatus();
@@ -654,6 +658,7 @@ function setDisconnectedStatus() {
 
 // ===================== API =====================
 function api(data) {
+    data = { ...data, requestId: data.requestId || operationId() };
     if (data.action === 'logInjection' && !data.timestampMs) data = { ...data, timestampMs: Date.now() };
     const run = async () => {
         if (data.row !== undefined && !pendingRowGuard(Number(data.row))) return { success: false };
@@ -676,7 +681,14 @@ function api(data) {
                 const res = await fetch(APP_URL, { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'text/plain;charset=utf-8' } });
                 result = await res.json();
             } catch(e) { return enqueue(); }
-            if (result.success) dataRevision++;
+            if (!result.success && result.apiVersion >= 2 && ['busy', 'server_error'].includes(result.code)) return enqueue();
+            if (result.success) {
+                dataRevision++;
+                if (data.id && result.id === data.id) {
+                    const item = [...history, ...presets, ...peptideLibrary, ...reconstitutions].find(x => x.id === data.id);
+                    if (item) { item.version = result.version; item.lastRequestId = data.requestId; }
+                }
+            }
             else if (!result.stale) showToast(t('toast_error'), 'error');
             return result;
         } catch(e) {
@@ -1228,7 +1240,7 @@ function deleteWithUndo(row) {
     showToast(t('delete_undo'), 'error', 4000, { label: t('undo'), callback: () => { cancelled = true; } });
     setTimeout(async () => {
         if (cancelled) return;
-        const res = await api({ action: 'deleteLog', row, verifyDate: item ? item.date : '', verifyPeptide: item ? item.peptide : '' });
+        const res = await api({ action: 'deleteLog', row, ...mutationTarget(item), verifyDate: item ? item.date : '', verifyPeptide: item ? item.peptide : '' });
         if (onStale(res)) return;
         if (res && res.success) { if (!res.offline) loadAllData(); }
         else { showToast(t('toast_error'), 'error'); loadAllData(); }
@@ -1321,7 +1333,7 @@ async function terminateRecon(row) {
     if (!pendingRowGuard(row)) return;
     if (!confirm(t('recon_confirm_close'))) return;
     const rObj = reconstitutions.find(x => x.row === row);
-    const res = await api({ action: 'closeReconstitution', row, closedAt: new Date().toISOString(), verifyDate: rObj ? rObj.date : '', verifyPeptide: rObj ? rObj.peptide : '' });
+    const res = await api({ action: 'closeReconstitution', row, ...mutationTarget(rObj), closedAt: new Date().toISOString(), verifyDate: rObj ? rObj.date : '', verifyPeptide: rObj ? rObj.peptide : '' });
     if (onStale(res)) return;
     if (res && res.success) {
         const r = reconstitutions.find(x => x.row === row);
@@ -1341,7 +1353,7 @@ async function deletePreset(row) {
     if (!pendingRowGuard(row)) return;
     if (!confirm(t('confirm_del_preset'))) return;
     const p = presets.find(x => x.row === row);
-    const res = await api({ action: 'deleteConfig', row, verifyLabel: p ? p.label : '', verifyPeptide: p ? p.peptide : '' });
+    const res = await api({ action: 'deleteConfig', row, ...mutationTarget(p), verifyLabel: p ? p.label : '', verifyPeptide: p ? p.peptide : '' });
     if (onStale(res)) return;                                   // refus serveur → loadAllData restaure la vérité
     if (res && res.success) { if (!res.offline) loadAllData(); } // succès en ligne → resync des index de lignes
     else { showToast(t('toast_error'), 'error'); loadAllData(); } // échec → on remet l'état serveur
@@ -1350,7 +1362,7 @@ async function deletePeptide(row) {
     if (!pendingRowGuard(row)) return;
     if (!confirm(t('confirm_del_library'))) return;
     const p = peptideLibrary.find(x => x.row === row);
-    const res = await api({ action: 'deletePeptide', row, verifyName: p ? p.name : '' });
+    const res = await api({ action: 'deletePeptide', row, ...mutationTarget(p), verifyName: p ? p.name : '' });
     if (onStale(res)) return;
     if (res && res.success) { if (!res.offline) loadAllData(); }
     else { showToast(t('toast_error'), 'error'); loadAllData(); }
